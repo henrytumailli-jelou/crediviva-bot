@@ -1,0 +1,3590 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api": {
+      "get": {
+        "operationId": "AppController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correo cifrado y paso en el que se reanuda el onboarding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginWithResumeResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/health/status": {
+      "get": {
+        "operationId": "HealthController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Readiness de Mongo y Redis. Solo devuelve el status, sin el detalle de cada check.\n\nThe Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "degraded"
+                      ],
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "error",
+                        "shutting_down"
+                      ],
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect",
+                          "responseTime": 3005
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up",
+                          "responseTime": 12
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect",
+                          "responseTime": 3005
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "up",
+                              "degraded",
+                              "down"
+                            ]
+                          },
+                          "responseTime": {
+                            "type": "number",
+                            "description": "Time the health indicator took to respond, in ms"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/register/terms-and-conditions": {
+      "get": {
+        "operationId": "RegisterController_getTermsAndConditions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "URLs de términos, datos y disclaimer APC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TermsAndConditionsResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudieron obtener los términos y condiciones"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/validate-email-client": {
+      "post": {
+        "operationId": "RegisterController_validateEmailClient",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateEmailClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp enviado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El email no viene o no es válido",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidBody": {
+                    "summary": "El email no viene o no es válido",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "Bad Request",
+                      "error": {
+                        "message": [
+                          "El email debe ser una cadena de texto",
+                          "El email no es válido",
+                          "El email es obligatorio"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No puede continuar el proceso de onboarding. Debe hacerlo por la app.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "consultant": {
+                    "summary": "El correo pertenece a un consultor",
+                    "value": {
+                      "success": false,
+                      "statusCode": 403,
+                      "message": "CONTINUE_VIA_APP_CONSULTANT",
+                      "error": {
+                        "message": "No puede continuar el proceso de onboarding. Debe hacerlo por la app."
+                      }
+                    }
+                  },
+                  "legacy": {
+                    "summary": "El correo es de un usuario legacy",
+                    "value": {
+                      "success": false,
+                      "statusCode": 403,
+                      "message": "CONTINUE_VIA_APP_LEGACY",
+                      "error": {
+                        "message": "No puede continuar el proceso de onboarding. Debe hacerlo por la app."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Este correo ya está registrado. Debe iniciar sesión.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 409,
+                  "message": "EMAIL_ALREADY_REGISTERED",
+                  "error": {
+                    "message": "Este correo ya está registrado. Debe iniciar sesión."
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "El OTP superó 3 intentos o no esperó 45 segundos",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 429,
+                  "message": "Too Many Requests",
+                  "error": {
+                    "message": "Debe esperar X segundos para solicitar un nuevo OTP."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudo validar el email con el servicio externo o el envio del OTP"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/send-email-otp": {
+      "post": {
+        "operationId": "RegisterController_sendEmailOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp enviado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El email no viene o no es válido",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidBody": {
+                    "summary": "El email no viene o no es válido",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "Bad Request",
+                      "error": {
+                        "message": [
+                          "El email no es válido",
+                          "El email es obligatorio",
+                          "El email debe ser una cadena de texto"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Máximo de envíos, o hay que esperar antes de reenviar",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 429,
+                  "message": "Too Many Requests",
+                  "error": {
+                    "message": "Debe esperar X segundos para solicitar un nuevo OTP."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudo enviar el código OTP"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/verify-email-otp": {
+      "post": {
+        "operationId": "RegisterController_verifyEmailOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp verificado correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp verificado correctamente"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El body no es válido (email o código ausentes o con formato incorrecto), el OTP no coincide o está expirado",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidBody": {
+                    "summary": "El email o el código no vienen o no son válidos",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "Bad Request",
+                      "error": {
+                        "message": [
+                          "El email debe ser una cadena de texto",
+                          "El email es obligatorio",
+                          "El email no es válido",
+                          "El código debe ser una cadena de texto",
+                          "El código debe tener entre 4 y 6 caracteres"
+                        ]
+                      }
+                    }
+                  },
+                  "otpNoMatch": {
+                    "summary": "El código no coincide",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "OTP_NO_MATCH",
+                      "error": {
+                        "message": "Otp incorrecto"
+                      }
+                    }
+                  },
+                  "otpExpired": {
+                    "summary": "El código expiró",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "OTP_EXPIRED",
+                      "error": {
+                        "message": "Otp expirado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error al validar el código OTP"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/create-client": {
+      "post": {
+        "operationId": "RegisterController_createClient",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cliente creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreateClientResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudo crear el cliente"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/validate-phone-client": {
+      "post": {
+        "operationId": "RegisterController_validatePhoneClient",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidatePhoneClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp enviado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El número no es válido para el país"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado, o el número de teléfono ya está registrado",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "stepAlreadyCompleted": {
+                    "summary": "El paso ya está completado",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "Conflict",
+                      "error": {
+                        "message": "El paso ya está completado"
+                      }
+                    }
+                  },
+                  "phoneAlreadyRegistered": {
+                    "summary": "El número de teléfono ya está registrado",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "PHONE_ALREADY_REGISTERED",
+                      "error": {
+                        "message": "Este número de teléfono ya está registrado."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "El OTP por metodo seleccionado superó el límite de envíos",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 429,
+                  "message": "Too Many Requests",
+                  "error": {
+                    "message": "Debe esperar X segundos para solicitar un nuevo OTP."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudo validar el número"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/send-phone-otp": {
+      "post": {
+        "operationId": "RegisterController_sendPhoneOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendPhoneOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp enviado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El número no es válido para el país"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "429": {
+            "description": "Máximo de envíos, o hay que esperar antes de reenviar",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 429,
+                  "message": "Too Many Requests",
+                  "error": {
+                    "message": "Debe esperar X segundos para solicitar un nuevo OTP."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "No se pudo enviar el OTP"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/verify-phone-otp": {
+      "post": {
+        "operationId": "RegisterController_verifyPhoneOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPhoneOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Otp verificado correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "Otp verificado correctamente"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El número no es válido para el país, el OTP no coincide o está expirado",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidPhone": {
+                    "summary": "El número no es válido para el país",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "Bad Request",
+                      "error": {
+                        "message": "El teléfono no es válido para el país Panama. Debe enviarse pegado, sin espacios ni caracteres especiales, en el formato +507 seguido de 8 dígitos que inician en 6."
+                      }
+                    }
+                  },
+                  "otpNoMatch": {
+                    "summary": "El código no coincide",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "OTP_NO_MATCH",
+                      "error": {
+                        "message": "Otp incorrecto"
+                      }
+                    }
+                  },
+                  "otpExpired": {
+                    "summary": "El código expiró",
+                    "value": {
+                      "success": false,
+                      "statusCode": 400,
+                      "message": "OTP_EXPIRED",
+                      "error": {
+                        "message": "Otp expirado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error al validar el código OTP"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/start-kyc": {
+      "post": {
+        "operationId": "RegisterController_startKyc",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "URL de Veriff o Jumio, según el proveedor configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StartKycResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Sesión Jumio inválida o Sesión Veriff inválida"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado, o la verificación falló"
+          },
+          "410": {
+            "description": "La verificación requiere reintento"
+          },
+          "411": {
+            "description": "La verificación ya fue procesada"
+          },
+          "412": {
+            "description": "La verificación encontró un cliente existente por cédula o por nombre y fecha de nacimiento"
+          },
+          "413": {
+            "description": "La sesión de verificación no fue encontrada"
+          },
+          "500": {
+            "description": "No se pudo obtener el token de Jumio o la sesión de Veriff"
+          },
+          "503": {
+            "description": "La verificación aún no está lista. Vuelve a llamar a este endpoint."
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/start-kyc-jumio": {
+      "post": {
+        "operationId": "RegisterController_startKycJumio",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartKycJumioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL para completar Jumio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StartKycJumioResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Sesión Jumio inválida"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado, o Jumio bloqueó la verificación. canUseAlternativeKyc indica si puede intentar con Veriff",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "stepAlreadyCompleted": {
+                    "summary": "El paso ya está completado",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "Conflict",
+                      "error": {
+                        "message": "El paso ya está completado"
+                      }
+                    }
+                  },
+                  "verificationBlocked": {
+                    "summary": "No puede volver a verificarse",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "VERIFICATION_FAILED",
+                      "error": {
+                        "type": "VERIFICATION_FAILED",
+                        "canUseAlternativeKyc": false,
+                        "message": "La verificación falló"
+                      }
+                    }
+                  },
+                  "alternativeKycAvailable": {
+                    "summary": "Puede intentar verificarse por Veriff",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "VERIFICATION_FAILED",
+                      "error": {
+                        "type": "VERIFICATION_FAILED",
+                        "canUseAlternativeKyc": true,
+                        "message": "La verificación falló"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "411": {
+            "description": "La verificación ya fue procesada"
+          },
+          "500": {
+            "description": "No se pudo obtener la url de Jumio"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/save-jumio-verification": {
+      "post": {
+        "operationId": "RegisterController_saveJumioVerification",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Verificación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "La verificación fue exitosa"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "403": {
+            "description": "No puede continuar el proceso de onboarding. Debe hacerlo por la app.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 403,
+                  "message": "CONTINUE_VIA_APP_LEGACY",
+                  "error": {
+                    "message": "No puede continuar el proceso de onboarding. Debe hacerlo por la app."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El paso ya está completado, o Jumio bloqueó la verificación. canUseAlternativeKyc indica si puede intentar con Veriff",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "stepAlreadyCompleted": {
+                    "summary": "El paso ya está completado",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "Conflict",
+                      "error": {
+                        "message": "El paso ya está completado"
+                      }
+                    }
+                  },
+                  "verificationBlocked": {
+                    "summary": "No puede volver a verificarse",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "VERIFICATION_FAILED",
+                      "error": {
+                        "type": "VERIFICATION_FAILED",
+                        "canUseAlternativeKyc": false,
+                        "message": "La verificación falló"
+                      }
+                    }
+                  },
+                  "alternativeKycAvailable": {
+                    "summary": "Puede intentar verificarse por Veriff",
+                    "value": {
+                      "success": false,
+                      "statusCode": 409,
+                      "message": "VERIFICATION_FAILED",
+                      "error": {
+                        "type": "VERIFICATION_FAILED",
+                        "canUseAlternativeKyc": true,
+                        "message": "La verificación falló"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "La verificación requiere reintento"
+          },
+          "412": {
+            "description": "La verificación encontró un cliente existente por cédula o por nombre y fecha de nacimiento"
+          },
+          "500": {
+            "description": "No se pudo guardar el workflow de Jumio"
+          },
+          "503": {
+            "description": "La verificación aún no está lista. Vuelve a llamar a este endpoint."
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/start-kyc-veriff": {
+      "post": {
+        "operationId": "RegisterController_startKycVeriff",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartKycVeriffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL para completar Veriff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StartKycVeriffResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado, o la verificación falló"
+          },
+          "411": {
+            "description": "La verificación ya fue procesada"
+          },
+          "500": {
+            "description": "No se pudo obtener la sesión de Veriff"
+          },
+          "503": {
+            "description": "La verificación aún no está lista. Vuelve a llamar a este endpoint."
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/save-veriff-verification": {
+      "post": {
+        "operationId": "RegisterController_saveVeriffVerification",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Verificación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/MessageResponse"
+                        }
+                      ],
+                      "example": {
+                        "message": "La verificación fue exitosa"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "403": {
+            "description": "No puede continuar el proceso de onboarding. Debe hacerlo por la app.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "statusCode": 403,
+                  "message": "CONTINUE_VIA_APP_LEGACY",
+                  "error": {
+                    "message": "No puede continuar el proceso de onboarding. Debe hacerlo por la app."
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El paso ya está completado, o la verificación falló"
+          },
+          "412": {
+            "description": "La verificación encontró un cliente existente por cédula o por nombre y fecha de nacimiento"
+          },
+          "413": {
+            "description": "La sesión de verificación no fue encontrada"
+          },
+          "500": {
+            "description": "No se pudo guardar el workflow de Veriff"
+          },
+          "503": {
+            "description": "La verificación aún no está lista. Vuelve a llamar a este endpoint."
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/register/enter-monthly-income": {
+      "post": {
+        "operationId": "RegisterController_enterMonthlyIncome",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterMonthlyIncomeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Aprobado, análisis manual o rechazado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/EnterMonthlyIncomeResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fecha de nacimiento requerida, fecha inválida o score CSE inválido"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "No se pudo registrar el ingreso mensual"
+          }
+        },
+        "tags": [
+          "register"
+        ]
+      }
+    },
+    "/api/credit-application/enter-credit-requested": {
+      "post": {
+        "operationId": "CreditApplicationController_enterCreditRequested",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterCreditRequestedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Monto registrado en la solicitud de crédito",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El monto no cumple la validación o la regla de remote config"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/select-merchants-favorite": {
+      "post": {
+        "operationId": "CreditApplicationController_selectMerchantsFavorite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectMerchantsFavoriteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comercios favoritos guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "favoriteCommerces no es un arreglo de comercios válidos del catálogo"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/enter-direction": {
+      "post": {
+        "operationId": "CreditApplicationController_enterDirection",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterDirectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dirección guardada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Provincia, distrito o corregimiento no coinciden con el catálogo de ubicaciones"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/enter-study-level": {
+      "post": {
+        "operationId": "CreditApplicationController_enterStudyLevel",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterStudyLevelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Nivel de estudio guardado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "levelStudy vacío o no pertenece al catálogo de niveles de estudio"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/enter-situation-job": {
+      "post": {
+        "operationId": "CreditApplicationController_enterSituationJob",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterSituationJobDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Situación laboral guardada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "currentWork vacío, fuera del catálogo, o sin formulario asignado"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/form-government-structure": {
+      "post": {
+        "operationId": "CreditApplicationController_formGovernmentStructure",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormGovernmentStructureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Datos laborales de estructura gubernamental guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "occupation inválida o el documento de trabajo es obligatorio"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/form-independent": {
+      "post": {
+        "operationId": "CreditApplicationController_formIndependent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormIndependentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Datos de trabajador independiente guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El documento de trabajo es obligatorio"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/form-private-company": {
+      "post": {
+        "operationId": "CreditApplicationController_formPrivateCompany",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormPrivateCompanyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Datos de empresa privada guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "economicActivity o seniority inválidos, o el documento de trabajo es obligatorio"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/form-retired-or-pensioned": {
+      "post": {
+        "operationId": "CreditApplicationController_formRetiredOrPensioned",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormRetiredOrPensionedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Datos de jubilado o pensionado guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El documento de trabajo es obligatorio"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/enter-references": {
+      "post": {
+        "operationId": "CreditApplicationController_enterReferences",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterReferencesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Referencias personales guardadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreditApplicationMessageResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parentesco fuera del catálogo, teléfonos inválidos o referencias repetidas"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/credit-application/form-pep": {
+      "post": {
+        "operationId": "CreditApplicationController_formPep",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FormPepDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Decisión de crédito luego de guardar la información PEP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "statusCode",
+                    "message",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "OK"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FormPepResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "isPEP true con campos obligatorios vacíos, una opción fuera del catálogo, un archivo inválido, o decisión de crédito inválida"
+          },
+          "401": {
+            "description": "Falta la sesión o el access token no es válido"
+          },
+          "409": {
+            "description": "El paso ya está completado"
+          },
+          "500": {
+            "description": "Error inesperado, o API Gateway no pudo completar la operación"
+          }
+        },
+        "tags": [
+          "credit-application"
+        ]
+      }
+    },
+    "/api/options/merchants": {
+      "get": {
+        "operationId": "OptionsController_listMerchants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de merchants disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/occupations": {
+      "get": {
+        "operationId": "OptionsController_listOccupations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de ocupaciones disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/employment-situations": {
+      "get": {
+        "operationId": "OptionsController_listEmploymentSituations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de situaciones laborales disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/industries": {
+      "get": {
+        "operationId": "OptionsController_listIndustries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de industrias disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/seniority": {
+      "get": {
+        "operationId": "OptionsController_listSeniority",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de antigüedades disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/provinces": {
+      "get": {
+        "operationId": "OptionsController_listProvinces",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de provincias con distritos y corregimientos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProvinceItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/relationships": {
+      "get": {
+        "operationId": "OptionsController_listRelationships",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Listas de relaciones disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRelationshipsResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/studies": {
+      "get": {
+        "operationId": "OptionsController_listStudies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de niveles de estudio disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptionItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    },
+    "/api/options/pep": {
+      "get": {
+        "operationId": "OptionsController_listPep",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Listas de opciones del formulario PEP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPepResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "options"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Crediviva Onboarding WhatsApp",
+    "description": "API para integracion con proveedor de whatsapp",
+    "version": "0.9.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "x-auth-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-auth-key",
+        "description": "Correo cifrado que devuelven login y create-client."
+      },
+      "x-environment": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-environment",
+        "description": "development, staging, production, o los mismos con sufijo -do."
+      },
+      "x-api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Identificador de la API key de API Gateway. En local no se exige."
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Correo electrónico del usuario",
+            "example": "usuario@ejemplo.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Contraseña del usuario (mínimo 8 caracteres)",
+            "example": "MiClave123"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResumeDecisionResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "PENDING"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message"
+        ]
+      },
+      "LoginWithResumeResponse": {
+        "type": "object",
+        "properties": {
+          "authKey": {
+            "type": "string",
+            "example": "iv.tag.ciphertext",
+            "description": "Correo cifrado. Se envía en el header x-auth-key."
+          },
+          "flow": {
+            "type": "string",
+            "enum": [
+              "register",
+              "credit-application"
+            ]
+          },
+          "step": {
+            "type": "string",
+            "example": "register/validate-phone-client"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/LoginResumeDecisionResponse"
+          }
+        },
+        "required": [
+          "authKey",
+          "completed"
+        ]
+      },
+      "TermsAndConditionsResponse": {
+        "type": "object",
+        "properties": {
+          "termsAndConditionsUrl": {
+            "type": "string",
+            "description": "URL de los términos y condiciones",
+            "example": "https://example.com/terminos.html"
+          },
+          "dataProcessingUrl": {
+            "type": "string",
+            "description": "URL del aviso de tratamiento de datos",
+            "example": "https://example.com/datos.html"
+          },
+          "disclaimerApcUrl": {
+            "type": "string",
+            "description": "URL del disclaimer APC",
+            "example": "https://example.com/apc.pdf"
+          }
+        },
+        "required": [
+          "termsAndConditionsUrl",
+          "dataProcessingUrl",
+          "disclaimerApcUrl"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensaje de respuesta",
+            "example": "Operación completada"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ValidateEmailClientDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email del cliente",
+            "example": "juan.perez@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "SendEmailOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email al que se enviará el código OTP",
+            "example": "juan.perez@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "VerifyEmailOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "CreateClientResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensaje de respuesta",
+            "example": "Cliente creado"
+          },
+          "authKey": {
+            "type": "string",
+            "description": "Correo cifrado. Se envía en el header x-auth-key."
+          }
+        },
+        "required": [
+          "message",
+          "authKey"
+        ]
+      },
+      "CreateClientDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email del cliente",
+            "example": "juan.perez@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "pattern": "[A-Z]",
+            "description": "Contraseña del cliente",
+            "example": "Password1!"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ValidatePhoneClientDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneNumber"
+        ]
+      },
+      "SendPhoneOtpDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "enum": [
+              "call",
+              "sms",
+              "whatsapp"
+            ],
+            "type": "string",
+            "description": "Método de envío del OTP",
+            "example": "sms"
+          },
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "phoneNumber"
+        ]
+      },
+      "VerifyPhoneOtpDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 6
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "call",
+              "sms",
+              "whatsapp"
+            ]
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "code",
+          "method"
+        ]
+      },
+      "StartKycResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "JUMIO",
+              "VERIFF"
+            ],
+            "example": "JUMIO"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL para completar la verificación KYC desde WhatsApp",
+            "example": "https://jumio.example/web"
+          }
+        },
+        "required": [
+          "provider",
+          "url"
+        ]
+      },
+      "StartKycJumioResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL para completar la verificación Jumio desde WhatsApp",
+            "example": "https://jumio.example/web"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "StartKycJumioDto": {
+        "type": "object",
+        "properties": {
+          "retry": {
+            "type": "object",
+            "default": false,
+            "example": false
+          }
+        }
+      },
+      "StartKycVeriffResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL para completar la verificación Veriff desde WhatsApp",
+            "example": "https://magic.veriff.me/v/session"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "StartKycVeriffDto": {
+        "type": "object",
+        "properties": {
+          "retry": {
+            "type": "object",
+            "default": false,
+            "example": false
+          }
+        }
+      },
+      "EnterMonthlyIncomeResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "manualAnalysis",
+              "rejected"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje de respuesta"
+          }
+        },
+        "required": [
+          "status",
+          "message"
+        ]
+      },
+      "EnterMonthlyIncomeDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Ingreso mensual declarado.",
+            "example": 1200
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "CreditApplicationMessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Paso guardado"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "EnterCreditRequestedDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Monto solicitado del crédito.",
+            "example": 250
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "SelectMerchantsFavoriteDto": {
+        "type": "object",
+        "properties": {
+          "favoriteCommerces": {
+            "minItems": 1,
+            "description": "Lista de nombres de los comercios favoritos seleccionados",
+            "example": [
+              "BREMEN",
+              "MULTIMAX"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "favoriteCommerces"
+        ]
+      },
+      "EnterDirectionDto": {
+        "type": "object",
+        "properties": {
+          "province": {
+            "type": "string",
+            "description": "Nombre de la provincia seleccionada",
+            "example": "Panamá"
+          },
+          "district": {
+            "type": "string",
+            "description": "Nombre del distrito seleccionado",
+            "example": "Panamá"
+          },
+          "corregimiento": {
+            "type": "string",
+            "description": "Nombre del corregimiento seleccionado",
+            "example": "Bella Vista"
+          },
+          "addressHome": {
+            "type": "string",
+            "description": "Edificio, residencial o punto de referencia",
+            "example": "PH Lemon Tower"
+          },
+          "addressStreet": {
+            "type": "string",
+            "description": "Calle de la dirección",
+            "example": "Calle 49 Este"
+          },
+          "addressHouse": {
+            "type": "string",
+            "description": "Número de casa o apartamento",
+            "example": "214"
+          }
+        },
+        "required": [
+          "province",
+          "district",
+          "corregimiento",
+          "addressHome",
+          "addressStreet",
+          "addressHouse"
+        ]
+      },
+      "EnterStudyLevelDto": {
+        "type": "object",
+        "properties": {
+          "levelStudy": {
+            "type": "string",
+            "description": "Nivel de estudio seleccionado",
+            "example": "Universitario"
+          }
+        },
+        "required": [
+          "levelStudy"
+        ]
+      },
+      "EnterSituationJobDto": {
+        "type": "object",
+        "properties": {
+          "currentWork": {
+            "type": "string",
+            "description": "Situación laboral seleccionada por el usuario",
+            "example": "Empresa Privada"
+          }
+        },
+        "required": [
+          "currentWork"
+        ]
+      },
+      "FormGovernmentStructureDto": {
+        "type": "object",
+        "properties": {
+          "occupation": {
+            "type": "string",
+            "example": "Ministerio de Educación"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          }
+        },
+        "required": [
+          "occupation"
+        ]
+      },
+      "FormIndependentDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          }
+        }
+      },
+      "FormPrivateCompanyDto": {
+        "type": "object",
+        "properties": {
+          "economicActivity": {
+            "type": "string",
+            "description": "Actividad económica",
+            "example": "Tecnología"
+          },
+          "seniority": {
+            "type": "string",
+            "example": "1-2 años"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          }
+        },
+        "required": [
+          "economicActivity",
+          "seniority"
+        ]
+      },
+      "FormRetiredOrPensionedDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          }
+        }
+      },
+      "EnterReferencesDto": {
+        "type": "object",
+        "properties": {
+          "nameRef1": {
+            "type": "string",
+            "example": "Juan Pérez"
+          },
+          "numberRef1": {
+            "type": "string",
+            "example": "+50760000000",
+            "description": "Número con formato de país"
+          },
+          "references1": {
+            "type": "string",
+            "description": "Relación de la referencia 1",
+            "example": "Padre"
+          },
+          "nameRef2": {
+            "type": "string",
+            "example": "María Gómez"
+          },
+          "numberRef2": {
+            "type": "string",
+            "example": "+50760000001",
+            "description": "Número con formato de país"
+          },
+          "references2": {
+            "type": "string",
+            "description": "Relación de la referencia 2",
+            "example": "Amigo"
+          }
+        },
+        "required": [
+          "nameRef1",
+          "numberRef1",
+          "references1",
+          "nameRef2",
+          "numberRef2",
+          "references2"
+        ]
+      },
+      "ScoreDecision": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status de GET_DECISION",
+            "example": "APPROVED",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "PENDING"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "description": "Monto de la decisión. Puede incluir decimales",
+            "example": 1500.5
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje para mostrar al cliente",
+            "example": "¡FELICITACIONES! Tienes un crédito aprobado de $1500. Descarga la APP de Crediviva para que puedas ir a tu comercio favorito y comprar el producto que deseas!"
+          }
+        },
+        "required": [
+          "status",
+          "amount",
+          "message"
+        ]
+      },
+      "FormPepResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "description": "Decisión de scoring luego de guardar la data PEP",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScoreDecision"
+              }
+            ]
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "FormPepDto": {
+        "type": "object",
+        "properties": {
+          "isPEP": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica si el cliente es una persona políticamente expuesta. Se recibe como texto true o false",
+            "example": "false"
+          },
+          "pepCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Código PEP",
+            "example": "12345"
+          },
+          "loanStatus": {
+            "type": "string",
+            "description": "Estatus de préstamo. Obligatorio si isPEP es true",
+            "example": "Activo"
+          },
+          "dataUpdatedAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Fecha de actualización de datos en formato aaaa-mm-dd. Obligatoria si isPEP es true",
+            "example": "2026-10-21"
+          },
+          "jurisdiction": {
+            "type": "string",
+            "description": "Jurisdicción PEP. Obligatoria si isPEP es true",
+            "example": "Si - Nacional"
+          },
+          "relationshipType": {
+            "type": "string",
+            "description": "Cargo propio o familiar o asociado cercano de un PEP. Obligatorio si isPEP es true",
+            "example": "familiar o Asociado cercano de un PEP"
+          },
+          "relatedPepLink": {
+            "type": "string",
+            "description": "Vínculo con el PEP. Obligatorio si relationshipType es familiar o asociado cercano",
+            "example": "cónyuge"
+          },
+          "relatedPepName": {
+            "type": "string",
+            "description": "Nombre del PEP relacionado. Obligatorio si relationshipType es familiar o asociado cercano",
+            "example": "Ana Pérez"
+          },
+          "publicOfficePosition": {
+            "type": "string",
+            "description": "Cargo público. Obligatorio si isPEP es true",
+            "example": "Ministro"
+          },
+          "publicOfficeInstitution": {
+            "type": "string",
+            "description": "Institución del cargo público. Obligatoria si isPEP es true",
+            "example": "Ministerio de Economía"
+          },
+          "publicOfficeHierarchy": {
+            "type": "string",
+            "description": "Jerarquía del cargo. Obligatoria si isPEP es true",
+            "example": "Alto"
+          },
+          "publicOfficePeriod": {
+            "type": "string",
+            "description": "Período del cargo público. Obligatorio si isPEP es true",
+            "example": "2024-2029"
+          },
+          "hasPreviousPublicOffices": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica si ocupó otros cargos públicos. Obligatorio si isPEP es true. Se recibe como texto true o false",
+            "example": "true"
+          },
+          "previousPublicOfficesDetail": {
+            "type": "string",
+            "description": "Detalle de cargos públicos anteriores. Obligatorio si hasPreviousPublicOffices es true",
+            "example": "Viceministro 2014-2019"
+          },
+          "officeStatusStatus": {
+            "type": "string",
+            "description": "Estatus del cargo. Obligatorio si isPEP es true",
+            "example": "Ha finalizado"
+          },
+          "officeStatusTimeSinceEnded": {
+            "type": "string",
+            "description": "Tiempo desde que finalizó el cargo. Obligatorio si officeStatusStatus es Ha finalizado",
+            "example": "2 años"
+          },
+          "hasInvestigations": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica si existen investigaciones o sanciones. Obligatorio si isPEP es true. Se recibe como texto true o false",
+            "example": "false"
+          },
+          "incomeMainSource": {
+            "type": "string",
+            "description": "Fuente principal de ingresos. Obligatoria si isPEP es true",
+            "example": "Salario público"
+          },
+          "incomeApproximateAmount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto aproximado de ingresos, con hasta dos decimales. Obligatorio si isPEP es true",
+            "example": 3500.5
+          },
+          "incomeFrequency": {
+            "type": "string",
+            "description": "Frecuencia de ingresos. Obligatoria si isPEP es true",
+            "example": "Mensuales"
+          },
+          "wealthOrigin": {
+            "type": "string",
+            "description": "Origen del patrimonio. Obligatorio si isPEP es true",
+            "example": "Bienes inmuebles"
+          },
+          "wealthExplanation": {
+            "type": "string",
+            "description": "Explicación del patrimonio. Obligatoria si isPEP es true",
+            "example": "Vivienda adquirida en 2018"
+          },
+          "wealthSupportDocument": {
+            "type": "string",
+            "format": "binary",
+            "description": "Soporte del patrimonio. Obligatorio si isPEP es true. Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          },
+          "otherIncomeType": {
+            "type": "string",
+            "description": "Otras fuentes de ingreso. Obligatorio si isPEP es true",
+            "example": "No"
+          },
+          "otherIncomeExplanation": {
+            "type": "string",
+            "description": "Explicación de otros ingresos. Obligatoria si otherIncomeType es distinto de No",
+            "example": "Consultoría independiente"
+          },
+          "otherIncomeEconomicActivity": {
+            "type": "string",
+            "description": "Actividad económica de otros ingresos. Obligatoria si otherIncomeType es distinto de No",
+            "example": "Servicios profesionales"
+          },
+          "otherIncomeCompanySeniority": {
+            "type": "string",
+            "description": "Antigüedad en la empresa de otros ingresos. Obligatoria si otherIncomeType es distinto de No",
+            "example": "3-5 años"
+          },
+          "otherIncomePartnersNames": {
+            "type": "string",
+            "description": "Nombre de los socios. Obligatorio si otherIncomeType es distinto de No",
+            "example": "Luis Gómez"
+          },
+          "otherIncomeSupportDocument": {
+            "type": "string",
+            "format": "binary",
+            "description": "Soporte de otros ingresos. Obligatorio si otherIncomeType es distinto de No. Archivo adjunto (PNG, JPG, JPEG, PDF). Máximo 5MB."
+          },
+          "hasPreviousFinancialInstitution": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica si fue cliente de otra entidad financiera. Obligatorio si isPEP es true. Se recibe como texto true o false",
+            "example": "true"
+          },
+          "debankingWasRejectedOrClosed": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica si hubo cierre de cuenta o rechazo de vinculación. Obligatorio si isPEP es true. Se recibe como texto true o false",
+            "example": "false"
+          },
+          "debankingReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Motivo de debanking, si se conoce",
+            "example": null
+          },
+          "hasHighRiskJurisdictionLinks": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "description": "Indica vínculos con jurisdicciones de alto riesgo. Obligatorio si isPEP es true. Se recibe como texto true o false",
+            "example": "false"
+          }
+        },
+        "required": [
+          "isPEP"
+        ]
+      },
+      "OptionItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "name": {
+            "type": "string",
+            "example": "Construcción"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "TownshipItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "name": {
+            "type": "string",
+            "example": "Construcción"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "DistrictItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "name": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "corregimientos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TownshipItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "corregimientos"
+        ]
+      },
+      "ProvinceItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "name": {
+            "type": "string",
+            "example": "Construcción"
+          },
+          "distritos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DistrictItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "distritos"
+        ]
+      },
+      "ListRelationshipsResponse": {
+        "type": "object",
+        "properties": {
+          "listOne": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "listTwo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          }
+        },
+        "required": [
+          "listOne",
+          "listTwo"
+        ]
+      },
+      "ListPepResponse": {
+        "type": "object",
+        "properties": {
+          "loanStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "jurisdiction": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "relationshipType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "relatedPepLink": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "publicOfficePeriod": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "officeStatusStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "incomeMainSource": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "incomeFrequency": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "wealthOrigin": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "otherIncomeType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          },
+          "otherIncomeCompanySeniority": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItem"
+            }
+          }
+        },
+        "required": [
+          "loanStatus",
+          "jurisdiction",
+          "relationshipType",
+          "relatedPepLink",
+          "publicOfficePeriod",
+          "officeStatusStatus",
+          "incomeMainSource",
+          "incomeFrequency",
+          "wealthOrigin",
+          "otherIncomeType",
+          "otherIncomeCompanySeniority"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "x-auth-key": [],
+      "x-environment": [],
+      "x-api-key": []
+    }
+  ]
+}

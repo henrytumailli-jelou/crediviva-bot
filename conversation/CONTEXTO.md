@@ -48,8 +48,10 @@ sites/crediviva-validacion/  webview de la autenticación de atención al client
 conversation/        este documento
 ```
 
-No están en el repo (ver `.gitignore`): `.jelou/` (estado local del CLI), los `.env` de las funciones y
-`.documents/` (SOW, OpenAPI y Postman de Crediviva: pedírselos a H. T. o a Crediviva).
+`.documents/` trae el SOW, la OpenAPI de onboarding (`crediviva-onboarding-openapi-nueva.json` es la 0.9.0
+vigente; la otra es la 0.8.2) y la colección Postman de la API de atención al cliente.
+
+No están en el repo (ver `.gitignore`): `.jelou/` (estado local del CLI) y los `.env` de las funciones.
 
 Workflows locales que **no deben subirse** con `jelou push`: `crediviva.whatsapp.json` y
 `verificacion-telefonica.whatsapp.json` (no están en el lockfile). Hacer push siempre con

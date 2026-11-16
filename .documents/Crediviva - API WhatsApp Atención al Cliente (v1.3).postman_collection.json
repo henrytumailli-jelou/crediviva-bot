@@ -1,0 +1,627 @@
+{
+  "info": {
+    "_postman_id": "20b166f8-6e43-484b-bb3d-3ad6f7230636",
+    "name": "Crediviva - API WhatsApp Atención al Cliente (v1.3)",
+    "description": "Colección oficial de Postman para las APIs de Crediviva (WhatsApp Customer API v1.3). Incluye flujos de validación de identidad (Auth Tipo 1 y Tipo 2 con OTP) y descarga de documentos PDF (Carta de Saldo, Estado de Cuenta, Carta de Cancelación y Último Pago).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38098106"
+  },
+  "item": [
+    {
+      "name": "1. Identidad y Autenticación",
+      "item": [
+        {
+          "name": "1.1 Validar Teléfono",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res && res.authType !== undefined) {",
+                  "    pm.collectionVariables.set('authType', res.authType);",
+                  "    console.log('authType detectado:', res.authType);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/verify-phone?phone={{phone}}&countryCode={{countryCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "verify-phone"
+              ],
+              "query": [
+                {
+                  "key": "phone",
+                  "value": "{{phone}}",
+                  "description": "Número telefónico del cliente (8 dígitos en Panamá)"
+                },
+                {
+                  "key": "countryCode",
+                  "value": "{{countryCode}}",
+                  "description": "Código de país (ej. PA)"
+                }
+              ]
+            },
+            "description": "Verifica si el teléfono está registrado en el sistema.\n- authType = 1: Registrado → Autenticar con cédula + fecha nacimiento (1.2)\n- authType = 2: No registrado → Requiere flujo OTP (1.3, 1.4 y 1.5)"
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Autenticar Cliente (Tipo 1 - Registrado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res && res.authenticated === true && res.sessionToken) {",
+                  "    pm.collectionVariables.set('sessionToken', res.sessionToken);",
+                  "    if (pm.environment) pm.environment.set('sessionToken', res.sessionToken);",
+                  "    console.log('sessionToken guardado con éxito');",
+                  "} else {",
+                  "    console.warn('No se autenticó o datos incorrectos:', res.message);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/authenticate?countryCode={{countryCode}}&phone={{phone}}&cedula={{cedula}}&birthdate={{birthdate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "authenticate"
+              ],
+              "query": [
+                {
+                  "key": "countryCode",
+                  "value": "{{countryCode}}"
+                },
+                {
+                  "key": "phone",
+                  "value": "{{phone}}"
+                },
+                {
+                  "key": "cedula",
+                  "value": "{{cedula}}",
+                  "description": "Cédula del cliente (ej. 8-123-456)"
+                },
+                {
+                  "key": "birthdate",
+                  "value": "{{birthdate}}",
+                  "description": "Fecha de nacimiento YYYY-MM-DD"
+                }
+              ]
+            },
+            "description": "Autentica al cliente con teléfono registrado mediante cédula y fecha de nacimiento. Devuelve sessionToken (vigencia ~30 min)."
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Solicitar OTP (Tipo 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cedula\": \"{{cedula}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/otp/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "otp",
+                "request"
+              ]
+            },
+            "description": "Envía un código OTP de 4 dígitos al correo electrónico registrado del cliente."
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Verificar OTP (Tipo 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res && res.otpValid === true && res.tempToken) {",
+                  "    pm.collectionVariables.set('tempToken', res.tempToken);",
+                  "    if (pm.environment) pm.environment.set('tempToken', res.tempToken);",
+                  "    console.log('tempToken guardado con éxito');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cedula\": \"{{cedula}}\",\n  \"otp\": \"{{otp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/otp/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "otp",
+                "verify"
+              ]
+            },
+            "description": "Valida el OTP enviado al cliente. Retorna tempToken (vigencia ~15 min) para usar en el siguiente paso de autenticación."
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Autenticar Cliente (Tipo 2 - con tempToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "if (res && res.authenticated === true && res.sessionToken) {",
+                  "    pm.collectionVariables.set('sessionToken', res.sessionToken);",
+                  "    if (pm.environment) pm.environment.set('sessionToken', res.sessionToken);",
+                  "    console.log('sessionToken obtenido vía OTP y guardado con éxito');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/authenticate?tempToken={{tempToken}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "authenticate"
+              ],
+              "query": [
+                {
+                  "key": "tempToken",
+                  "value": "{{tempToken}}",
+                  "description": "Token temporal obtenido en la verificación de OTP"
+                }
+              ]
+            },
+            "description": "Completa la autenticación con el tempToken generado por OTP. Devuelve el sessionToken final."
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Reenviar OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cedula\": \"{{cedula}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/customer-auth/otp/resend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "customer-auth",
+                "otp",
+                "resend"
+              ]
+            },
+            "description": "Reenvía el código OTP con cooldown de 60 segundos."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para verificar el teléfono del cliente, solicitar/verificar OTP y autenticar para obtener el sessionToken."
+    },
+    {
+      "name": "2. Documentos PDF",
+      "item": [
+        {
+          "name": "2.1 Carta de Saldo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {\n    pm.response.to.have.status(200);\n});\n\nconst res = pm.response.json();\nif (res && res.document && res.document.downloadUrl) {\n    console.log('URL de descarga PDF:', res.document.downloadUrl);\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/document-service/balance-letter?addressedTo={{addressedTo}}&recipientName={{recipientName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "document-service",
+                "balance-letter"
+              ],
+              "query": [
+                {
+                  "key": "addressedTo",
+                  "value": "{{addressedTo}}",
+                  "description": "Valores permitidos: SEÑORES | SEÑORA | SEÑOR"
+                },
+                {
+                  "key": "recipientName",
+                  "value": "{{recipientName}}",
+                  "description": "Nombre de la entidad o persona a quien se dirige (ej. Banco XYZ)"
+                }
+              ]
+            },
+            "description": "Genera la Carta de Saldo en PDF. Requiere crédito activo o write_off. Retorna downloadUrl firmada."
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Estado de Cuenta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {\n    pm.response.to.have.status(200);\n});\n\nconst res = pm.response.json();\nif (res && res.document && res.document.downloadUrl) {\n    console.log('URL de descarga PDF:', res.document.downloadUrl);\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/document-service/account-statement",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "document-service",
+                "account-statement"
+              ]
+            },
+            "description": "Genera el Estado de Cuenta en PDF. Elegibilidad: ACTIVE | CLOSED | OVERPAID | WRITE_OFF."
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Carta de Cancelación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {\n    pm.response.to.have.status(200);\n});\n\nconst res = pm.response.json();\nif (res && res.document && res.document.downloadUrl) {\n    console.log('URL de descarga PDF:', res.document.downloadUrl);\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/document-service/cancellation-letter?addressedTo={{addressedTo}}&recipientName={{recipientName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "document-service",
+                "cancellation-letter"
+              ],
+              "query": [
+                {
+                  "key": "addressedTo",
+                  "value": "{{addressedTo}}",
+                  "description": "Valores permitidos: SEÑORES | SEÑORA | SEÑOR"
+                },
+                {
+                  "key": "recipientName",
+                  "value": "{{recipientName}}",
+                  "description": "Nombre destinatario (ej. Juan Perez o Banco XYZ)"
+                }
+              ]
+            },
+            "description": "Genera la Carta de Cancelación en PDF. Requiere crédito CLOSED u OVERPAID."
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Comprobante de Último Pago",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200', function () {\n    pm.response.to.have.status(200);\n});\n\nconst res = pm.response.json();\nif (res && res.document && res.document.downloadUrl) {\n    console.log('URL de descarga PDF:', res.document.downloadUrl);\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{sessionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/whatsapp-customer-api/document-service/last-payment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "whatsapp-customer-api",
+                "document-service",
+                "last-payment"
+              ]
+            },
+            "description": "Genera el comprobante del último pago registrado en formato PDF."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para generación y descarga de documentos oficiales en PDF. Requieren "
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.kubbesa.net/staging/integrations"
+    },
+    {
+      "key": "apiKey",
+      "value": "YOUR_API_KEY_HERE"
+    },
+    {
+      "key": "sessionToken",
+      "value": ""
+    },
+    {
+      "key": "tempToken",
+      "value": ""
+    },
+    {
+      "key": "phone",
+      "value": "61234567"
+    },
+    {
+      "key": "countryCode",
+      "value": "PA"
+    },
+    {
+      "key": "cedula",
+      "value": "8-123-456"
+    },
+    {
+      "key": "birthdate",
+      "value": "1990-05-15"
+    },
+    {
+      "key": "otp",
+      "value": "1234"
+    },
+    {
+      "key": "addressedTo",
+      "value": "SEÑORES"
+    },
+    {
+      "key": "recipientName",
+      "value": "Banco XYZ"
+    },
+    {
+      "key": "authType",
+      "value": ""
+    }
+  ]
+}
