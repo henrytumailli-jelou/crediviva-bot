@@ -1,0 +1,591 @@
+{
+  "workflowId": 73056,
+  "workflowName": "Estado de cuenta",
+  "workflowDescription": "Solicitar o descargar el estado de cuenta de mi crédito Crediviva en PDF.",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "50lSfO4-55tq7KaVkGiML",
+      "title": "Autenticación de cliente",
+      "configuration": {
+        "title": "Autenticación de cliente",
+        "skillId": "53043"
+      },
+      "type": "SKILL",
+      "position": [
+        876,
+        85
+      ]
+    },
+    {
+      "id": "64uAr80Qb8Fav9lRo--aR",
+      "title": "Preparar nueva validación",
+      "configuration": {
+        "title": "Preparar nueva validación",
+        "content": "$memory.delete(\"cv_sesion\");\nconst n = Number($memory.get(\"cv_reautenticado\", 0)) + 1;\n$memory.set(\"cv_reautenticado\", n);\n$memory.set(\"cv_reauthPermitido\", n <= 1 ? \"si\" : \"no\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2040,
+        710
+      ]
+    },
+    {
+      "id": "AbhbGSDcOJACaX-0OKBIy",
+      "title": "¿Qué sigue?",
+      "configuration": {
+        "title": "¿Qué sigue?",
+        "conditions": [
+          {
+            "id": "c_otro",
+            "name": "Otro documento",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "otro_documento",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_asesor",
+            "name": "Asesor",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "asesor",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_reauth",
+            "name": "Validar identidad otra vez",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "reautenticar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_fin",
+            "name": "Finalizado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "finalizado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_carta_saldo",
+            "name": "Carta de saldo",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "carta_saldo",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_carta_cancelacion",
+            "name": "Carta de cancelación",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "carta_cancelacion",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_ultimo_pago",
+            "name": "Comprobante de último pago",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "ultimo_pago",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_nuevo_credito",
+            "name": "Quiere su primer crédito",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_docIA.estado}}",
+                "value2": "nuevo_credito",
+                "operator": "equal"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1652,
+        380
+      ]
+    },
+    {
+      "id": "aJb9Q20vConakLrsSKTCj",
+      "title": "¿Puede validar otra vez?",
+      "configuration": {
+        "title": "¿Puede validar otra vez?",
+        "conditions": [
+          {
+            "id": "c_reauth_ok",
+            "name": "Sí",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_reauthPermitido}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2428,
+        1100
+      ]
+    },
+    {
+      "id": "dlVCcx1B8bjdjCq8fSanL",
+      "title": "Registrar salida sin estado",
+      "configuration": {
+        "title": "Registrar salida sin estado",
+        "content": "// El agente terminó sin un estado reconocido: no se envía mensaje.\n$memory.set(\"cv_ultimoResultado\", \"sin_estado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2040,
+        1440
+      ]
+    },
+    {
+      "id": "EYVQTXOpvVvJQWInXVs_K",
+      "title": "Volver a validar identidad",
+      "configuration": {
+        "title": "Volver a validar identidad",
+        "skillId": "53043"
+      },
+      "type": "SKILL",
+      "position": [
+        2816,
+        1110
+      ]
+    },
+    {
+      "id": "fOfHaRcLiB3fnm9HHG84x",
+      "title": "Ir a Comprobante de último pago",
+      "configuration": {
+        "title": "Ir a Comprobante de último pago",
+        "skillId": "53049"
+      },
+      "type": "SKILL",
+      "position": [
+        2040,
+        1840
+      ]
+    },
+    {
+      "id": "HHQ8dmuUbW8s6C1JETowf",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "lz6MawlMUJ2u3HmDjYkoa",
+      "title": "Ir a Carta de saldo",
+      "configuration": {
+        "title": "Ir a Carta de saldo",
+        "skillId": "53045"
+      },
+      "type": "SKILL",
+      "position": [
+        2040,
+        50
+      ]
+    },
+    {
+      "id": "OQueFuFAP1VvnG3Bf9K1z",
+      "title": "Despedida",
+      "configuration": {
+        "title": "Despedida",
+        "skillId": "53046"
+      },
+      "type": "SKILL",
+      "position": [
+        2040,
+        1110
+      ]
+    },
+    {
+      "id": "pIEapx4hCTCJttop1i-Dq",
+      "title": "Reiniciar contador de validación",
+      "configuration": {
+        "title": "Reiniciar contador de validación",
+        "content": "$memory.set(\"cv_reautenticado\", 0);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "sVcBaM3kCmyIL0pWvbqsq",
+      "title": "Asistente: estado de cuenta",
+      "configuration": {
+        "name": "Asistente estado de cuenta",
+        "model": "openai/gpt-6-luna",
+        "version": "v2",
+        "settings": {
+          "expiration": {
+            "time": "minutes",
+            "enabled": true,
+            "duration": 30,
+            "timeInSeconds": 1800
+          },
+          "splitMessages": false,
+          "messageHistory": {
+            "enabled": false
+          }
+        },
+        "variable": "cv_docIA",
+        "connections": {
+          "mcp": [],
+          "datum": [],
+          "tools": [
+            {
+              "id": "tool-8935",
+              "name": "Crediviva Estado de Cuenta",
+              "inputs": [
+                {
+                  "id": "aEwpcKtvjrZ-yytRct5I-",
+                  "name": "sessionToken",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": null,
+                  "modelId": 8935,
+                  "position": 0,
+                  "required": true,
+                  "createdAt": "2026-10-16T17:01:26.000Z",
+                  "deletedAt": null,
+                  "modelType": "TOOL",
+                  "updatedAt": "2026-10-16T17:01:26.000Z",
+                  "description": "Token del cliente autenticado (vigencia ~30 min), devuelto por Crediviva Resultado Validacion",
+                  "displayName": "Token de sesión",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "-z5MDfA-4qkmnAiBBtVaW",
+                  "name": "ambiente",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": null,
+                  "modelId": 8935,
+                  "position": 0,
+                  "required": true,
+                  "createdAt": "2026-10-16T17:01:26.000Z",
+                  "deletedAt": null,
+                  "modelType": "TOOL",
+                  "updatedAt": "2026-10-16T17:01:26.000Z",
+                  "description": "Ambiente de Crediviva: \"staging\" o \"production\". Lo define el workflow Configuración de ambiente.",
+                  "displayName": "Ambiente",
+                  "defaultValue": null,
+                  "configuration": null
+                }
+              ],
+              "toolId": 8935,
+              "version": "1.0.3",
+              "external": true,
+              "parameters": {
+                "ambiente": "{{$memory.cv_ambiente}}",
+                "sessionToken": "{{$memory.cv_sesion.token}}"
+              },
+              "description": "Genera el estado de cuenta en PDF del crédito del cliente autenticado de Crediviva y lo envía al cliente en la conversación.",
+              "parameterModes": {
+                "ambiente": "dynamic",
+                "sessionToken": "dynamic"
+              }
+            },
+            {
+              "id": "send_interactive_message",
+              "name": "send_interactive_message",
+              "action": "pause",
+              "external": false,
+              "description": ""
+            }
+          ]
+        },
+        "endFunction": {
+          "rawSchema": {
+            "estado": {
+              "type": "string",
+              "required": true
+            }
+          },
+          "description": "Termina cuando el cliente elija qué hacer después (otro documento, asesor o finalizar), cuando haga falta validar la identidad otra vez, o cuando pida un asesor. Completa 'estado' con uno de: carta_saldo, carta_cancelacion, ultimo_pago, otro_documento, asesor, nuevo_credito, reautenticar, finalizado. Termina justo después de la confirmación; no envíes despedida, el siguiente paso la envía."
+        },
+        "instructions": "Eres el asistente de Crediviva que entrega al cliente su estado de cuenta en PDF. El cliente ya validó su identidad.\n\nPasos:\n1. No saludes ni te presentes: el cliente ya fue atendido en el paso anterior. Empieza directo con la tarea.\n2. Llama de inmediato a la herramienta \"Crediviva Estado de Cuenta\"; no necesitas pedirle datos al cliente.\n5. Según el resultado de esa herramienta:\n   - ok = true y enviado = true: el PDF ya llegó al cliente en esta conversación. Confírmaselo en una frase corta dentro del mensaje del paso 6 (no menciones enlaces).\n   - reason = \"sesion_expirada\": dile al cliente que por seguridad necesita validar su identidad otra vez y termina con estado \"reautenticar\".\n   - code = \"DAILY_LIMIT_EXCEEDED\": Crediviva solo permite solicitar un documento por día. Díselo con amabilidad y sugiérele intentarlo mañana; no ofrezcas reintentar hoy.\n   - reason = \"no_elegible\" (cualquier otro código): si la herramienta trae un message, úsalo como base para explicar el motivo con tus palabras, sin cambiar su sentido. Si no trae message, explica en palabras simples por qué no se puede emitir. Solo se emite cuando el crédito está activo, cerrado, pagado de más o castigado. Códigos: NO_DISBURSEMENTS_FOUND = no hay desembolsos registrados en su crédito. Si el código no está en la lista, di que su crédito no cumple las condiciones para este documento. No muestres códigos técnicos.\n   - code = \"ENVIO_FALLIDO\", PDF_GENERATION_FAILED u otra falla del servicio: dile que el servicio de Crediviva no respondió y ofrece con send_interactive_message: \"Intentar de nuevo\", \"Hablar con asesor\", \"Finalizar\". Si elige intentar, vuelve a llamar a la herramienta (máximo 2 reintentos en total; después ofrece solo asesor o finalizar).\n6. Después de entregar el documento o de explicar por qué no se puede emitir, llama SIEMPRE a send_interactive_message en un solo mensaje: en el texto pon la confirmación o la explicación seguida de \"¿Qué deseas hacer ahora?\", y como opciones exactamente \"Otro documento\", \"Hablar con asesor\", \"Finalizar\". Nunca respondas solo con texto en este paso: sin esas opciones el cliente no puede continuar.\n\nReglas:\n- Nunca pidas, muestres ni menciones tokens, sesiones, ambientes ni enlaces de descarga: el archivo se envía directamente.\n- No inventes saldos, montos, fechas ni datos del crédito.\n- Si quiere salir o terminar (\"salir\", \"cancelar\", \"no gracias\", \"ya no\"), termina de inmediato con estado \"finalizado\", sin pedir confirmación.\n- Si el cliente pide hablar con una persona, tiene un reclamo o una consulta de empresa (B2B), termina con estado \"asesor\".\n- Si el cliente quiere solicitar un crédito por primera vez, registrarse o crear su cuenta Crediviva, termina de inmediato con estado \"nuevo_credito\", sin escribirle nada (no es un asesor): el siguiente paso lo lleva al registro.\n- Cuando ofrezcas opciones usa la herramienta send_interactive_message: nunca más de 10 opciones, máximo 20 caracteres por opción, títulos únicos y en el orden indicado.\n- Si el cliente pide un documento concreto distinto a este, termina de inmediato con estado \"carta_saldo\", \"carta_cancelacion\", \"ultimo_pago\" según corresponda (carta_saldo = carta de saldo, estado_cuenta = estado de cuenta, carta_cancelacion = carta de cancelación, ultimo_pago = comprobante de último pago). Si solo dice \"otro documento\" sin especificar cuál, termina con estado \"otro_documento\". Si pide algo que no es un documento (por ejemplo solicitar un crédito), termina con estado \"asesor\".\n- Responde en español, breve y cordial.",
+        "startCommand": "Necesito mi estado de cuenta.",
+        "instructions_lang": "es",
+        "nonHappyPathHandlers": {
+          "error": {
+            "mode": "message",
+            "message": "Tuvimos un problema técnico y no pude entregarte tu estado de cuenta. Intenta de nuevo en unos minutos escribiendo *documentos*."
+          }
+        }
+      },
+      "type": "AI_TASK",
+      "position": [
+        1264,
+        50
+      ]
+    },
+    {
+      "id": "tcK0ryLDZbLe3SOe5ZHdJ",
+      "title": "Ir a Registro de cliente",
+      "type": "SKILL",
+      "position": [
+        2040,
+        2690
+      ],
+      "configuration": {
+        "title": "Ir a Registro de cliente",
+        "skillId": "53335"
+      }
+    },
+    {
+      "id": "Tmfr0UzDSZIbcM60d8_IW",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "skillId": "53048"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "VSWlzZpq8jVfCIoW7AEf6",
+      "title": "Ir a Carta de cancelación",
+      "configuration": {
+        "title": "Ir a Carta de cancelación",
+        "skillId": "53044"
+      },
+      "type": "SKILL",
+      "position": [
+        2040,
+        380
+      ]
+    },
+    {
+      "id": "wAPwFvNxVg4AzjcN5TG15",
+      "title": "Registrar salida sin autenticar",
+      "configuration": {
+        "title": "Registrar salida sin autenticar",
+        "content": "$memory.set(\"cv_ultimoResultado\", \"no_autenticado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3204,
+        1240
+      ]
+    },
+    {
+      "id": "Xnb81bQd4lrWAHXFab7eI",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        3204,
+        910
+      ]
+    },
+    {
+      "id": "ZOCtJdXPPMURWv0djQyv2",
+      "title": "Ir a Menú de documentos",
+      "configuration": {
+        "title": "Ir a Menú de documentos",
+        "skillId": "53052"
+      },
+      "type": "SKILL",
+      "position": [
+        2040,
+        2170
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "3DsU2VMkOMQoF8K4HyLr_",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "dlVCcx1B8bjdjCq8fSanL",
+      "branch": "else"
+    },
+    {
+      "id": "6TiimaZIUXYjUJbCbAeNO",
+      "sourceId": "sVcBaM3kCmyIL0pWvbqsq",
+      "targetId": "AbhbGSDcOJACaX-0OKBIy",
+      "branch": "success"
+    },
+    {
+      "id": "7N4dbqXE9ZAyfsy_aGavv",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "Xnb81bQd4lrWAHXFab7eI",
+      "branch": "condition:c_asesor"
+    },
+    {
+      "id": "8bQksb2Lgp5omZIMtXEU-",
+      "sourceId": "64uAr80Qb8Fav9lRo--aR",
+      "targetId": "aJb9Q20vConakLrsSKTCj",
+      "branch": "success"
+    },
+    {
+      "id": "b-MV-IAlGxGkOlEJIidkW",
+      "sourceId": "HHQ8dmuUbW8s6C1JETowf",
+      "targetId": "pIEapx4hCTCJttop1i-Dq",
+      "branch": "default"
+    },
+    {
+      "id": "crCX1rq_ULvCEBTXel1F6",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "ZOCtJdXPPMURWv0djQyv2",
+      "branch": "condition:c_otro"
+    },
+    {
+      "id": "HhhPvDMerMzQTilQVk3B7",
+      "sourceId": "aJb9Q20vConakLrsSKTCj",
+      "targetId": "Xnb81bQd4lrWAHXFab7eI",
+      "branch": "else"
+    },
+    {
+      "id": "Htl9SB6pitXJHtHiasEak",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "OQueFuFAP1VvnG3Bf9K1z",
+      "branch": "condition:c_fin"
+    },
+    {
+      "id": "JvhFfX4lGUCx49NMBT7LZ",
+      "sourceId": "50lSfO4-55tq7KaVkGiML",
+      "targetId": "Xnb81bQd4lrWAHXFab7eI",
+      "branch": "output:sAI_fixi4P3V8b_AXz3SP:failed"
+    },
+    {
+      "id": "LBK6EvuDoqVFJkO_0OVwL",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "lz6MawlMUJ2u3HmDjYkoa",
+      "branch": "condition:c_carta_saldo"
+    },
+    {
+      "id": "ND24-Ja-9d_mQnCiADLWC",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "tcK0ryLDZbLe3SOe5ZHdJ",
+      "branch": "condition:c_nuevo_credito"
+    },
+    {
+      "id": "nUx4hsRjdVy4xD1V8txng",
+      "sourceId": "EYVQTXOpvVvJQWInXVs_K",
+      "targetId": "wAPwFvNxVg4AzjcN5TG15",
+      "branch": "output:aDZbYAFeH5p5mctJDD-kQ:failed"
+    },
+    {
+      "id": "qt8qzZD4llTc7R2TaGLZ8",
+      "sourceId": "50lSfO4-55tq7KaVkGiML",
+      "targetId": "wAPwFvNxVg4AzjcN5TG15",
+      "branch": "output:aDZbYAFeH5p5mctJDD-kQ:failed"
+    },
+    {
+      "id": "RPd_Nqw6Itvl9XNmQ3vSp",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "64uAr80Qb8Fav9lRo--aR",
+      "branch": "condition:c_reauth"
+    },
+    {
+      "id": "TxVBXDjG2yoGBpOf7WK0P",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "VSWlzZpq8jVfCIoW7AEf6",
+      "branch": "condition:c_carta_cancelacion"
+    },
+    {
+      "id": "Wo8WuKFsMfjI54JDeLdsa",
+      "sourceId": "AbhbGSDcOJACaX-0OKBIy",
+      "targetId": "fOfHaRcLiB3fnm9HHG84x",
+      "branch": "condition:c_ultimo_pago"
+    },
+    {
+      "id": "X4EeikeJgql8Vanufo6X2",
+      "sourceId": "EYVQTXOpvVvJQWInXVs_K",
+      "targetId": "Xnb81bQd4lrWAHXFab7eI",
+      "branch": "output:sAI_fixi4P3V8b_AXz3SP:failed"
+    },
+    {
+      "id": "XhMQO9d2XCJ5yKSE6NdZ6",
+      "sourceId": "pIEapx4hCTCJttop1i-Dq",
+      "targetId": "50lSfO4-55tq7KaVkGiML",
+      "branch": "success"
+    },
+    {
+      "id": "xqac-UXBlDDOpnTuZ3pHs",
+      "sourceId": "50lSfO4-55tq7KaVkGiML",
+      "targetId": "sVcBaM3kCmyIL0pWvbqsq",
+      "branch": "output:WmB2Tz0g6WTaag9tg4lNg:success"
+    },
+    {
+      "id": "XvuADk6w7t3k7CaEIuIEj",
+      "sourceId": "aJb9Q20vConakLrsSKTCj",
+      "targetId": "EYVQTXOpvVvJQWInXVs_K",
+      "branch": "condition:c_reauth_ok"
+    },
+    {
+      "id": "Z911gsNElpg_NdcIaBkFl",
+      "sourceId": "64uAr80Qb8Fav9lRo--aR",
+      "targetId": "Xnb81bQd4lrWAHXFab7eI",
+      "branch": "failed"
+    },
+    {
+      "id": "Ztj-2JV5bFLGJZ7VdreGK",
+      "sourceId": "sVcBaM3kCmyIL0pWvbqsq",
+      "targetId": "Tmfr0UzDSZIbcM60d8_IW",
+      "branch": "expire"
+    },
+    {
+      "id": "Zyh44Cyt2IdGdh46Gog0i",
+      "sourceId": "EYVQTXOpvVvJQWInXVs_K",
+      "targetId": "sVcBaM3kCmyIL0pWvbqsq",
+      "branch": "output:WmB2Tz0g6WTaag9tg4lNg:success"
+    }
+  ]
+}

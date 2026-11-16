@@ -1,0 +1,387 @@
+{
+  "toolId": 8936,
+  "workflowId": 73043,
+  "toolName": "Crediviva Iniciar Validacion",
+  "toolDescription": "Crea la sesión de validación de identidad del cliente de Crediviva y devuelve el enlace del webview donde valida con cédula y fecha de nacimiento o con un código a su correo.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "userId",
+      "id": "EbFBn5IUQtQeWQIWQPrB6",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, normalmente {{$user.id}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "botId",
+      "id": "vzp5XnLDKpDPYxQTI8RCD",
+      "displayName": "Bot",
+      "description": "Id del bot, normalmente {{$bot.id}}",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "phone",
+      "id": "2eHg-BBp0vb1OnychoZYW",
+      "displayName": "Teléfono",
+      "description": "Teléfono del cliente sin prefijo, ej. \"61234567\"",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "countryCode",
+      "id": "wGl6g3d8jDa0dsxIQRQAD",
+      "displayName": "País",
+      "description": "Código ISO del país, ej. \"PA\"",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": "PA",
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "authType",
+      "id": "p4QMyE5ZSMEGxoQ_MZMMO",
+      "displayName": "Tipo de autenticación",
+      "description": "\"1\" = cédula + fecha de nacimiento; \"2\" = código al correo",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "ambiente",
+      "id": "noNhKsaT7mD5zUkLWuGbs",
+      "displayName": "Ambiente",
+      "description": "Ambiente de Crediviva: \"staging\" o \"production\". Lo define el workflow Configuración de ambiente.",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "enlace",
+      "id": "utvs0YHn-sPl_kyrohrm8",
+      "displayName": "Enlace creado",
+      "description": "{ ok:true, url, nonce, ttlSeconds }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "bloqueado",
+      "id": "6LNHfzr0ROS3eh6ZAD7yZ",
+      "displayName": "Cliente bloqueado",
+      "description": "Bloqueo temporal por intentos fallidos. { ok:false, minutesLeft }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "sN9hff8WKHK8hVMYN4D9G",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "_hMcX-4uC6RdOA7Kz_wgz",
+      "type": "END",
+      "title": "Fin: Error técnico",
+      "position": [
+        2620,
+        770
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "sN9hff8WKHK8hVMYN4D9G"
+      }
+    },
+    {
+      "id": "AY-UkonAZ66QwHEWa1PBV",
+      "type": "CONDITIONAL",
+      "title": "¿Configuración completa?",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Configuración completa?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Configuración completa",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bZ0c1LMwZeOTx5FbutwFf",
+      "type": "END",
+      "title": "Fin: Cliente bloqueado",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Cliente bloqueado",
+        "outputId": "6LNHfzr0ROS3eh6ZAD7yZ"
+      }
+    },
+    {
+      "id": "DI4kAc011NRU8WjxSpLZ5",
+      "type": "HTTP",
+      "title": "Crear sesión de validación",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Crear sesión de validación",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "method": "POST",
+        "url": "https://crediviva-validacion-2838e0.fn.jelou.ai/iniciar",
+        "output": "iniciarResponse",
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "g1Wqqc71q_zaPsglETbG5",
+      "type": "CODE",
+      "title": "Fallo técnico",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "Gpg5bRjLGm9B9ui95Ov3b",
+      "type": "END",
+      "title": "Fin: Enlace creado",
+      "position": [
+        2620,
+        770
+      ],
+      "configuration": {
+        "title": "Fin: Enlace creado",
+        "outputId": "utvs0YHn-sPl_kyrohrm8"
+      }
+    },
+    {
+      "id": "iaECLEEpbsZvxxzQo3Gt5",
+      "type": "CODE",
+      "title": "Interpretar respuesta",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"iniciarResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\nconst mensaje = String(data.message ?? data.error?.message ?? data.detail ?? \"\");\nconst codigo = String(data.code ?? data.errorCode ?? data.error?.code ?? (typeof data.error === \"string\" ? data.error : \"\"));\n$utils.logger.log(\"iniciarResponse\", JSON.stringify({ status, codigo }));\nlet salida = \"error\";\nif (ok && data.ok === true && typeof data.url === \"string\") {\n  salida = \"enlace\";\n  $output.set(\"enlace\", { ok: true, url: data.url, nonce: data.nonce, ttlSeconds: data.ttlSeconds });\n} else if (ok && data.status === \"blocked\") {\n  salida = \"bloqueado\";\n  $output.set(\"bloqueado\", { ok: false, minutesLeft: Number(data.minutesLeft || 30) });\n} else {\n  $output.set(\"error\", { ok: false, code: \"HTTP_\" + status, message: mensaje || \"No se pudo crear la sesión de validación.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "jHKOBWvO6DNDZsI9p-Hin",
+      "type": "CONDITIONAL",
+      "title": "¿Cuál es el resultado?",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_enlace",
+            "name": "Enlace creado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "enlace"
+              }
+            ]
+          },
+          {
+            "id": "cond_bloqueado",
+            "name": "Cliente bloqueado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "bloqueado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "N8rY-nZWp1TN4xHmBoyro",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "QwRdaFtA-Dp7J6Ks0t41n",
+      "type": "CODE",
+      "title": "Preparar solicitud",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nasync function secreto(nombre) {\n  try {\n    return String((await $secret.get(nombre)) || \"\");\n  } catch (e) {\n    return \"\";\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") {\n  fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\n}\nconst fnKey = (await secreto(\"JELOU_FN_INVOKE_KEY\"));\nif (!fallo && fnKey.length < 8) fallo = \"Falta el secreto JELOU_FN_INVOKE_KEY.\";\nlet phone = String(inp(\"phone\", \"\")).replace(/\\D/g, \"\");\nif (phone.length === 11 && phone.startsWith(\"507\")) phone = phone.slice(3);\nconst authType = Number(inp(\"authType\", 0));\nconst userId = String(inp(\"userId\", \"\")).trim();\nif (!fallo && !userId) fallo = \"Falta el usuario.\";\nif (!fallo && authType !== 1 && authType !== 2) fallo = \"Tipo de autenticación inválido.\";\nconst body = { userId, phone, countryCode: String(inp(\"countryCode\", \"PA\")).toUpperCase(), authType, ambiente };\nconst botId = String(inp(\"botId\", \"\")).trim();\nif (botId) body.botId = botId;\n$context.set(\"fnKey\", fnKey);\n$context.set(\"body\", JSON.stringify(body));\nif (fallo) {\n  $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "2ecrGlNtwcG8x8NLFIrA7",
+      "sourceId": "iaECLEEpbsZvxxzQo3Gt5",
+      "targetId": "g1Wqqc71q_zaPsglETbG5",
+      "branch": "failed"
+    },
+    {
+      "id": "5EKh7yj0cHRpEtlAIbk4C",
+      "sourceId": "QwRdaFtA-Dp7J6Ks0t41n",
+      "targetId": "AY-UkonAZ66QwHEWa1PBV",
+      "branch": "success"
+    },
+    {
+      "id": "8mn5dyIJiCHqMSQA9naGP",
+      "sourceId": "DI4kAc011NRU8WjxSpLZ5",
+      "targetId": "iaECLEEpbsZvxxzQo3Gt5",
+      "branch": "failed"
+    },
+    {
+      "id": "AgBtdDSux3zHpENIsfEQZ",
+      "sourceId": "jHKOBWvO6DNDZsI9p-Hin",
+      "targetId": "Gpg5bRjLGm9B9ui95Ov3b",
+      "branch": "condition:cond_enlace"
+    },
+    {
+      "id": "igwioSwxUUiO4hZ-lDevs",
+      "sourceId": "iaECLEEpbsZvxxzQo3Gt5",
+      "targetId": "jHKOBWvO6DNDZsI9p-Hin",
+      "branch": "success"
+    },
+    {
+      "id": "Lw_MA8lCYg1Kj5uZo-3hk",
+      "sourceId": "QwRdaFtA-Dp7J6Ks0t41n",
+      "targetId": "g1Wqqc71q_zaPsglETbG5",
+      "branch": "failed"
+    },
+    {
+      "id": "M-lPak5PxrUiW61gIW5IL",
+      "sourceId": "DI4kAc011NRU8WjxSpLZ5",
+      "targetId": "iaECLEEpbsZvxxzQo3Gt5",
+      "branch": "success"
+    },
+    {
+      "id": "mas7DAuY033-KTw1KZm31",
+      "sourceId": "AY-UkonAZ66QwHEWa1PBV",
+      "targetId": "DI4kAc011NRU8WjxSpLZ5",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "RIdNdqo7O8fAWTTTnIFOU",
+      "sourceId": "jHKOBWvO6DNDZsI9p-Hin",
+      "targetId": "bZ0c1LMwZeOTx5FbutwFf",
+      "branch": "condition:cond_bloqueado"
+    },
+    {
+      "id": "WJc4nZP9R5OqWVBasam7i",
+      "sourceId": "AY-UkonAZ66QwHEWa1PBV",
+      "targetId": "_hMcX-4uC6RdOA7Kz_wgz",
+      "branch": "else"
+    },
+    {
+      "id": "xnZDoqoYFS5z34W8IX_va",
+      "sourceId": "jHKOBWvO6DNDZsI9p-Hin",
+      "targetId": "_hMcX-4uC6RdOA7Kz_wgz",
+      "branch": "else"
+    },
+    {
+      "id": "yoj8-BM0IZTqb1gd8eQ0c",
+      "sourceId": "N8rY-nZWp1TN4xHmBoyro",
+      "targetId": "QwRdaFtA-Dp7J6Ks0t41n",
+      "branch": "default"
+    },
+    {
+      "id": "yRKpz5_BUm3Vs1V8TJFjs",
+      "sourceId": "g1Wqqc71q_zaPsglETbG5",
+      "targetId": "_hMcX-4uC6RdOA7Kz_wgz",
+      "branch": "success"
+    }
+  ]
+}

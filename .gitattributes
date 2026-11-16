@@ -1,0 +1,3 @@
+# LF siempre: los hashes de jelou.lock se calculan sobre el contenido exacto de los archivos.
+* text=auto eol=lf
+*.pdf binary

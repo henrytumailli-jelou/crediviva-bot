@@ -1,0 +1,335 @@
+{
+  "toolId": 9072,
+  "workflowId": 74697,
+  "toolName": "Crediviva Iniciar Solicitud",
+  "toolDescription": "Genera el enlace del formulario de solicitud de crédito de Crediviva (monto, comercios, dirección, datos laborales con documento, referencias y PEP). Se usa después de que el ingreso mensual sale aprobado.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "userId",
+      "id": "ketHokdq40eTYZ8ofWuyl",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, normalmente {{$user.id}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "botId",
+      "id": "eOfowQGaq4b4SMjfp-yAG",
+      "displayName": "Bot",
+      "description": "Id del bot, normalmente {{$bot.id}}",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 1
+    },
+    {
+      "name": "authKey",
+      "id": "EtjlnuZObh0mRTQcn7I4Z",
+      "displayName": "Sesión",
+      "description": "Sesión de Crediviva, {{$memory.cv_sesionCrediviva.authKey}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 2
+    },
+    {
+      "name": "ambiente",
+      "id": "Auq4GuuIi8tVXuh47A_IF",
+      "displayName": "Ambiente",
+      "description": "staging o production, {{$memory.cv_ambiente}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 3
+    },
+    {
+      "name": "paso",
+      "id": "vEP7ZFcnrmLsmsF_ibTC-",
+      "displayName": "Paso pendiente",
+      "description": "Paso pendiente que devolvió el login de Crediviva, {{$memory.cv_pasoCrediviva}}",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 4
+    }
+  ],
+  "outputs": [
+    {
+      "name": "enlace",
+      "id": "HKsagWmytMDObQknh4en0",
+      "displayName": "Enlace",
+      "description": "{ ok:true, estado:\"enlace\", url, ttlSeconds }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "TLDVrXNhmMgit9d-ZBCW0",
+      "displayName": "Error técnico",
+      "description": "{ ok:false, estado:\"error\", code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "aZ2sRW3WGLkWNgJwK60z-",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bElm-Pe0bzmVClLEsmgfC",
+      "title": "¿Cuál es el resultado?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_enlace",
+            "name": "enlace",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "enlace"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bna8uiGXspcdWnza76iSO",
+      "title": "Llamar servicio de solicitud",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de solicitud",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/solicitud-iniciar",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "FGfhMR0bPjleylrgI_S2b",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") {\n  fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\n}\nconst userId = String(inp(\"userId\", \"\")).trim();\nif (!fallo && !userId) fallo = \"Falta el usuario.\";\n// La sesión de Crediviva nunca se imprime.\nconst authKey = String(inp(\"authKey\", \"\")).trim();\nif (!fallo && (authKey.length < 10 || authKey.includes(\"{{\"))) fallo = \"Falta la sesión de Crediviva.\";\nconst body = { userId, ambiente, authKey };\nconst botId = String(inp(\"botId\", \"\")).trim();\nif (botId && !botId.includes(\"{{\")) body.botId = botId;\nconst paso = String(inp(\"paso\", \"\")).trim();\nif (paso && !paso.includes(\"{{\")) body.paso = paso;\n$context.set(\"body\", JSON.stringify(body));\nif (fallo) $output.set(\"error\", { ok: false, estado: \"error\", code: \"CONFIGURACION\", message: fallo });\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "gzP_YxOQVAQfOP0Ta7hm7",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  estado: \"error\",\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de solicitud de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "iWkXVWk9nTlGpkX_7huw5",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "sL6123IRKhJ3rocyRo4Wf",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nlet salida = \"error\";\nif (ok && data.estado === \"pendiente\" && typeof data.url === \"string\" && data.url) {\n  salida = \"enlace\";\n  $output.set(\"enlace\", { ok: true, estado: \"enlace\", url: data.url, ttlSeconds: Number(data.ttlSeconds) || 1800, message: \"Envía esta url al cliente como webview.\" });\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"No se pudo preparar la solicitud de crédito.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "UBgpmlAhbFkbpoFk7uJqN",
+      "title": "Fin: enlace",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "outputId": "HKsagWmytMDObQknh4en0",
+        "title": "Fin: enlace"
+      }
+    },
+    {
+      "id": "zg0e6k60hYyia6UeV9LOk",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "outputId": "TLDVrXNhmMgit9d-ZBCW0",
+        "title": "Fin: Error técnico"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "_XqW7y-b_CbX-WVH-ieQ3",
+      "sourceId": "bna8uiGXspcdWnza76iSO",
+      "targetId": "sL6123IRKhJ3rocyRo4Wf",
+      "branch": "success"
+    },
+    {
+      "id": "0UvCb1KOveJhVfsqpsy_1",
+      "sourceId": "gzP_YxOQVAQfOP0Ta7hm7",
+      "targetId": "zg0e6k60hYyia6UeV9LOk",
+      "branch": "success"
+    },
+    {
+      "id": "7wpVnlLJXPqX-kxVQaXtL",
+      "sourceId": "iWkXVWk9nTlGpkX_7huw5",
+      "targetId": "FGfhMR0bPjleylrgI_S2b",
+      "branch": "default"
+    },
+    {
+      "id": "enSHz0fkGpp7mTRYz_FNj",
+      "sourceId": "FGfhMR0bPjleylrgI_S2b",
+      "targetId": "aZ2sRW3WGLkWNgJwK60z-",
+      "branch": "success"
+    },
+    {
+      "id": "HbRkgpyJZip-jiq3jkHjz",
+      "sourceId": "FGfhMR0bPjleylrgI_S2b",
+      "targetId": "gzP_YxOQVAQfOP0Ta7hm7",
+      "branch": "failed"
+    },
+    {
+      "id": "hQskr2r2XHlKrFj4QnkuY",
+      "sourceId": "sL6123IRKhJ3rocyRo4Wf",
+      "targetId": "gzP_YxOQVAQfOP0Ta7hm7",
+      "branch": "failed"
+    },
+    {
+      "id": "J9QJ2nYu148-fTlkwey0D",
+      "sourceId": "bElm-Pe0bzmVClLEsmgfC",
+      "targetId": "UBgpmlAhbFkbpoFk7uJqN",
+      "branch": "condition:cond_enlace"
+    },
+    {
+      "id": "KBULY-txKk_YHmMdqG67T",
+      "sourceId": "bna8uiGXspcdWnza76iSO",
+      "targetId": "sL6123IRKhJ3rocyRo4Wf",
+      "branch": "failed"
+    },
+    {
+      "id": "Mh8CYxxRrgXqqGlpiUIcE",
+      "sourceId": "sL6123IRKhJ3rocyRo4Wf",
+      "targetId": "bElm-Pe0bzmVClLEsmgfC",
+      "branch": "success"
+    },
+    {
+      "id": "UHW0x6TmYEwYjBmjEVMTM",
+      "sourceId": "aZ2sRW3WGLkWNgJwK60z-",
+      "targetId": "zg0e6k60hYyia6UeV9LOk",
+      "branch": "else"
+    },
+    {
+      "id": "VddPJVdGeZKp7Z_f4g0jL",
+      "sourceId": "aZ2sRW3WGLkWNgJwK60z-",
+      "targetId": "bna8uiGXspcdWnza76iSO",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "wEIVJExrc2fO9bLpGUDkA",
+      "sourceId": "bElm-Pe0bzmVClLEsmgfC",
+      "targetId": "zg0e6k60hYyia6UeV9LOk",
+      "branch": "else"
+    }
+  ]
+}

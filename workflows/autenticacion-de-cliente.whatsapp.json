@@ -1,0 +1,1074 @@
+{
+  "workflowId": 73048,
+  "workflowName": "Autenticación de cliente",
+  "workflowDescription": "Flujo interno reutilizable que valida la identidad del cliente de Crediviva por webview antes de entregarle documentos.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "04InkhJyKf10ldHxs36GS",
+      "title": "Webview de validación",
+      "configuration": {
+        "messages": [
+          {
+            "id": "bOxHA-LIC_yzqhqKAhavW",
+            "text": "Para proteger tu información necesitamos validar tu identidad 🔒\n\nToca el botón, completa tus datos y vuelve a este chat. Si no quieres continuar, toca *Cancelar y volver a WhatsApp* en el formulario.",
+            "type": "webview",
+            "settings": {
+              "pendingMessage": "Te espero ⏳ Completa la validación en el enlace que te envié para continuar. Si no quieres continuar, toca *Cancelar y volver a WhatsApp* en el formulario.",
+              "responseVariable": "cv_wvResp",
+              "isBlockingEnabled": true
+            },
+            "parameters": {
+              "url": "{{$memory.cv_wv.url}}",
+              "display_text": "Validar identidad"
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4796,
+        585
+      ]
+    },
+    {
+      "id": "16SN2aYEYAA4S0-DcDtJR",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "skillId": "53048"
+      },
+      "type": "SKILL",
+      "position": [
+        5204,
+        155
+      ]
+    },
+    {
+      "id": "2EpVFBX67joxM0bkhgKCb",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "skillId": "53048"
+      },
+      "type": "SKILL",
+      "position": [
+        2448,
+        80
+      ]
+    },
+    {
+      "id": "2Gk2ihopSJqAvPZQRn4_u",
+      "title": "Solicitar contacto",
+      "configuration": {
+        "title": "Solicitar contacto",
+        "messages": [
+          {
+            "id": "KPF-Sf_L-zRWjA3Xry5Nw",
+            "text": "Para ayudarte con tus documentos necesito confirmar tu número de celular 📲\n\nToca el botón para compartirlo.",
+            "type": "contact_info_request",
+            "settings": {
+              "isBlockingEnabled": true,
+              "optionNotFoundMessage": "Para continuar necesito tu número. Toca el botón del mensaje anterior para compartirlo 👆"
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2040,
+        260
+      ]
+    },
+    {
+      "id": "4dFAPFzwmTduIqIXqHaYC",
+      "title": "Error técnico",
+      "configuration": {
+        "messages": [
+          {
+            "id": "x2BedPKrZ9MNbVJFVSlLM",
+            "text": "Tuvimos un problema técnico al validar tu identidad 😔. Te comunico con un asesor para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6368,
+        833
+      ]
+    },
+    {
+      "id": "4S5Y3VsASKd9Hx7sbTQaf",
+      "title": "¿Cómo seguimos?",
+      "configuration": {
+        "conditions": [
+          {
+            "id": "c_vigente",
+            "name": "Sesión vigente",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_authEstado}}",
+                "value2": "vigente",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_bloqueado",
+            "name": "Bloqueado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_authEstado}}",
+                "value2": "bloqueado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_pedir",
+            "name": "Pedir contacto",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_authEstado}}",
+                "value2": "pedir_contacto",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "5ZIUEo-yhSudgCRRcnTax",
+      "title": "Validar teléfono en Crediviva",
+      "configuration": {
+        "async": false,
+        "input": {
+          "phone": "{{$memory.cv_phone}}",
+          "ambiente": "{{$memory.cv_ambiente}}",
+          "countryCode": "{{$memory.cv_countryCode}}"
+        },
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8939,
+          "toolName": "Crediviva Validar Telefono",
+          "thumbnail": 1,
+          "workflowId": 73046
+        },
+        "variable": "cv_vtel"
+      },
+      "type": "TOOL",
+      "position": [
+        3612,
+        50
+      ]
+    },
+    {
+      "id": "8xN-H75muagJ55nWiKrlZ",
+      "title": "Guardar teléfono del usuario",
+      "configuration": {
+        "title": "Guardar teléfono del usuario",
+        "variables": {
+          "cv_userPhone": "{{$user.phone}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        90
+      ]
+    },
+    {
+      "id": "9d5woBRfFWvcaD2iJlTEp",
+      "title": "Crear enlace de validación",
+      "configuration": {
+        "async": false,
+        "input": {
+          "phone": "{{$memory.cv_phone}}",
+          "userId": "{{$user.id}}",
+          "ambiente": "{{$memory.cv_ambiente}}",
+          "authType": "{{$memory.cv_authType}}",
+          "countryCode": "{{$memory.cv_countryCode}}"
+        },
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8936,
+          "toolName": "Crediviva Iniciar Validacion",
+          "thumbnail": 1,
+          "workflowId": 73043
+        },
+        "variable": "cv_wv"
+      },
+      "type": "TOOL",
+      "position": [
+        4408,
+        400
+      ]
+    },
+    {
+      "id": "AhchhBjKy3_0AcTtxZQR2",
+      "title": "¿Número válido?",
+      "configuration": {
+        "title": "¿Número válido?",
+        "conditions": [
+          {
+            "id": "c_cont_ok",
+            "name": "Número válido",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_contactoEstado}}",
+                "value2": "ok",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_cont_retry",
+            "name": "Reintentar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_contactoEstado}}",
+                "value2": "reintentar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        3224,
+        162
+      ]
+    },
+    {
+      "id": "AjyQebIr_WUmc5vb8YfRY",
+      "title": "¿Por qué no se validó?",
+      "configuration": {
+        "conditions": [
+          {
+            "id": "c_mot_bloq",
+            "name": "Bloqueado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_motivo}}",
+                "value2": "bloqueado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_mot_retry",
+            "name": "Puede reintentar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_motivo}}",
+                "value2": "reintentar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        6368,
+        417
+      ]
+    },
+    {
+      "id": "aoiEQENP_TKbDn0fezkWJ",
+      "title": "Cliente bloqueado",
+      "configuration": {
+        "messages": [
+          {
+            "id": "GSR5ZMdPle3MPXEbA7KRn",
+            "text": "Por seguridad bloqueamos temporalmente la validación (30 minutos) por superar el número de intentos permitidos. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4796,
+        235
+      ]
+    },
+    {
+      "id": "aSsgSR0PoWSH7R2U1izgk",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        550
+      ]
+    },
+    {
+      "id": "asSXKkTKymWUPPKnzCswH",
+      "title": "Fin: autenticado",
+      "configuration": {
+        "outputId": "WmB2Tz0g6WTaag9tg4lNg"
+      },
+      "type": "END",
+      "position": [
+        6776,
+        260
+      ]
+    },
+    {
+      "id": "B4iI30OHaZ6GgeJULseUD",
+      "title": "Fin: requiere asesor",
+      "configuration": {
+        "outputId": "sAI_fixi4P3V8b_AXz3SP"
+      },
+      "type": "END",
+      "position": [
+        5204,
+        485
+      ]
+    },
+    {
+      "id": "cmYk9u69r6fwbJtO4prvI",
+      "title": "Leer respuesta del webview",
+      "configuration": {
+        "content": "// La plataforma guarda el data del callback del webview en cv_wvResp; su forma exacta\n// puede venir anidada o serializada, así que se buscan las variantes conocidas.\nfunction leer(clave) {\n  let v = null;\n  try { v = $memory.getJson(clave, null); } catch (e) { v = null; }\n  if (v === null) {\n    try { v = $memory.get(clave, null); } catch (e) { v = null; }\n  }\n  if (typeof v === \"string\") {\n    try { v = JSON.parse(v); } catch (e) { /* queda como texto */ }\n  }\n  return v;\n}\nfunction buscarSello(v, prof) {\n  if (!v || prof > 4) return \"\";\n  if (typeof v === \"string\") return v.length >= 40 && /^[A-Za-z0-9_-]+$/.test(v) ? v : \"\";\n  if (typeof v !== \"object\") return \"\";\n  if (typeof v.n === \"string\" && v.n.length >= 40) return v.n;\n  for (const k of [\"data\", \"response\", \"payload\", \"body\", \"result\"]) {\n    const s = buscarSello(v[k], prof + 1);\n    if (s) return s;\n  }\n  return \"\";\n}\nfunction forma(v, prof) {\n  if (v === null || v === undefined) return String(v);\n  if (typeof v !== \"object\") return typeof v + (typeof v === \"string\" ? \"(\" + v.length + \")\" : \"\");\n  if (prof > 2) return \"{…}\";\n  return \"{\" + Object.keys(v).map((k) => k + \":\" + forma(v[k], prof + 1)).join(\",\") + \"}\";\n}\nlet sello = \"\";\nfor (const clave of [\"cv_wvResp\", \"response\"]) {\n  const v = leer(clave);\n  $utils.logger.log(\"webview \" + clave, forma(v, 0));\n  sello = buscarSello(v, 0);\n  if (sello) break;\n}\n$memory.set(\"cv_wvSello\", sello);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5204,
+        695
+      ]
+    },
+    {
+      "id": "CPML5CTo6l6sB0IOOIbs_",
+      "title": "Fin: no autenticado",
+      "configuration": {
+        "outputId": "aDZbYAFeH5p5mctJDD-kQ"
+      },
+      "type": "END",
+      "position": [
+        7572,
+        748
+      ]
+    },
+    {
+      "id": "HkFwaZWcfalrPWYeQqd-2",
+      "title": "Fin: requiere asesor",
+      "configuration": {
+        "outputId": "sAI_fixi4P3V8b_AXz3SP"
+      },
+      "type": "END",
+      "position": [
+        4020,
+        720
+      ]
+    },
+    {
+      "id": "hS3nV4KkEsM94AJ3bIrkA",
+      "title": "Consultar resultado de la validación",
+      "configuration": {
+        "async": false,
+        "input": {
+          "nonce": "{{$memory.cv_wvSello}}"
+        },
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8937,
+          "toolName": "Crediviva Resultado Validacion",
+          "thumbnail": 1,
+          "workflowId": 73044
+        },
+        "variable": "cv_res"
+      },
+      "type": "TOOL",
+      "position": [
+        5592,
+        400
+      ]
+    },
+    {
+      "id": "HY0FPISYLVLGvd8XsCMjp",
+      "title": "Revisar motivo",
+      "configuration": {
+        "content": "const r = $memory.getJson(\"cv_res\", {});\nconst motivo = String(r.reason || \"incomplete\");\nif (motivo === \"blocked\") {\n  $memory.set(\"cv_bloqueadoHasta\", Date.now() + 30 * 60 * 1000);\n}\nconst rondas = Number($memory.get(\"cv_rondasWv\", 0)) + 1;\n$memory.set(\"cv_rondasWv\", rondas);\n$memory.set(\"cv_motivo\", motivo === \"blocked\" ? \"bloqueado\" : rondas >= 3 ? \"agotado\" : \"reintentar\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5980,
+        225
+      ]
+    },
+    {
+      "id": "k70t7LBhHNUwVyyB2QEUi",
+      "title": "Definir tipo de validación",
+      "configuration": {
+        "content": "const v = $memory.getJson(\"cv_vtel\", {});\n$memory.set(\"cv_authType\", String(Number(v.authType) === 1 ? 1 : 2));",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4020,
+        320
+      ]
+    },
+    {
+      "id": "kdxEk-m6pJo91Vbgb8cod",
+      "title": "Demasiados intentos",
+      "configuration": {
+        "messages": [
+          {
+            "id": "idsG-Sb_tsWpcDUnflt7Y",
+            "text": "No logramos validar tu identidad después de varios intentos. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6776,
+        470
+      ]
+    },
+    {
+      "id": "LDkQCDYzbVjQ8GmWf4sKT",
+      "title": "Fin: autenticado",
+      "configuration": {
+        "outputId": "WmB2Tz0g6WTaag9tg4lNg"
+      },
+      "type": "END",
+      "position": [
+        2040,
+        50
+      ]
+    },
+    {
+      "id": "LIXywwxTVP4EIWK_y4GwD",
+      "title": "Cliente bloqueado",
+      "configuration": {
+        "messages": [
+          {
+            "id": "GSR5ZMdPle3MPXEbA7KRn",
+            "text": "Por seguridad bloqueamos temporalmente la validación (30 minutos) por superar el número de intentos permitidos. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6776,
+        1306
+      ]
+    },
+    {
+      "id": "MHGcPGnPmf6iB06sfHfFj",
+      "title": "¿Reintentar validación?",
+      "configuration": {
+        "messages": [
+          {
+            "id": "f0WGBtLgMYQURVS-a5ZNg",
+            "text": "No pudimos completar la validación de tu identidad. ¿Quieres intentarlo de nuevo?",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_retry",
+                "type": "postback",
+                "title": "Intentar de nuevo",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_reintentar_validacion": "Intentar de nuevo"
+                  },
+                  "skillId": "53043",
+                  "targetId": "9d5woBRfFWvcaD2iJlTEp"
+                }
+              },
+              {
+                "id": "opt_no",
+                "type": "postback",
+                "title": "Ahora no",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_reintentar_validacion": "Ahora no"
+                  },
+                  "skillId": "53043",
+                  "targetId": "TWTadBAtuDHlzeMGnfYLB"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_retrySel",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Elige una opción: *Intentar de nuevo* o *Ahora no*."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6776,
+        820
+      ]
+    },
+    {
+      "id": "nys7G8s7_l6QpH_Wm-FbV",
+      "title": "Fin: requiere asesor",
+      "configuration": {
+        "outputId": "sAI_fixi4P3V8b_AXz3SP"
+      },
+      "type": "END",
+      "position": [
+        7184,
+        478
+      ]
+    },
+    {
+      "id": "O3LP8RXO9RfoBez--eyWp",
+      "title": "Fin: no autenticado",
+      "configuration": {
+        "title": "Fin: no autenticado",
+        "outputId": "aDZbYAFeH5p5mctJDD-kQ"
+      },
+      "type": "END",
+      "position": [
+        2836,
+        465
+      ]
+    },
+    {
+      "id": "Pkgs0lvty0UZRWkxy_0KZ",
+      "title": "Fin: requiere asesor",
+      "configuration": {
+        "outputId": "sAI_fixi4P3V8b_AXz3SP"
+      },
+      "type": "END",
+      "position": [
+        6776,
+        50
+      ]
+    },
+    {
+      "id": "pUv7JLvRE9XgZFPcKAVXN",
+      "title": "Contacto sin número válido",
+      "configuration": {
+        "title": "Contacto sin número válido",
+        "messages": [
+          {
+            "id": "yVd74pRcM080DiLGfzo8P",
+            "text": "No pude leer un número de celular en el contacto que compartiste 🤔. Inténtalo de nuevo con el botón.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3612,
+        500
+      ]
+    },
+    {
+      "id": "qINYgi_I4Sl4aXfJH2Hk9",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "SLDwoZ5u4S0XRmhwW2YPQ",
+      "title": "Fin: requiere asesor",
+      "configuration": {
+        "outputId": "sAI_fixi4P3V8b_AXz3SP"
+      },
+      "type": "END",
+      "position": [
+        7184,
+        1018
+      ]
+    },
+    {
+      "id": "t1BDa16qy4_Kc7QZBdqJo",
+      "title": "Validar teléfono compartido",
+      "configuration": {
+        "title": "Validar teléfono compartido",
+        "content": "// Meta entrega el número sin formato garantizado (+507 6123-4567, 50761234567, 61234567…).\nfunction normalizarTelefono(raw) {\n  let d = String(raw || \"\").replace(/\\D/g, \"\");\n  if (d.startsWith(\"00\")) d = d.slice(2);\n  if (d.length === 11 && d.startsWith(\"507\")) return { phone: d.slice(3), pais: \"PA\" };\n  if (d.length === 8) return { phone: d, pais: \"PA\" };\n  if (d.length >= 7 && d.length <= 15) return { phone: d, pais: \"OTRO\" };\n  return null;\n}\nconst raw = String($memory.get(\"cv_userPhone\", \"\"));\nconst tel = normalizarTelefono(raw);\n$utils.logger.log(\"contacto compartido\", JSON.stringify({ digitos: String(raw).replace(/\\D/g, \"\").length, pais: tel ? tel.pais : null }));\nlet estado;\nif (tel) {\n  $memory.set(\"cv_phone\", tel.phone);\n  $memory.set(\"cv_phoneSource\", \"shared_contact\");\n  estado = \"ok\";\n} else {\n  const n = Number($memory.get(\"cv_intentosTel\", 0)) + 1;\n  $memory.set(\"cv_intentosTel\", n);\n  estado = n >= 2 ? \"agotado\" : \"reintentar\";\n}\n$memory.set(\"cv_contactoEstado\", estado);\n",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2836,
+        65
+      ]
+    },
+    {
+      "id": "TWTadBAtuDHlzeMGnfYLB",
+      "title": "Despedida",
+      "configuration": {
+        "title": "Despedida",
+        "skillId": "53046"
+      },
+      "type": "SKILL",
+      "position": [
+        7184,
+        688
+      ]
+    },
+    {
+      "id": "Vvrn6fiZtX1BKFw_OOych",
+      "title": "Guardar sesión",
+      "configuration": {
+        "content": "const r = $memory.getJson(\"cv_res\", {});\nconst ttl = Math.max(60, Math.min(Number(r.expiresInSeconds) || 1500, 1800));\n$memory.setJson(\"cv_sesion\", { token: r.sessionToken, expira: Date.now() + ttl * 1000, ambiente: $memory.get(\"cv_ambiente\", \"staging\") }, ttl);\n$memory.set(\"cv_rondasWv\", 0);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5980,
+        625
+      ]
+    },
+    {
+      "id": "wkZeUEzjnnhq3b3BjHRFR",
+      "title": "Guardar teléfono compartido",
+      "configuration": {
+        "variables": {
+          "cv_userPhone": "{{$user.phone}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        2448,
+        410
+      ]
+    },
+    {
+      "id": "X_rjdnCGwBns255HEz4Fn",
+      "title": "No se pudo verificar el teléfono",
+      "configuration": {
+        "messages": [
+          {
+            "id": "lXaZZqCZMJdAamJVc3K4P",
+            "text": "No pudimos verificar tu número de teléfono. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3612,
+        850
+      ]
+    },
+    {
+      "id": "X9rJm87YjlCusCwVMiLSP",
+      "title": "Identidad validada",
+      "configuration": {
+        "messages": [
+          {
+            "id": "qpqEuO453RIy7qlnCDVoP",
+            "text": "✅ ¡Listo! Validamos tu identidad.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6368,
+        67
+      ]
+    },
+    {
+      "id": "xhBVXSBVmEMEeZA4m80VZ",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "YdCHJoUaQoLhSuoPk1vUV",
+      "title": "Revisar sesión vigente",
+      "configuration": {
+        "title": "Revisar sesión vigente",
+        "content": "// Meta entrega el número sin formato garantizado (+507 6123-4567, 50761234567, 61234567…).\nfunction normalizarTelefono(raw) {\n  let d = String(raw || \"\").replace(/\\D/g, \"\");\n  if (d.startsWith(\"00\")) d = d.slice(2);\n  if (d.length === 11 && d.startsWith(\"507\")) return { phone: d.slice(3), pais: \"PA\" };\n  if (d.length === 8) return { phone: d, pais: \"PA\" };\n  if (d.length >= 7 && d.length <= 15) return { phone: d, pais: \"OTRO\" };\n  return null;\n}\nconst ahora = Date.now();\nconst ambiente = $memory.get(\"cv_ambiente\", \"staging\");\nconst sesion = $memory.getJson(\"cv_sesion\", null);\nlet estado;\nif (sesion && sesion.token && Number(sesion.expira) > ahora && sesion.ambiente === ambiente) {\n  estado = \"vigente\";\n} else if (Number($memory.get(\"cv_bloqueadoHasta\", 0)) > ahora) {\n  estado = \"bloqueado\";\n} else {\n  const tel = normalizarTelefono($memory.get(\"cv_userPhone\", \"\"));\n  if (tel) {\n    $memory.set(\"cv_phone\", tel.phone);\n    $memory.set(\"cv_phoneSource\", \"user_phone\");\n    estado = \"con_telefono\";\n  } else {\n    estado = \"pedir_contacto\";\n  }\n  $memory.set(\"cv_intentosTel\", 0);\n  $memory.set(\"cv_rondasWv\", 0);\n}\n$memory.set(\"cv_authEstado\", estado);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1264,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "0hzlUp-nRtoqQv3zKnNlA",
+      "sourceId": "k70t7LBhHNUwVyyB2QEUi",
+      "targetId": "9d5woBRfFWvcaD2iJlTEp",
+      "branch": "success"
+    },
+    {
+      "id": "2jHVVfKlftY4FfwGB87pR",
+      "sourceId": "cmYk9u69r6fwbJtO4prvI",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "9CCnh3OlxR72mCD8KaTM0",
+      "sourceId": "AhchhBjKy3_0AcTtxZQR2",
+      "targetId": "5ZIUEo-yhSudgCRRcnTax",
+      "branch": "condition:c_cont_ok"
+    },
+    {
+      "id": "9enSMkHcNmvLQThz3vLRu",
+      "sourceId": "5ZIUEo-yhSudgCRRcnTax",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "output:m0uXAZb8gLFL0RPb1XDwJ:failed"
+    },
+    {
+      "id": "9QI1O7XpYVop489QjJcli",
+      "sourceId": "AjyQebIr_WUmc5vb8YfRY",
+      "targetId": "LIXywwxTVP4EIWK_y4GwD",
+      "branch": "condition:c_mot_bloq"
+    },
+    {
+      "id": "AIdDkG-u5a5ubHG4cL1wX",
+      "sourceId": "qINYgi_I4Sl4aXfJH2Hk9",
+      "targetId": "xhBVXSBVmEMEeZA4m80VZ",
+      "branch": "default"
+    },
+    {
+      "id": "BG6vBwmrK8VQBgZtwBNTp",
+      "sourceId": "16SN2aYEYAA4S0-DcDtJR",
+      "targetId": "CPML5CTo6l6sB0IOOIbs_",
+      "branch": "output:sdiHEQRxo-EZ3ugX9Z9PG:success"
+    },
+    {
+      "id": "bqgsoHaA5CXxT_F9tJRkr",
+      "sourceId": "4S5Y3VsASKd9Hx7sbTQaf",
+      "targetId": "LDkQCDYzbVjQ8GmWf4sKT",
+      "branch": "condition:c_vigente"
+    },
+    {
+      "id": "bVyyMWyq-ma96E9R1rFgK",
+      "sourceId": "t1BDa16qy4_Kc7QZBdqJo",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "CgJvMG2s9gJiV5WIVgeKo",
+      "sourceId": "04InkhJyKf10ldHxs36GS",
+      "targetId": "cmYk9u69r6fwbJtO4prvI",
+      "branch": "error"
+    },
+    {
+      "id": "cR73Nbybjgh1cZ9phe5mr",
+      "sourceId": "AhchhBjKy3_0AcTtxZQR2",
+      "targetId": "pUv7JLvRE9XgZFPcKAVXN",
+      "branch": "condition:c_cont_retry"
+    },
+    {
+      "id": "DiMd-hkATqJS6tofvpc5A",
+      "sourceId": "2Gk2ihopSJqAvPZQRn4_u",
+      "targetId": "wkZeUEzjnnhq3b3BjHRFR",
+      "branch": "default"
+    },
+    {
+      "id": "dRu8h814CTkHrWiGLJfj0",
+      "sourceId": "YdCHJoUaQoLhSuoPk1vUV",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "dS43gmbbp6N6BT38PiyrR",
+      "sourceId": "9d5woBRfFWvcaD2iJlTEp",
+      "targetId": "aoiEQENP_TKbDn0fezkWJ",
+      "branch": "output:6LNHfzr0ROS3eh6ZAD7yZ:failed"
+    },
+    {
+      "id": "eO3O48aXsdPk6BrL__tw7",
+      "sourceId": "aSsgSR0PoWSH7R2U1izgk",
+      "targetId": "8xN-H75muagJ55nWiKrlZ",
+      "branch": "default"
+    },
+    {
+      "id": "f9voFe6vYkkQuzZdyZz6L",
+      "sourceId": "4S5Y3VsASKd9Hx7sbTQaf",
+      "targetId": "LIXywwxTVP4EIWK_y4GwD",
+      "branch": "condition:c_bloqueado"
+    },
+    {
+      "id": "FUjOMs12iZqNQetcCntxa",
+      "sourceId": "cmYk9u69r6fwbJtO4prvI",
+      "targetId": "hS3nV4KkEsM94AJ3bIrkA",
+      "branch": "success"
+    },
+    {
+      "id": "GOhISNwG3wJNdzXIljVJk",
+      "sourceId": "HY0FPISYLVLGvd8XsCMjp",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "gqeMlD_czARcN_9xBGpmF",
+      "sourceId": "X9rJm87YjlCusCwVMiLSP",
+      "targetId": "asSXKkTKymWUPPKnzCswH",
+      "branch": "default"
+    },
+    {
+      "id": "GXthBgmfs67fFnGCp9eUk",
+      "sourceId": "HY0FPISYLVLGvd8XsCMjp",
+      "targetId": "AjyQebIr_WUmc5vb8YfRY",
+      "branch": "success"
+    },
+    {
+      "id": "Hf2kz97pswaUeIW88urrZ",
+      "sourceId": "4dFAPFzwmTduIqIXqHaYC",
+      "targetId": "Pkgs0lvty0UZRWkxy_0KZ",
+      "branch": "default"
+    },
+    {
+      "id": "hPBIDxJbQrNB5ejobNDvX",
+      "sourceId": "4S5Y3VsASKd9Hx7sbTQaf",
+      "targetId": "5ZIUEo-yhSudgCRRcnTax",
+      "branch": "else"
+    },
+    {
+      "id": "I1ll29Sjh6fMr_uCHi-UF",
+      "sourceId": "kdxEk-m6pJo91Vbgb8cod",
+      "targetId": "SLDwoZ5u4S0XRmhwW2YPQ",
+      "branch": "default"
+    },
+    {
+      "id": "jd1HP7aLBp7Ts6Kc8W-rL",
+      "sourceId": "t1BDa16qy4_Kc7QZBdqJo",
+      "targetId": "AhchhBjKy3_0AcTtxZQR2",
+      "branch": "success"
+    },
+    {
+      "id": "KSJOogssHa_JjZbD2Riry",
+      "sourceId": "2EpVFBX67joxM0bkhgKCb",
+      "targetId": "O3LP8RXO9RfoBez--eyWp",
+      "branch": "output:sdiHEQRxo-EZ3ugX9Z9PG:success"
+    },
+    {
+      "id": "M8jN7jEUje0zy1-r2bhxU",
+      "sourceId": "04InkhJyKf10ldHxs36GS",
+      "targetId": "cmYk9u69r6fwbJtO4prvI",
+      "branch": "exit"
+    },
+    {
+      "id": "mzoCIr8lHNdpNsX-lrfa9",
+      "sourceId": "MHGcPGnPmf6iB06sfHfFj",
+      "targetId": "CPML5CTo6l6sB0IOOIbs_",
+      "branch": "expire"
+    },
+    {
+      "id": "O5SsCd_MK8onHgPzwWh8R",
+      "sourceId": "AjyQebIr_WUmc5vb8YfRY",
+      "targetId": "MHGcPGnPmf6iB06sfHfFj",
+      "branch": "condition:c_mot_retry"
+    },
+    {
+      "id": "PwlKUR1cleUwxX1ZYD6aa",
+      "sourceId": "04InkhJyKf10ldHxs36GS",
+      "targetId": "16SN2aYEYAA4S0-DcDtJR",
+      "branch": "expire"
+    },
+    {
+      "id": "qach_2uc4ZdAc7XmtEWdS",
+      "sourceId": "hS3nV4KkEsM94AJ3bIrkA",
+      "targetId": "Vvrn6fiZtX1BKFw_OOych",
+      "branch": "output:ELq43WmSAKExFJ3GWwY46:success"
+    },
+    {
+      "id": "qHqFCEB9BNbdHQveCrJKJ",
+      "sourceId": "4S5Y3VsASKd9Hx7sbTQaf",
+      "targetId": "2Gk2ihopSJqAvPZQRn4_u",
+      "branch": "condition:c_pedir"
+    },
+    {
+      "id": "RCx1c37QaVUrFukxW17mX",
+      "sourceId": "8xN-H75muagJ55nWiKrlZ",
+      "targetId": "YdCHJoUaQoLhSuoPk1vUV",
+      "branch": "default"
+    },
+    {
+      "id": "RL426WoHLTOhJSKUDsdsG",
+      "sourceId": "9d5woBRfFWvcaD2iJlTEp",
+      "targetId": "04InkhJyKf10ldHxs36GS",
+      "branch": "output:utvs0YHn-sPl_kyrohrm8:success"
+    },
+    {
+      "id": "RMJniuYCpMjQPQh0WcI1O",
+      "sourceId": "5ZIUEo-yhSudgCRRcnTax",
+      "targetId": "k70t7LBhHNUwVyyB2QEUi",
+      "branch": "output:KPHFWogOM0J5mI8sFLDL-:success"
+    },
+    {
+      "id": "SoefnR7RuoYvUujwB49mW",
+      "sourceId": "2Gk2ihopSJqAvPZQRn4_u",
+      "targetId": "2EpVFBX67joxM0bkhgKCb",
+      "branch": "expire"
+    },
+    {
+      "id": "spLZqQvRvAJm5AcLVzL1J",
+      "sourceId": "wkZeUEzjnnhq3b3BjHRFR",
+      "targetId": "t1BDa16qy4_Kc7QZBdqJo",
+      "branch": "default"
+    },
+    {
+      "id": "SSNK5hVpSo2EZHC5zk5o7",
+      "sourceId": "xhBVXSBVmEMEeZA4m80VZ",
+      "targetId": "aSsgSR0PoWSH7R2U1izgk",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "T_gcUapJ2pBScizuzjWQj",
+      "sourceId": "hS3nV4KkEsM94AJ3bIrkA",
+      "targetId": "HY0FPISYLVLGvd8XsCMjp",
+      "branch": "output:HTNePY0-iprXr5L5eD7Ut:failed"
+    },
+    {
+      "id": "t44j0LcV3_MJQD7KK8LBG",
+      "sourceId": "5ZIUEo-yhSudgCRRcnTax",
+      "targetId": "k70t7LBhHNUwVyyB2QEUi",
+      "branch": "output:onZkj3KGQZLN9Y9WFXav1:success"
+    },
+    {
+      "id": "upL2mJJeqBqOh_40AB3ak",
+      "sourceId": "xhBVXSBVmEMEeZA4m80VZ",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "UZ5g8jEGVB4p9R94NzxCN",
+      "sourceId": "MHGcPGnPmf6iB06sfHfFj",
+      "targetId": "TWTadBAtuDHlzeMGnfYLB",
+      "branch": "option:opt_no"
+    },
+    {
+      "id": "VJUrJyx6NjyfQ2t53Unz3",
+      "sourceId": "Vvrn6fiZtX1BKFw_OOych",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "VONmmTbs022D9MLFV5O8N",
+      "sourceId": "k70t7LBhHNUwVyyB2QEUi",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "failed"
+    },
+    {
+      "id": "w4x5F0tZ_HKCozOWqBmjC",
+      "sourceId": "AhchhBjKy3_0AcTtxZQR2",
+      "targetId": "X_rjdnCGwBns255HEz4Fn",
+      "branch": "else"
+    },
+    {
+      "id": "WaTFjgrgeSUNeIMpYSFva",
+      "sourceId": "9d5woBRfFWvcaD2iJlTEp",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "output:sN9hff8WKHK8hVMYN4D9G:failed"
+    },
+    {
+      "id": "wcchgETDfm33p1_89UMdf",
+      "sourceId": "Vvrn6fiZtX1BKFw_OOych",
+      "targetId": "X9rJm87YjlCusCwVMiLSP",
+      "branch": "success"
+    },
+    {
+      "id": "we_nEu_2UpsZWLleHcUSm",
+      "sourceId": "AjyQebIr_WUmc5vb8YfRY",
+      "targetId": "kdxEk-m6pJo91Vbgb8cod",
+      "branch": "else"
+    },
+    {
+      "id": "WEYLvLoK4048WuuR7ULlQ",
+      "sourceId": "TWTadBAtuDHlzeMGnfYLB",
+      "targetId": "CPML5CTo6l6sB0IOOIbs_",
+      "branch": "output:8N8iAzOgxJvSPGCYcmEMk:success"
+    },
+    {
+      "id": "wXJGjlmoILyO_SU9C0Qks",
+      "sourceId": "YdCHJoUaQoLhSuoPk1vUV",
+      "targetId": "4S5Y3VsASKd9Hx7sbTQaf",
+      "branch": "success"
+    },
+    {
+      "id": "xOob1dzIdfdi9DQ-sDz02",
+      "sourceId": "hS3nV4KkEsM94AJ3bIrkA",
+      "targetId": "4dFAPFzwmTduIqIXqHaYC",
+      "branch": "output:1WvNODPY8rTGPsJt80_bK:failed"
+    },
+    {
+      "id": "yf-fXeXGGaqlF69_Hs3Vt",
+      "sourceId": "LIXywwxTVP4EIWK_y4GwD",
+      "targetId": "nys7G8s7_l6QpH_Wm-FbV",
+      "branch": "default"
+    },
+    {
+      "id": "YRkGTyBr6bFbm8mympCx0",
+      "sourceId": "aoiEQENP_TKbDn0fezkWJ",
+      "targetId": "B4iI30OHaZ6GgeJULseUD",
+      "branch": "default"
+    },
+    {
+      "id": "Zh-wvpbn9lD8FGDkx53bO",
+      "sourceId": "MHGcPGnPmf6iB06sfHfFj",
+      "targetId": "9d5woBRfFWvcaD2iJlTEp",
+      "branch": "option:opt_retry"
+    },
+    {
+      "id": "zVjPuskTT0_7TKoD9kZY1",
+      "sourceId": "pUv7JLvRE9XgZFPcKAVXN",
+      "targetId": "2Gk2ihopSJqAvPZQRn4_u",
+      "branch": "default"
+    },
+    {
+      "id": "zvWBeLUSCZfpL877MTJk2",
+      "sourceId": "X_rjdnCGwBns255HEz4Fn",
+      "targetId": "HkFwaZWcfalrPWYeQqd-2",
+      "branch": "default"
+    }
+  ]
+}

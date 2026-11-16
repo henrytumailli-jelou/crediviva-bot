@@ -1,0 +1,134 @@
+{
+  "toolId": 8992,
+  "workflowId": 73643,
+  "toolName": "Crediviva Configuracion de Ambiente",
+  "toolDescription": "Devuelve el ambiente de las APIs de Crediviva (staging o production) y el país de operación que usan los flujos del bot.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [],
+  "outputs": [
+    {
+      "name": "ambiente",
+      "id": "Vw5_BkbhdlEcmw8GhTh1V",
+      "displayName": "Ambiente listo",
+      "description": "{ ambiente: \"staging\" | \"production\", countryCode: \"PA\" }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "8Wc3ClqwLQOKYMDyRS4RJ",
+      "displayName": "Configuración inválida",
+      "description": "El ambiente configurado no es válido. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "0dFRKdTtYt43MpG1wFDsy",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "b60uPwRK5NeoqVA_IM6gk",
+      "title": "Fin: Configuración inválida",
+      "type": "END",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Configuración inválida",
+        "outputId": "8Wc3ClqwLQOKYMDyRS4RJ"
+      }
+    },
+    {
+      "id": "DSl4UBB0zzZSDGBZwsieW",
+      "title": "Fin: Ambiente listo",
+      "type": "END",
+      "position": [
+        1360,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Ambiente listo",
+        "outputId": "Vw5_BkbhdlEcmw8GhTh1V"
+      }
+    },
+    {
+      "id": "N00gbuyryoVibgXCBeWE6",
+      "title": "Elegir ambiente",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Elegir ambiente",
+        "content": "// ================== ELIGE AQUÍ EL AMBIENTE ==================\n//  \"staging\"    → pruebas  (secretos CREDIVIVA_*_STAGING)\n//  \"production\" → clientes reales (secretos CREDIVIVA_*_PRODUCTION)\nconst AMBIENTE = \"staging\";\n// País de operación (Panamá es el único activo en esta fase)\nconst PAIS = \"PA\";\n// ============================================================\nif (AMBIENTE === \"staging\" || AMBIENTE === \"production\") {\n  $output.set(\"ambiente\", { ambiente: AMBIENTE, countryCode: PAIS });\n  $context.set(\"valido\", \"si\");\n} else {\n  $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: \"AMBIENTE debe ser staging o production\" });\n  $context.set(\"valido\", \"no\");\n}",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "W1PZH901GGDCcw6do-NmI",
+      "title": "¿Ambiente válido?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Ambiente válido?",
+        "conditions": [
+          {
+            "id": "cond_valido",
+            "name": "Válido",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.valido}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "4yrgBSzIdDedi8QOMqKP4",
+      "sourceId": "W1PZH901GGDCcw6do-NmI",
+      "targetId": "b60uPwRK5NeoqVA_IM6gk",
+      "branch": "else"
+    },
+    {
+      "id": "Do001KKVui_SawNgKWgtQ",
+      "sourceId": "0dFRKdTtYt43MpG1wFDsy",
+      "targetId": "N00gbuyryoVibgXCBeWE6",
+      "branch": "default"
+    },
+    {
+      "id": "DRzYqMKaaXQtcYx0J8mjS",
+      "sourceId": "W1PZH901GGDCcw6do-NmI",
+      "targetId": "DSl4UBB0zzZSDGBZwsieW",
+      "branch": "condition:cond_valido"
+    },
+    {
+      "id": "fvxV6LEZrFJsmUwoDWmUe",
+      "sourceId": "N00gbuyryoVibgXCBeWE6",
+      "targetId": "W1PZH901GGDCcw6do-NmI",
+      "branch": "success"
+    }
+  ]
+}

@@ -1,0 +1,1343 @@
+{
+  "workflowId": 73469,
+  "workflowName": "Registro de cliente",
+  "workflowDescription": "Quiero un crédito o un préstamo: solicitar mi primer crédito en Crediviva (compra ahora, paga después), registrarme o crear mi cuenta, iniciar sesión porque ya tengo cuenta, o continuar mi solicitud de crédito. Se ingresa con el correo electrónico.",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "_INx7kGQzg7yGcCkBvmub",
+      "title": "Registro cancelado",
+      "configuration": {
+        "title": "Registro cancelado",
+        "messages": [
+          {
+            "id": "0VWACkVQFdSocwp2XVpGI",
+            "text": "Cancelaste el proceso. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2816,
+        50
+      ]
+    },
+    {
+      "id": "00LknuJ_iiUMvtCOfwGap",
+      "title": "¿Login de prueba OK?",
+      "configuration": {
+        "title": "¿Login de prueba OK?",
+        "conditions": [
+          {
+            "id": "c_ok",
+            "name": "Sesión iniciada",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_pruebaEstado}}",
+                "value2": "ok",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_clave",
+            "name": "Credenciales inválidas",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_pruebaEstado}}",
+                "value2": "credenciales_invalidas",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_completado",
+            "name": "Proceso ya terminado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_pruebaEstado}}",
+                "value2": "completado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        3980,
+        3808
+      ]
+    },
+    {
+      "id": "0lfVKz5l0qNpk5qsrr8vu",
+      "title": "Sesión iniciada",
+      "configuration": {
+        "title": "Sesión iniciada",
+        "messages": [
+          {
+            "id": "vYVilnq2gflPFlMJQVfE0",
+            "text": "✅ Iniciaste sesión en tu cuenta Crediviva. Continuemos con tu solicitud.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3592,
+        2490
+      ]
+    },
+    {
+      "id": "0yNJglyV44PAtPHYZGcj7",
+      "title": "¿Número de prueba?",
+      "configuration": {
+        "title": "¿Número de prueba?",
+        "conditions": [
+          {
+            "id": "c_prueba",
+            "name": "Número de prueba en staging",
+            "terms": [
+              {
+                "value1": "{{$user.id}}",
+                "value2": "593984181411",
+                "operator": "equal"
+              },
+              {
+                "value1": "{{$memory.cv_ambiente}}",
+                "value2": "staging",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2040,
+        1808
+      ]
+    },
+    {
+      "id": "3xIMC_IYZ4kiZx0rXEJay",
+      "title": "Login de prueba",
+      "configuration": {
+        "async": false,
+        "input": {
+          "email": "{{$memory.cv_pruebaCorreo}}",
+          "userId": "{{$user.id}}",
+          "ambiente": "{{$memory.cv_ambiente}}",
+          "password": "{{$memory.cv_pruebaClave}}"
+        },
+        "title": "Login de prueba",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 9109,
+          "toolName": "Crediviva Login de Prueba",
+          "thumbnail": 1,
+          "workflowId": 74960
+        },
+        "variable": "cv_pruebaLogin"
+      },
+      "type": "TOOL",
+      "position": [
+        3204,
+        1808
+      ]
+    },
+    {
+      "id": "4FuLx1I0oA63AsxZG4Znb",
+      "title": "Ir a Evaluación (prueba)",
+      "configuration": {
+        "title": "Ir a Evaluación (prueba)",
+        "skillId": "53531"
+      },
+      "type": "SKILL",
+      "position": [
+        4756,
+        3808
+      ]
+    },
+    {
+      "id": "aMv5nAK5AdgaQfdRvACFu",
+      "title": "Ir a Menú de documentos",
+      "configuration": {
+        "title": "Ir a Menú de documentos",
+        "skillId": "53052"
+      },
+      "type": "SKILL",
+      "position": [
+        2816,
+        1040
+      ]
+    },
+    {
+      "id": "bg6jSWZxWdWaN9XuwRaPV",
+      "title": "Error técnico",
+      "configuration": {
+        "title": "Error técnico",
+        "messages": [
+          {
+            "id": "Thkm2KaaA362bONHzEsmk",
+            "text": "Tuvimos un problema técnico con tu solicitud 😔. Te comunico con un asesor para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        876,
+        400
+      ]
+    },
+    {
+      "id": "BpP8SYO4i-XywQ4rciuYw",
+      "title": "Registro pendiente",
+      "configuration": {
+        "title": "Registro pendiente",
+        "messages": [
+          {
+            "id": "-pb0jbiVfe0pkBfRnOLjd",
+            "text": "Está bien. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3980,
+        1958
+      ]
+    },
+    {
+      "id": "cfpYq6WkznZZp_OiuiVsd",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        1264,
+        400
+      ]
+    },
+    {
+      "id": "cnPQp13QbPGbLy6UxGXhG",
+      "title": "Sesión vigente",
+      "configuration": {
+        "title": "Sesión vigente",
+        "messages": [
+          {
+            "id": "7AaE-eaHbNvZPohSjb_ZQ",
+            "text": "Tu cuenta Crediviva ya está lista ✅ Continuemos con tu solicitud.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2816,
+        1450
+      ]
+    },
+    {
+      "id": "CRAZrVxncnc_qpZHNPdym",
+      "title": "API",
+      "configuration": {
+        "url": "https://onboarding-whatsapp-staging.kubbesa.net/api/health/status",
+        "body": {
+          "type": "no-content",
+          "content": "",
+          "enabled": false
+        },
+        "method": "GET",
+        "headers": [
+          {
+            "id": "d3L9knpQiPrBeEPiEHVQY",
+            "key": "accept",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "CMOBIhs21rfmBxMXVVG6x",
+            "key": "x-auth-key",
+            "value": "p1zf53UHdBSez2Kv.oWSvogYMWidqwHKioi9SJQ.zS2m2U_05-Z4cGBd1ekWvEveDqmKkGjY8Q",
+            "enabled": true
+          },
+          {
+            "id": "ca29prjbyC0Sp7vUQK96y",
+            "key": "x-api-key",
+            "value": "Yr3EsnEdqU3GaxwYERtCj6nOj7gwwwrN8QZhRoIj",
+            "enabled": true
+          }
+        ],
+        "settings": {
+          "retries": 0,
+          "timeout": 30000,
+          "proxyOptions": {
+            "ip": "185.228.195.219",
+            "auth": {
+              "password": null,
+              "username": null
+            },
+            "host": null,
+            "port": null,
+            "enabled": false,
+            "protocol": "https"
+          },
+          "retryOptions": {
+            "enabled": false,
+            "retries": 0,
+            "retryDelay": "no_delay",
+            "milliseconds": 1000,
+            "retryCondition": "is_network_or_idempotent_request_error",
+            "shouldResetTimeout": false
+          },
+          "sslCertificate": true
+        },
+        "parameters": [
+          {
+            "id": "D_rO-5_YGlkFhEosyXqB0",
+            "key": "",
+            "value": "",
+            "enabled": true
+          }
+        ],
+        "authentication": {
+          "type": null,
+          "enabled": true
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        318,
+        809
+      ]
+    },
+    {
+      "id": "D8DBcMGlgC5Eo61L_X5SL",
+      "title": "Preparar asistente",
+      "configuration": {
+        "title": "Preparar asistente",
+        "content": "// Al volver del webview el agente sale sin estado; se limpian los de una vuelta anterior.\n$memory.delete(\"cv_registro\");\n$memory.delete(\"cv_registroResultado\");\n// Sesión de Crediviva vigente (la escribe la Function al crear la cuenta o iniciar sesión; dura 24 h).\nconst s = $memory.getJson(\"cv_sesionCrediviva\", null);\nconst vigente = !!(s && s.authKey && s.ambiente === $memory.get(\"cv_ambiente\", \"\"));\n$memory.set(\"cv_sesionVigente\", vigente ? \"si\" : \"no\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "EB922znBDpO3bP0m9ex2H",
+      "title": "Ir a la App: registro completo",
+      "configuration": {
+        "title": "Ir a la App: registro completo",
+        "messages": [
+          {
+            "id": "IaO8sivJlMXTMZNfb7-BV",
+            "text": "Ya completaste tu proceso de registro en Crediviva 🙌\n\nPara ver el estado de tu solicitud y continuar, ingresa a la App de Crediviva con tu correo y contraseña 📲",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3592,
+        3146
+      ]
+    },
+    {
+      "id": "HbPqSIjc4Qkui8rDPplmV",
+      "title": "Recoger sesión",
+      "configuration": {
+        "async": false,
+        "input": {
+          "phone": "{{$user.phone}}",
+          "userId": "{{$user.id}}"
+        },
+        "title": "Recoger sesión",
+        "version": "1.0.2",
+        "toolData": {
+          "toolId": 8994,
+          "toolName": "Crediviva Estado Registro",
+          "thumbnail": 1,
+          "workflowId": 73648
+        },
+        "variable": "cv_recogida"
+      },
+      "type": "TOOL",
+      "position": [
+        2816,
+        500
+      ]
+    },
+    {
+      "id": "hMxBHOpZhUZFBSDrfwFgc",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "IEg2nzRAEWZqn0XrZ0t0l",
+      "title": "¿Cómo terminó el asistente?",
+      "configuration": {
+        "title": "¿Cómo terminó el asistente?",
+        "conditions": [
+          {
+            "id": "c_ia_cancelado",
+            "name": "Canceló",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registro.estado}}",
+                "value2": "cancelado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_ia_asesor",
+            "name": "Pidió asesor",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registro.estado}}",
+                "value2": "asesor",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_ia_documentos",
+            "name": "Quiere documentos",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registro.estado}}",
+                "value2": "documentos",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2428,
+        50
+      ]
+    },
+    {
+      "id": "iURy1DAFYBZDq6HU-b3K1",
+      "title": "Ir a Verificación de identidad",
+      "configuration": {
+        "title": "Ir a Verificación de identidad",
+        "skillId": "53530"
+      },
+      "type": "SKILL",
+      "position": [
+        3980,
+        2490
+      ]
+    },
+    {
+      "id": "jO10-vDhqLvyZB9FQ_zXC",
+      "title": "Guardar sesión",
+      "configuration": {
+        "title": "Guardar sesión",
+        "content": "// Cómo terminó el webview, entregado por la Function una sola vez. La sesión de Crediviva\n// (authKey) queda en memoria 30 min: Crediviva la invalida antes de 24 h (se vio un 401 a ~1 h 40 min)\n// y una sesión vencida haría saltar el login. La copia de la tool se borra.\nconst r = $memory.getJson(\"cv_recogida\", {}) || {};\n$memory.delete(\"cv_recogida\");\nconst estado = String(r.estado || \"pendiente\");\nif (r.authKey) {\n  $memory.setJson(\"cv_sesionCrediviva\", { authKey: r.authKey, origen: r.origen || \"\", ambiente: r.ambiente || $memory.get(\"cv_ambiente\", \"\") }, 1800);\n}\n// Paso pendiente en Crediviva (lo devuelve el login): Verificación y Evaluación saltan lo ya hecho.\n$memory.set(\"cv_pasoCrediviva\", String(r.paso || \"\"), 1800);\n$memory.setJson(\"cv_registroResultado\", { estado, paso: r.paso || \"\", decision: r.decision || \"\" }, 86400);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3204,
+        1300
+      ]
+    },
+    {
+      "id": "K-5Ygw-FSq7vY6N-xCdC3",
+      "title": "Registrar salida sin consentimiento",
+      "configuration": {
+        "title": "Registrar salida sin consentimiento",
+        "content": "// Consentimientos ya le explicó al usuario por qué no se continúa.\n$memory.set(\"cv_ultimoResultado\", \"sin_consentimiento\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2040,
+        710
+      ]
+    },
+    {
+      "id": "Kdbflq-FR188AnxryNYRK",
+      "title": "Consentimientos",
+      "configuration": {
+        "title": "Consentimientos",
+        "skillId": "53334"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        710
+      ]
+    },
+    {
+      "id": "MbCP4BmN_mw_bi8QAJ68g",
+      "title": "¿Cómo terminó el registro?",
+      "configuration": {
+        "title": "¿Cómo terminó el registro?",
+        "conditions": [
+          {
+            "id": "c_creada",
+            "name": "Cuenta creada",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registroResultado.estado}}",
+                "value2": "cuenta_creada",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_sesion",
+            "name": "Inició sesión",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registroResultado.estado}}",
+                "value2": "sesion_iniciada",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_completado",
+            "name": "Ya completó el onboarding",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registroResultado.estado}}",
+                "value2": "completado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_app",
+            "name": "Debe continuar en la App",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registroResultado.estado}}",
+                "value2": "app",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_cancelado",
+            "name": "Canceló",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_registroResultado.estado}}",
+                "value2": "cancelado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        3204,
+        500
+      ]
+    },
+    {
+      "id": "OtwL8KxBjWw-1unKQf6NK",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        50
+      ]
+    },
+    {
+      "id": "pcNSzgisWfmR5ZNsxRc9U",
+      "title": "Ir a la App: continuar solicitud",
+      "configuration": {
+        "title": "Ir a la App: continuar solicitud",
+        "messages": [
+          {
+            "id": "T1hDbh38nfSFQa4NsEsLL",
+            "text": "Encontramos un proceso a tu nombre que debes continuar desde la App de Crediviva 📲\n\nIngresa a la App con tu correo para retomarlo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3592,
+        1216
+      ]
+    },
+    {
+      "id": "r3x1ey4VjC9r757a-h2lw",
+      "title": "Contraseña de prueba",
+      "configuration": {
+        "title": "Contraseña de prueba",
+        "prompt": "Ahora escribe la contraseña.\n\n⚠️ Usa solo una cuenta de prueba: la contraseña queda escrita en este chat.",
+        "variable": "cv_pruebaClave"
+      },
+      "type": "INPUT",
+      "position": [
+        2816,
+        1808
+      ]
+    },
+    {
+      "id": "r5rX60dUxqN9rK9OP_0vT",
+      "title": "Cuenta creada",
+      "configuration": {
+        "title": "Cuenta creada",
+        "messages": [
+          {
+            "id": "Ub9tcDt3SMhaToqLoUfFz",
+            "text": "✅ ¡Tu cuenta ha sido creada con éxito!",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3980,
+        500
+      ]
+    },
+    {
+      "id": "rsJBukbzQMA6GNBqgmgzZ",
+      "title": "Sesión expirada",
+      "configuration": {
+        "title": "Sesión expirada",
+        "messages": [
+          {
+            "id": "80nEhIOyB6Xas3c3ClRBl",
+            "text": "Cerré el proceso por inactividad ⌛. Si ya ingresaste o creaste tu cuenta en el formulario, escribe *Continuar mi solicitud* y seguimos desde ahí.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2428,
+        750
+      ]
+    },
+    {
+      "id": "s989P3VOstvt-t_v9FTCf",
+      "title": "¿Tiene sesión vigente?",
+      "configuration": {
+        "title": "¿Tiene sesión vigente?",
+        "conditions": [
+          {
+            "id": "c_vigente",
+            "name": "Sesión vigente",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_sesionVigente}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2040,
+        1450
+      ]
+    },
+    {
+      "id": "tSQ5SfDmSwZB04v0urhAG",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "tuvTek-114aP1pZaikT3B",
+      "title": "Sesión de prueba iniciada",
+      "configuration": {
+        "title": "Sesión de prueba iniciada",
+        "messages": [
+          {
+            "id": "jnbtAJ5a6yYn_nLj-m-YY",
+            "text": "🧪 Sesión de prueba iniciada. Pasamos directo al formulario de solicitud, sin validar celular, identidad ni ingreso.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4368,
+        3808
+      ]
+    },
+    {
+      "id": "uZtkDnMyb8uzamh2Kh8jy",
+      "title": "¿Continuar el registro?",
+      "configuration": {
+        "title": "¿Continuar el registro?",
+        "messages": [
+          {
+            "id": "M-VFizsOnpvFAyAD0Cs-t",
+            "text": "Aún no terminas el proceso en el formulario. ¿Quieres continuar ahora?",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_continuar",
+                "type": "postback",
+                "title": "Continuar",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "53335",
+                  "targetId": "D8DBcMGlgC5Eo61L_X5SL"
+                }
+              },
+              {
+                "id": "opt_luego",
+                "type": "postback",
+                "title": "Ahora no",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "53335",
+                  "targetId": "BpP8SYO4i-XywQ4rciuYw"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_regRetrySel",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Elige una opción: *Continuar* o *Ahora no*."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3592,
+        1958
+      ]
+    },
+    {
+      "id": "VC218o8UeJbqrKqZ-WZ79",
+      "title": "Guardar sesión de prueba",
+      "configuration": {
+        "title": "Guardar sesión de prueba",
+        "content": "// Atajo de pruebas: sesión de Crediviva sin formulario. La contraseña y la respuesta se borran de memoria.\nconst r = $memory.getJson(\"cv_pruebaLogin\", {}) || {};\n$memory.delete(\"cv_pruebaLogin\");\n$memory.delete(\"cv_pruebaClave\");\n$memory.delete(\"cv_pruebaCorreo\");\nlet estado = String(r.estado || \"error\");\n// Proceso ya terminado en Crediviva: no acepta más pasos (responde 401); se muestra el resultado.\nif (estado === \"completado\") $memory.set(\"cv_pruebaDecision\", String(r.decision || \"sin decisión\"), 600);\nif (r.authKey && estado === \"sesion_iniciada\") {\n  $memory.setJson(\"cv_sesionCrediviva\", { authKey: r.authKey, origen: \"login\", ambiente: $memory.get(\"cv_ambiente\", \"\") }, 1800);\n  $memory.set(\"cv_pasoCrediviva\", String(r.paso || \"\"), 1800);\n  // Sin celular ni KYC: Evaluación no vuelve a mandar a la verificación de identidad.\n  $memory.set(\"cv_kycAprobado\", \"si\", 3600);\n  // Y sin ingreso: Evaluación lo manda directo al formulario de solicitud.\n  $memory.set(\"cv_pruebaSolicitud\", \"si\", 3600);\n  estado = \"ok\";\n}\n$memory.set(\"cv_pruebaEstado\", estado, 600);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3592,
+        3808
+      ]
+    },
+    {
+      "id": "Wv3Ngzs6w_fKSDimVeI5s",
+      "title": "Cuenta de prueba ya terminada",
+      "configuration": {
+        "title": "Cuenta de prueba ya terminada",
+        "messages": [
+          {
+            "id": "MKZARA8JHEP_wcZj3SdEt",
+            "text": "🧪 Esta cuenta ya terminó su proceso en Crediviva (resultado: *{{$memory.cv_pruebaDecision}}*), así que no acepta más pasos.\n\nPara probar la evaluación y la solicitud usa una cuenta que aún no haya terminado. Escribe *Continuar mi solicitud* para ingresar con otra.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4368,
+        4684
+      ]
+    },
+    {
+      "id": "xEQZeMqA3VkbCc2WDqRvF",
+      "title": "Asistente de registro",
+      "configuration": {
+        "name": "Asistente de registro",
+        "model": "openai/gpt-6-luna",
+        "title": "Asistente de registro",
+        "version": "v2",
+        "settings": {
+          "expiration": {
+            "time": "minutes",
+            "enabled": true,
+            "duration": 30,
+            "timeInSeconds": 1800
+          },
+          "splitMessages": true,
+          "messageHistory": {
+            "enabled": false
+          }
+        },
+        "variable": "cv_registro",
+        "connections": {
+          "mcp": [],
+          "datum": [],
+          "tools": [
+            {
+              "id": "tool-8993",
+              "name": "Crediviva Iniciar Registro",
+              "inputs": [
+                {
+                  "id": "FbDka2Mdoyeb42H2HAfJZ",
+                  "name": "ambiente",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 8993,
+                  "position": 0,
+                  "required": true,
+                  "description": "Ambiente de Crediviva: \"staging\" o \"production\". Lo define la tool Crediviva Configuracion de Ambiente.",
+                  "displayName": "Ambiente",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "i-W-DSGiziTW8ZxBD0TBR",
+                  "name": "userId",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 8993,
+                  "position": 0,
+                  "required": true,
+                  "description": "Id del usuario de Jelou, normalmente {{$user.id}}",
+                  "displayName": "Usuario",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "VBKSqohQUypI9M5Tkk65b",
+                  "name": "botId",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 8993,
+                  "position": 0,
+                  "required": false,
+                  "description": "Id del bot, normalmente {{$bot.id}}",
+                  "displayName": "Bot",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "yemUeuqQn0stHQdx55Wpy",
+                  "name": "phone",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 8993,
+                  "position": 0,
+                  "required": false,
+                  "description": "Teléfono del usuario, normalmente {{$user.phone}}, ej. \"50761234567\"",
+                  "displayName": "Teléfono",
+                  "defaultValue": null,
+                  "configuration": null
+                }
+              ],
+              "toolId": 8993,
+              "version": "1.0.1",
+              "external": true,
+              "parameters": {
+                "botId": "{{$bot.id}}",
+                "phone": "{{$user.phone}}",
+                "userId": "{{$user.id}}",
+                "ambiente": "{{$memory.cv_ambiente}}"
+              },
+              "description": "Revisa si el cliente ya creó su cuenta Crediviva desde este chat y, si no, genera el enlace del webview donde registra su correo, lo verifica con un código y crea su contraseña.",
+              "parameterModes": {
+                "botId": "dynamic",
+                "phone": "dynamic",
+                "userId": "dynamic",
+                "ambiente": "dynamic"
+              }
+            },
+            {
+              "id": "send_interactive_message",
+              "name": "send_interactive_message",
+              "action": "pause",
+              "external": false,
+              "description": "Envía el formulario de registro como webview (y botones cuando haga falta)."
+            },
+            {
+              "id": "custom_message_webview",
+              "name": "Ingresar mi correo",
+              "action": "pause",
+              "enabled": true,
+              "description": "Úsalo para enviar al cliente el formulario seguro de Crediviva donde ingresa su correo y, según el caso, inicia sesión con su contraseña (ya registrado) o crea su cuenta (correo nuevo). Envíalo solo cuando \"Crediviva Iniciar Registro\" responda estado = \"enlace\", con esa url exacta. No lo uses si la cuenta ya está creada ni para ningún otro enlace.",
+              "messageType": "webview",
+              "interactiveMessageId": "custom_message_webview"
+            }
+          ]
+        },
+        "endFunction": {
+          "rawSchema": {
+            "estado": {
+              "type": "string",
+              "required": true
+            }
+          },
+          "description": "Termina si la cuenta ya estaba creada, si el cliente quiere cancelar, pide un asesor o un documento, o si la herramienta falla. Completa 'estado' con uno de: cuenta_creada, cancelado, asesor, documentos. No termines después de enviar el formulario: el flujo continúa solo cuando el cliente lo completa. Termina justo después de identificarlo; no envíes despedida ni confirmación, el siguiente paso la envía."
+        },
+        "instructions": "Eres el asistente de registro de Crediviva (fintech panameña de \"compra ahora, paga después\"). El cliente ya aceptó el tratamiento de datos, los términos y condiciones y la consulta APC. Tu tarea es llevarlo al formulario seguro donde primero ingresa su correo: si ya está registrado, inicia sesión con su contraseña; si es nuevo, lo verifica con un código y crea su contraseña. No des por hecho que el cliente es nuevo: nunca le digas que va a crear su cuenta antes de que el formulario lo confirme.\n\nPasos:\n1. Llama de inmediato a \"Crediviva Iniciar Registro\" (no le pidas ningún dato al cliente; la herramienta ya conoce su contexto).\n2. Lee el campo \"estado\" del resultado de la herramienta:\n   - estado = \"enlace\": envía la url con el mensaje webview \"Ingresar mi correo\" de send_interactive_message, usando la url EXACTA, sin modificarla ni acortarla. Texto del mensaje: \"¡Hola! 👋 Para continuar con tu solicitud en Crediviva toca el botón e ingresa tu correo electrónico:\n\n🔑 ¿Ya tienes cuenta? Solo te pediremos tu contraseña.\n✨ ¿Eres nuevo? Verificas tu correo con un código y creas tu contraseña.\n\nAl terminar vuelve a este chat. Si no quieres continuar, escribe *salir*.\" y texto del botón \"Ingresar mi correo\". Después de enviarlo no escribas nada más.\n   - estado = \"cuenta_creada\": el cliente ya tiene una sesión de registro vigente (creó su cuenta o inició sesión hace poco). No le digas nada; termina de inmediato con estado \"cuenta_creada\".\n   - estado = \"error\" u ok = false: termina con estado \"asesor\".\n   Nunca le digas al cliente que algo falló si la herramienta respondió ok = true.\n3. Si antes de abrir el formulario el cliente tiene dudas, respóndelas en una o dos frases: si ya tiene cuenta, solo ingresa su correo y su contraseña de Crediviva (si la olvidó, la recupera desde la App de Crediviva); si es nuevo, necesita un correo al que tenga acceso para recibir el código, y la contraseña debe tener mínimo 8 caracteres con mayúscula, minúscula, número y carácter especial. Luego vuelve a ofrecer el formulario.\n\nReglas:\n- Nunca pidas ni aceptes por este chat el correo, el código ni la contraseña: todo se ingresa en el formulario. Si el cliente escribe una contraseña aquí, pídele que no la comparta por chat y que la ingrese en el formulario.\n- Si quiere salir o cancelar (\"salir\", \"cancelar\", \"ya no\", \"no gracias\"), termina de inmediato con estado \"cancelado\", sin pedir confirmación.\n- Si pide hablar con una persona, tiene un reclamo o una consulta de empresa o comercio (B2B), termina con estado \"asesor\".\n- Si en realidad ya es cliente y quiere un documento de su crédito (carta de saldo, estado de cuenta, carta de cancelación, comprobante de pago), termina con estado \"documentos\".\n- Nunca inventes que la cuenta fue creada: eso solo lo confirma el formulario.\n- Nunca respondas solo \"Entendido\" ni te despidas: cuando el cliente ya decidió, termina la tarea con el estado correspondiente.\n- Responde en español, breve y cordial.",
+        "startCommand": "Quiero registrarme en Crediviva.",
+        "instructions_lang": "es",
+        "nonHappyPathHandlers": {
+          "error": {
+            "mode": "message",
+            "message": "Tuvimos un problema técnico con tu registro 😔. Cuando quieras retomarlo, escribe *Continuar mi solicitud*."
+          }
+        }
+      },
+      "type": "AI_TASK",
+      "position": [
+        2040,
+        50
+      ]
+    },
+    {
+      "id": "XRxF2fK-kp-3d1SeeZqD3",
+      "title": "Correo de prueba",
+      "configuration": {
+        "title": "Correo de prueba",
+        "prompt": "🧪 *Modo de prueba*\n\nEscribe el correo de tu cuenta de Crediviva.",
+        "variable": "cv_pruebaCorreo"
+      },
+      "type": "INPUT",
+      "position": [
+        2428,
+        1808
+      ]
+    },
+    {
+      "id": "XxHucvB9pI3VzUCmYkvbL",
+      "title": "Guardar cuenta creada",
+      "configuration": {
+        "title": "Guardar cuenta creada",
+        "content": "// La sesión (authKey) ya quedó en memoria (cv_sesionCrediviva) en \"Guardar sesión\".\n$memory.set(\"cv_cuentaCreada\", true);\n$memory.set(\"cv_ultimoResultado\", \"cuenta_creada\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3592,
+        500
+      ]
+    },
+    {
+      "id": "YB428U5cOsNSN-ts8bpX2",
+      "title": "¿Ya aceptó los consentimientos?",
+      "configuration": {
+        "title": "¿Ya aceptó los consentimientos?",
+        "conditions": [
+          {
+            "id": "c_cons_ok",
+            "name": "Ya aceptó",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consentimiento}}",
+                "value2": "aceptado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1264,
+        50
+      ]
+    },
+    {
+      "id": "zxB_xCs83JS9JS1OoGIY1",
+      "title": "Credenciales de prueba inválidas",
+      "configuration": {
+        "title": "Credenciales de prueba inválidas",
+        "messages": [
+          {
+            "id": "7l65D5LjW6cUsuH4MadGd",
+            "text": "El correo o la contraseña no coinciden. Escribe *Continuar mi solicitud* para intentarlo de nuevo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4368,
+        4158
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "1HGNutkugK6oNtEx0C1Zo",
+      "sourceId": "00LknuJ_iiUMvtCOfwGap",
+      "targetId": "Wv3Ngzs6w_fKSDimVeI5s",
+      "branch": "condition:c_completado"
+    },
+    {
+      "id": "2gJNTUDwBsiDX8XoUAZWe",
+      "sourceId": "cnPQp13QbPGbLy6UxGXhG",
+      "targetId": "iURy1DAFYBZDq6HU-b3K1",
+      "branch": "default"
+    },
+    {
+      "id": "3eNVgRMpOSrmCfVmdfHgq",
+      "sourceId": "Kdbflq-FR188AnxryNYRK",
+      "targetId": "cfpYq6WkznZZp_OiuiVsd",
+      "branch": "output:2RqtOM0Desm4AxOeD9Lzr:failed"
+    },
+    {
+      "id": "46EWl-X-H230G_fnIGwhB",
+      "sourceId": "0lfVKz5l0qNpk5qsrr8vu",
+      "targetId": "iURy1DAFYBZDq6HU-b3K1",
+      "branch": "default"
+    },
+    {
+      "id": "4AC01wSDW4GDe7S_gon1a",
+      "sourceId": "OtwL8KxBjWw-1unKQf6NK",
+      "targetId": "YB428U5cOsNSN-ts8bpX2",
+      "branch": "default"
+    },
+    {
+      "id": "4QSoUnMltnI6shH4Lprck",
+      "sourceId": "0yNJglyV44PAtPHYZGcj7",
+      "targetId": "D8DBcMGlgC5Eo61L_X5SL",
+      "branch": "else"
+    },
+    {
+      "id": "5-0rkApceRyo0tesNiayW",
+      "sourceId": "3xIMC_IYZ4kiZx0rXEJay",
+      "targetId": "VC218o8UeJbqrKqZ-WZ79",
+      "branch": "output:RHFj0bCs8SAzijRLkKxKW:failed"
+    },
+    {
+      "id": "6lGWGn3o9L-nQHColzG6s",
+      "sourceId": "jO10-vDhqLvyZB9FQ_zXC",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "failed"
+    },
+    {
+      "id": "6up9AU9nhIChRX7Ax2KVD",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "pcNSzgisWfmR5ZNsxRc9U",
+      "branch": "condition:c_app"
+    },
+    {
+      "id": "7ank9237B_Y1OPVnYDLOK",
+      "sourceId": "XxHucvB9pI3VzUCmYkvbL",
+      "targetId": "r5rX60dUxqN9rK9OP_0vT",
+      "branch": "success"
+    },
+    {
+      "id": "aaH5yv1pZWfKsagNliBB3",
+      "sourceId": "uZtkDnMyb8uzamh2Kh8jy",
+      "targetId": "D8DBcMGlgC5Eo61L_X5SL",
+      "branch": "option:opt_continuar"
+    },
+    {
+      "id": "AHQHqLXLBrADeEaiQp074",
+      "sourceId": "tuvTek-114aP1pZaikT3B",
+      "targetId": "4FuLx1I0oA63AsxZG4Znb",
+      "branch": "default"
+    },
+    {
+      "id": "BKHho6px6sC0pNLXRRepo",
+      "sourceId": "IEg2nzRAEWZqn0XrZ0t0l",
+      "targetId": "HbPqSIjc4Qkui8rDPplmV",
+      "branch": "else"
+    },
+    {
+      "id": "BMkrBw4kGCgqGisbKLdE7",
+      "sourceId": "s989P3VOstvt-t_v9FTCf",
+      "targetId": "cnPQp13QbPGbLy6UxGXhG",
+      "branch": "condition:c_vigente"
+    },
+    {
+      "id": "c583co-7zf0-4m08CBZ-1",
+      "sourceId": "bg6jSWZxWdWaN9XuwRaPV",
+      "targetId": "cfpYq6WkznZZp_OiuiVsd",
+      "branch": "default"
+    },
+    {
+      "id": "cs3_v5m-_2i-zmEubm9bR",
+      "sourceId": "IEg2nzRAEWZqn0XrZ0t0l",
+      "targetId": "aMv5nAK5AdgaQfdRvACFu",
+      "branch": "condition:c_ia_documentos"
+    },
+    {
+      "id": "edjB08nURkTTyrFK9xBUf",
+      "sourceId": "00LknuJ_iiUMvtCOfwGap",
+      "targetId": "tuvTek-114aP1pZaikT3B",
+      "branch": "condition:c_ok"
+    },
+    {
+      "id": "eVKeTWkuBbNuJsku99dHG",
+      "sourceId": "00LknuJ_iiUMvtCOfwGap",
+      "targetId": "zxB_xCs83JS9JS1OoGIY1",
+      "branch": "condition:c_clave"
+    },
+    {
+      "id": "gSYy4XQXq84cR6e9bZLXs",
+      "sourceId": "s989P3VOstvt-t_v9FTCf",
+      "targetId": "xEQZeMqA3VkbCc2WDqRvF",
+      "branch": "else"
+    },
+    {
+      "id": "gY2ImOk0HafZoMatbfK-C",
+      "sourceId": "XRxF2fK-kp-3d1SeeZqD3",
+      "targetId": "rsJBukbzQMA6GNBqgmgzZ",
+      "branch": "expire"
+    },
+    {
+      "id": "HT6Xlin2Aq8u-lGgVIak-",
+      "sourceId": "xEQZeMqA3VkbCc2WDqRvF",
+      "targetId": "IEg2nzRAEWZqn0XrZ0t0l",
+      "branch": "success"
+    },
+    {
+      "id": "JbHKbQMNMpeCSsYHYqpN2",
+      "sourceId": "YB428U5cOsNSN-ts8bpX2",
+      "targetId": "0yNJglyV44PAtPHYZGcj7",
+      "branch": "condition:c_cons_ok"
+    },
+    {
+      "id": "jdMX6l799LL45JllsZ9BZ",
+      "sourceId": "r5rX60dUxqN9rK9OP_0vT",
+      "targetId": "iURy1DAFYBZDq6HU-b3K1",
+      "branch": "default"
+    },
+    {
+      "id": "JRIWrhwq1PxrRb78KQOTj",
+      "sourceId": "VC218o8UeJbqrKqZ-WZ79",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "failed"
+    },
+    {
+      "id": "KosoNDXIHBtm5HX8YLaAP",
+      "sourceId": "jO10-vDhqLvyZB9FQ_zXC",
+      "targetId": "MbCP4BmN_mw_bi8QAJ68g",
+      "branch": "success"
+    },
+    {
+      "id": "KPwLLMl_0521OaQgNNDGP",
+      "sourceId": "YB428U5cOsNSN-ts8bpX2",
+      "targetId": "Kdbflq-FR188AnxryNYRK",
+      "branch": "else"
+    },
+    {
+      "id": "KwS23rIvPBAIOjT6e-sb_",
+      "sourceId": "D8DBcMGlgC5Eo61L_X5SL",
+      "targetId": "s989P3VOstvt-t_v9FTCf",
+      "branch": "success"
+    },
+    {
+      "id": "ldGkr_4X6SClLUOky32LN",
+      "sourceId": "r3x1ey4VjC9r757a-h2lw",
+      "targetId": "3xIMC_IYZ4kiZx0rXEJay",
+      "branch": "success"
+    },
+    {
+      "id": "ldhJPezqDeFrtINpHHSOe",
+      "sourceId": "XxHucvB9pI3VzUCmYkvbL",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "failed"
+    },
+    {
+      "id": "lek1iYr-IaQBa_rjseHyI",
+      "sourceId": "Kdbflq-FR188AnxryNYRK",
+      "targetId": "0yNJglyV44PAtPHYZGcj7",
+      "branch": "output:rQBq8r9PdaTtJJOIZs-w-:success"
+    },
+    {
+      "id": "m2Flsjk3WSiqQ5lRRNFJV",
+      "sourceId": "XRxF2fK-kp-3d1SeeZqD3",
+      "targetId": "r3x1ey4VjC9r757a-h2lw",
+      "branch": "success"
+    },
+    {
+      "id": "mwt1m_n3NcQjG_DlT__9-",
+      "sourceId": "HbPqSIjc4Qkui8rDPplmV",
+      "targetId": "jO10-vDhqLvyZB9FQ_zXC",
+      "branch": "output:yAL6VBwC1JpYmDkQVyWBc:success"
+    },
+    {
+      "id": "N4XHQ8F5G5a40HBKkxchz",
+      "sourceId": "hMxBHOpZhUZFBSDrfwFgc",
+      "targetId": "OtwL8KxBjWw-1unKQf6NK",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "NvhfWNPHVaMIyM1ymdR-I",
+      "sourceId": "hMxBHOpZhUZFBSDrfwFgc",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "nwYo6fO3MBbS2-KSpxVC1",
+      "sourceId": "00LknuJ_iiUMvtCOfwGap",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "else"
+    },
+    {
+      "id": "nyfOfu3SrJ_JRp9ienbuy",
+      "sourceId": "3xIMC_IYZ4kiZx0rXEJay",
+      "targetId": "VC218o8UeJbqrKqZ-WZ79",
+      "branch": "output:D8ri2qwRXr9LNQJBMHCmR:success"
+    },
+    {
+      "id": "O7mm4PBF-ZWwYGKpCpORq",
+      "sourceId": "tSQ5SfDmSwZB04v0urhAG",
+      "targetId": "hMxBHOpZhUZFBSDrfwFgc",
+      "branch": "default"
+    },
+    {
+      "id": "otk6ucoTQ5_rKutq0yQyp",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "_INx7kGQzg7yGcCkBvmub",
+      "branch": "condition:c_cancelado"
+    },
+    {
+      "id": "otqnTZeI8gLeW0LQwSrhG",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "uZtkDnMyb8uzamh2Kh8jy",
+      "branch": "else"
+    },
+    {
+      "id": "pFZDpzWLvkmGAjTZH92mj",
+      "sourceId": "IEg2nzRAEWZqn0XrZ0t0l",
+      "targetId": "_INx7kGQzg7yGcCkBvmub",
+      "branch": "condition:c_ia_cancelado"
+    },
+    {
+      "id": "PXZKUHKBMtIeA-wiCvViG",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "EB922znBDpO3bP0m9ex2H",
+      "branch": "condition:c_completado"
+    },
+    {
+      "id": "Qbbe-j1_HHa5jUu8GpiUq",
+      "sourceId": "uZtkDnMyb8uzamh2Kh8jy",
+      "targetId": "BpP8SYO4i-XywQ4rciuYw",
+      "branch": "option:opt_luego"
+    },
+    {
+      "id": "QNMphZU4DxkSwlv3b6sYe",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "XxHucvB9pI3VzUCmYkvbL",
+      "branch": "condition:c_creada"
+    },
+    {
+      "id": "rxZAsW5bo-Q2qf9NMP8st",
+      "sourceId": "MbCP4BmN_mw_bi8QAJ68g",
+      "targetId": "0lfVKz5l0qNpk5qsrr8vu",
+      "branch": "condition:c_sesion"
+    },
+    {
+      "id": "t6GTnmUoS3vPtk1yu_tgY",
+      "sourceId": "IEg2nzRAEWZqn0XrZ0t0l",
+      "targetId": "cfpYq6WkznZZp_OiuiVsd",
+      "branch": "condition:c_ia_asesor"
+    },
+    {
+      "id": "TM8--Ji9LLFPdaz2sIfM-",
+      "sourceId": "r3x1ey4VjC9r757a-h2lw",
+      "targetId": "rsJBukbzQMA6GNBqgmgzZ",
+      "branch": "expire"
+    },
+    {
+      "id": "TNC70FRw2qxsI6qWhGriY",
+      "sourceId": "D8DBcMGlgC5Eo61L_X5SL",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "failed"
+    },
+    {
+      "id": "UD9gJF_h-2G9zYxZu7l_v",
+      "sourceId": "uZtkDnMyb8uzamh2Kh8jy",
+      "targetId": "rsJBukbzQMA6GNBqgmgzZ",
+      "branch": "expire"
+    },
+    {
+      "id": "uk7f82z6ojf1wRBtqz2B0",
+      "sourceId": "HbPqSIjc4Qkui8rDPplmV",
+      "targetId": "bg6jSWZxWdWaN9XuwRaPV",
+      "branch": "output:A1n9IWVQORUgbzHXu7YVf:failed"
+    },
+    {
+      "id": "xBJTAjgZDasTj5U_sdwta",
+      "sourceId": "Kdbflq-FR188AnxryNYRK",
+      "targetId": "K-5Ygw-FSq7vY6N-xCdC3",
+      "branch": "output:adcWHsqbtc99-yc61ZoEo:failed"
+    },
+    {
+      "id": "yizX6pY3AP3AToHlB8kvH",
+      "sourceId": "0yNJglyV44PAtPHYZGcj7",
+      "targetId": "XRxF2fK-kp-3d1SeeZqD3",
+      "branch": "condition:c_prueba"
+    },
+    {
+      "id": "Yshr4Z8Ugehhh2la1TriN",
+      "sourceId": "xEQZeMqA3VkbCc2WDqRvF",
+      "targetId": "rsJBukbzQMA6GNBqgmgzZ",
+      "branch": "expire"
+    },
+    {
+      "id": "Zm9kPtbH84E8AluRQs0Ww",
+      "sourceId": "Kdbflq-FR188AnxryNYRK",
+      "targetId": "K-5Ygw-FSq7vY6N-xCdC3",
+      "branch": "output:QeOPkcXdIgpGN14aKn23b:failed"
+    },
+    {
+      "id": "zUPbsTZWeJDM2oI-2BeeR",
+      "sourceId": "VC218o8UeJbqrKqZ-WZ79",
+      "targetId": "00LknuJ_iiUMvtCOfwGap",
+      "branch": "success"
+    }
+  ]
+}

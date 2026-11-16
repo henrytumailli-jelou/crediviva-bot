@@ -1,0 +1,331 @@
+{
+  "toolId": 9000,
+  "workflowId": 73699,
+  "toolName": "Crediviva Registrar Ingreso",
+  "toolDescription": "Registra el ingreso mensual del cliente en Crediviva y devuelve el resultado de la evaluación crediticia: aprobado, análisis manual o rechazado.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "authKey",
+      "id": "T6sau6R0juKNClkdXOdkk",
+      "displayName": "Sesión de Crediviva",
+      "description": "Sesión del registro, normalmente {{$memory.cv_sesionCrediviva.authKey}}. Nunca se le pide al cliente.",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "ambiente",
+      "id": "ZHUktmtV3s9S6jVQVKFLf",
+      "displayName": "Ambiente",
+      "description": "Ambiente de Crediviva: \"staging\" o \"production\".",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "monto",
+      "id": "h_oDHF4gl7DhFRqXVaA_5",
+      "displayName": "Ingreso mensual",
+      "description": "Ingreso mensual del cliente en dólares, solo el número, ej. \"1200\" o \"850.50\".",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "resultado",
+      "id": "zaHCud7n9JT4P3pibLlu4",
+      "displayName": "Resultado",
+      "description": "{ ok:true, estado: approved | manualAnalysis | rejected | monto_minimo | invalido | completado | sin_sesion, message, minimo? }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "JlaE8dMP2kNzrN2w-_sQv",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, estado:\"error\", code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "3X7MM92lAePmuXRD9PJ74",
+      "title": "Llamar servicio de Crediviva",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de Crediviva",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/ingreso-registrar",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 30000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "65m43VY3-bjf90XT_AVHD",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") fallo = \"El ambiente debe ser staging o production.\";\nconst authKey = String(inp(\"authKey\", \"\")).trim();\nif (!fallo && (authKey.length < 10 || authKey.includes(\"{{\"))) fallo = \"SIN_SESION\";\nconst monto = Number(String(inp(\"monto\", \"\")).replace(/[^\\d.]/g, \"\"));\nif (!fallo && !(monto > 0)) fallo = \"MONTO\";\nconst body = { authKey, ambiente, monto };\n$context.set(\"body\", JSON.stringify(body));\nif (fallo === \"SIN_SESION\") {\n  $output.set(\"resultado\", { ok: true, estado: \"sin_sesion\", message: \"La sesión de Crediviva venció: el cliente debe iniciar sesión otra vez.\" });\n} else if (fallo === \"MONTO\") {\n  $output.set(\"resultado\", { ok: true, estado: \"invalido\", message: \"El ingreso debe ser un número en dólares, ej. 1200.\" });\n} else if (fallo) {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo === \"SIN_SESION\" || fallo === \"MONTO\" ? \"respondido\" : fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "6Pv0i3TpTk6f1wudY7dke",
+      "title": "Fin: Resultado",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Resultado",
+        "outputId": "zaHCud7n9JT4P3pibLlu4"
+      }
+    },
+    {
+      "id": "7dr0SWv9iUhr9_YY1Ii7B",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "JlaE8dMP2kNzrN2w-_sQv"
+      }
+    },
+    {
+      "id": "DzRoVRGRKijtvPvai2eT1",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nconst MENSAJES = {\"enlace\": \"Envía la url al cliente como botón para que complete la verificación en el proveedor.\", \"aprobado\": \"La identidad del cliente quedó verificada.\", \"completado\": \"Este paso ya estaba completado en Crediviva; continúa con el siguiente.\", \"bloqueado\": \"La verificación fue bloqueada por el proveedor.\", \"reintentar\": \"El proveedor pide repetir la verificación.\", \"procesada\": \"La verificación ya fue procesada; consulta su resultado.\", \"cliente_existente\": \"El documento ya pertenece a otro cliente de Crediviva.\", \"sin_verificacion\": \"No se encontró una verificación iniciada para este cliente.\", \"no_lista\": \"El resultado aún no está listo; vuelve a consultarlo en unos segundos.\", \"sesion_invalida\": \"La sesión con el proveedor no es válida; hay que iniciar la verificación de nuevo.\", \"sin_sesion\": \"La sesión de Crediviva venció: el cliente debe iniciar sesión otra vez.\", \"app\": \"El cliente debe continuar su proceso en la App de Crediviva.\", \"approved\": \"Evaluación aprobada.\", \"manualAnalysis\": \"La solicitud requiere análisis manual.\", \"rejected\": \"La solicitud no cumple los criterios de crédito.\", \"monto_minimo\": \"El ingreso mínimo es de $100: pide al cliente que lo revise.\", \"invalido\": \"Crediviva no aceptó el dato enviado.\"};\nlet salida = \"error\";\nif (ok && typeof data.estado === \"string\" && data.estado !== \"error\") {\n  salida = \"resultado\";\n  const r = { ok: true, estado: data.estado, message: data.message || MENSAJES[data.estado] || \"\" };\n  for (const k of [\"url\", \"proveedor\", \"alternativa\", \"minimo\"]) if (data[k] !== undefined) r[k] = data[k];\n  $output.set(\"resultado\", r);\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"El servicio de Crediviva no respondió.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "gzIGKga4HluOWV_6wXoy4",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "t8iF2zdp19i5gRoANOxp4",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  estado: \"error\",\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "y8FWlJW5P5qxiNYVxAinO",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          },
+          {
+            "id": "cond_prep_resp",
+            "name": "Ya respondida",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "respondido"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "yStIBDh3X0ZRXtNHuVya5",
+      "title": "¿Respondió el servicio?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "¿Respondió el servicio?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "Respondió",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "2dmnYeLQ4gR92Rrwu3oWo",
+      "sourceId": "y8FWlJW5P5qxiNYVxAinO",
+      "targetId": "6Pv0i3TpTk6f1wudY7dke",
+      "branch": "condition:cond_prep_resp"
+    },
+    {
+      "id": "4IYYqgjf4Q3ySLB3awCdE",
+      "sourceId": "DzRoVRGRKijtvPvai2eT1",
+      "targetId": "yStIBDh3X0ZRXtNHuVya5",
+      "branch": "success"
+    },
+    {
+      "id": "4QM3GGiv2R4hEOmJafsNL",
+      "sourceId": "gzIGKga4HluOWV_6wXoy4",
+      "targetId": "65m43VY3-bjf90XT_AVHD",
+      "branch": "default"
+    },
+    {
+      "id": "bKJrO4qGsjFeSJxLr6ZD4",
+      "sourceId": "3X7MM92lAePmuXRD9PJ74",
+      "targetId": "DzRoVRGRKijtvPvai2eT1",
+      "branch": "success"
+    },
+    {
+      "id": "Esv_6MtGXSsJykmRCSBnY",
+      "sourceId": "y8FWlJW5P5qxiNYVxAinO",
+      "targetId": "3X7MM92lAePmuXRD9PJ74",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "fh-So_8ceg9id6-ydi0RG",
+      "sourceId": "y8FWlJW5P5qxiNYVxAinO",
+      "targetId": "7dr0SWv9iUhr9_YY1Ii7B",
+      "branch": "else"
+    },
+    {
+      "id": "fH5fKN-vzJ2GKHiRAMLIw",
+      "sourceId": "65m43VY3-bjf90XT_AVHD",
+      "targetId": "t8iF2zdp19i5gRoANOxp4",
+      "branch": "failed"
+    },
+    {
+      "id": "gJaKppHorHonMWsdaIdV1",
+      "sourceId": "65m43VY3-bjf90XT_AVHD",
+      "targetId": "y8FWlJW5P5qxiNYVxAinO",
+      "branch": "success"
+    },
+    {
+      "id": "IAdQvpJwnopdWD5agQgNu",
+      "sourceId": "DzRoVRGRKijtvPvai2eT1",
+      "targetId": "t8iF2zdp19i5gRoANOxp4",
+      "branch": "failed"
+    },
+    {
+      "id": "jTZG8NrMv5rSMZ4f0f59i",
+      "sourceId": "t8iF2zdp19i5gRoANOxp4",
+      "targetId": "7dr0SWv9iUhr9_YY1Ii7B",
+      "branch": "success"
+    },
+    {
+      "id": "piq5fgcfBcuApSdKp_mgr",
+      "sourceId": "yStIBDh3X0ZRXtNHuVya5",
+      "targetId": "7dr0SWv9iUhr9_YY1Ii7B",
+      "branch": "else"
+    },
+    {
+      "id": "w5KumSR10JJLFqg87xTlK",
+      "sourceId": "yStIBDh3X0ZRXtNHuVya5",
+      "targetId": "6Pv0i3TpTk6f1wudY7dke",
+      "branch": "condition:cond_resultado"
+    },
+    {
+      "id": "Zl7zslWiCmnL-mg8oC4zh",
+      "sourceId": "3X7MM92lAePmuXRD9PJ74",
+      "targetId": "DzRoVRGRKijtvPvai2eT1",
+      "branch": "failed"
+    }
+  ]
+}

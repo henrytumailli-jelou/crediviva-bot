@@ -1,0 +1,134 @@
+{
+  "workflowId": 74693,
+  "workflowName": "Inicio",
+  "workflowDescription": "Saludo inicial de Crediviva: bienvenida y menú para elegir entre solicitar un crédito por primera vez, consultar documentos si ya es cliente, o hablar con un asesor si es un comercio.",
+  "workflowDefault": true,
+  "nodes": [
+    {
+      "id": "58EvSgmuvP3yx5af_U0zp",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "a5vsCIVVbioD8HotCssYF",
+      "title": "Bienvenida",
+      "configuration": {
+        "messages": [
+          {
+            "id": "61kpfxTnEoyuGSAVC72vE",
+            "text": "¡Hola! 👋 Bienvenido a *Crediviva*\n\n¿Qué te gustaría hacer?\n\n💳 *Mi primer crédito*: solicita tu crédito por primera vez.\n📄 *Ya soy cliente*: consulta los documentos de tu crédito.\n🏪 *Soy comercio*: habla con un asesor.",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_credito",
+                "type": "postback",
+                "title": "Mi primer crédito",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "54360",
+                  "targetId": "iFvej9oQjK5g3AS2uyMcf"
+                }
+              },
+              {
+                "id": "opt_cliente",
+                "type": "postback",
+                "title": "Ya soy cliente",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "54360",
+                  "targetId": "tbG3v3wDFxJVVd3JAu4P6"
+                }
+              },
+              {
+                "id": "opt_comercio",
+                "type": "postback",
+                "title": "Soy comercio",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "54360",
+                  "targetId": "xXQVU2cD4TUZnLm8Pju-D"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_inicioSel",
+              "isBlockingEnabled": false
+            },
+            "contentTouched": true
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        488,
+        49
+      ]
+    },
+    {
+      "id": "iFvej9oQjK5g3AS2uyMcf",
+      "title": "Ir a Registro de cliente",
+      "configuration": {
+        "skillId": "53335"
+      },
+      "type": "SKILL",
+      "position": [
+        887,
+        98
+      ]
+    },
+    {
+      "id": "tbG3v3wDFxJVVd3JAu4P6",
+      "title": "Ir a Menú de documentos",
+      "configuration": {
+        "skillId": "53052"
+      },
+      "type": "SKILL",
+      "position": [
+        889,
+        304
+      ]
+    },
+    {
+      "id": "xXQVU2cD4TUZnLm8Pju-D",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        896,
+        515
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "DWDbn_S415z0NoANt7geW",
+      "sourceId": "58EvSgmuvP3yx5af_U0zp",
+      "targetId": "a5vsCIVVbioD8HotCssYF",
+      "branch": "default"
+    },
+    {
+      "id": "mEHxdsscM8d2AHOEQgCPc",
+      "sourceId": "a5vsCIVVbioD8HotCssYF",
+      "targetId": "iFvej9oQjK5g3AS2uyMcf",
+      "branch": "option:opt_credito"
+    },
+    {
+      "id": "ngxmI6oYRKZmOV96aULIt",
+      "sourceId": "a5vsCIVVbioD8HotCssYF",
+      "targetId": "tbG3v3wDFxJVVd3JAu4P6",
+      "branch": "option:opt_cliente"
+    },
+    {
+      "id": "ToOFXw-SdiIPXbaNVkPr1",
+      "sourceId": "a5vsCIVVbioD8HotCssYF",
+      "targetId": "xXQVU2cD4TUZnLm8Pju-D",
+      "branch": "option:opt_comercio"
+    }
+  ]
+}

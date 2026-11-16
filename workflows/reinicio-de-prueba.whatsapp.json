@@ -1,0 +1,239 @@
+{
+  "workflowId": 74915,
+  "workflowName": "Reinicio de prueba",
+  "workflowDescription": "Reiniciar prueba: comando del equipo de QA para reiniciar la conversación y el onboarding desde cero en el ambiente de pruebas. Se activa cuando el usuario escribe exactamente reiniciar prueba.",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "-hlPqpe-E1DNXk0-c6Sqg",
+      "title": "Vaciar memoria",
+      "configuration": {
+        "title": "Vaciar memoria",
+        "content": "// Comando de QA (solo staging): la conversación vuelve a empezar desde cero.\n// El estado de la cuenta en Crediviva (por correo) no se toca: eso se reinicia de su lado.\nconst claves = [\"cv_authEstado\",\"cv_authType\",\"cv_bienvenidaSel\",\"cv_bloqueadoHasta\",\"cv_consDecision\",\"cv_consEstado\",\"cv_consRetrySel\",\"cv_consRondas\",\"cv_consUrl\",\"cv_consWv\",\"cv_consentimiento\",\"cv_contactoEstado\",\"cv_cuentaCreada\",\"cv_docIA\",\"cv_eval\",\"cv_evalPrevia\",\"cv_evaluacion\",\"cv_inicioSel\",\"cv_intentosTel\",\"cv_kyc\",\"cv_kycAprobado\",\"cv_kycChequeos\",\"cv_kycErrores\",\"cv_kycIni\",\"cv_kycPaso\",\"cv_kycProveedor\",\"cv_kycReintento\",\"cv_kycReintentos\",\"cv_kycRes\",\"cv_kycSel\",\"cv_kycUrl\",\"cv_menu\",\"cv_motivo\",\"cv_pasoCrediviva\",\"cv_phone\",\"cv_phoneSource\",\"cv_reautenticado\",\"cv_reauthPermitido\",\"cv_recogida\",\"cv_regRetrySel\",\"cv_registro\",\"cv_registroResultado\",\"cv_res\",\"cv_retrySel\",\"cv_rondasWv\",\"cv_sesion\",\"cv_sesionCrediviva\",\"cv_sesionVigente\",\"cv_sol\",\"cv_solMensaje\",\"cv_solRes\",\"cv_solWv\",\"cv_ultimoResultado\",\"cv_userPhone\",\"cv_vtel\",\"cv_wv\",\"cv_wvResp\",\"cv_wvSello\",\"cv_reinicio\",\"cv_pruebaCorreo\",\"cv_pruebaClave\",\"cv_pruebaLogin\",\"cv_pruebaEstado\",\"cv_pruebaDecision\",\"cv_pruebaSolicitud\"];\nfor (const k of claves) $memory.delete(k);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2040,
+        75
+      ]
+    },
+    {
+      "id": "0iBCMakjinqFC7d4aitFv",
+      "title": "Prueba reiniciada",
+      "configuration": {
+        "title": "Prueba reiniciada",
+        "messages": [
+          {
+            "id": "r5moeth66HfgAtpD0MIVf",
+            "text": "🔄 Listo, reinicié tu prueba: el bot ya no recuerda los consentimientos ni el avance de este número.\n\nRecuerda que tu cuenta en Crediviva sigue asociada a tu correo: para un registro nuevo usa otro correo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2428,
+        400
+      ]
+    },
+    {
+      "id": "6NtdpHCxZw28ycHtjoVoQ",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "7_4r7onsTodRyrtuHy7OI",
+      "title": "No se pudo reiniciar",
+      "configuration": {
+        "title": "No se pudo reiniciar",
+        "messages": [
+          {
+            "id": "_oWLAGEgWOUZbP0pPAYOB",
+            "text": "No pude reiniciar la prueba en este momento 😔. Intenta de nuevo en unos minutos.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2428,
+        50
+      ]
+    },
+    {
+      "id": "fA164ltonhExX7irk6dzy",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "lO96z5K5-9AN0j4s9HuPV",
+      "title": "¿Ambiente de pruebas?",
+      "configuration": {
+        "title": "¿Ambiente de pruebas?",
+        "conditions": [
+          {
+            "id": "c_staging",
+            "name": "Staging",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_ambiente}}",
+                "value2": "staging",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1264,
+        100
+      ]
+    },
+    {
+      "id": "OP7_e3Ku_gjEVdo_qneIE",
+      "title": "Reiniciar consentimiento",
+      "configuration": {
+        "async": false,
+        "input": {
+          "phone": "{{$user.phone}}",
+          "userId": "{{$user.id}}",
+          "ambiente": "{{$memory.cv_ambiente}}"
+        },
+        "title": "Reiniciar consentimiento",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 9104,
+          "toolName": "Crediviva Reinicio de Prueba",
+          "thumbnail": 1,
+          "workflowId": 74914
+        },
+        "variable": "cv_reinicio"
+      },
+      "type": "TOOL",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "oUrvud3iV94PjbY7AJlBC",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        150
+      ]
+    },
+    {
+      "id": "UoKoOnrVs_JiDyNxd39Tc",
+      "title": "Ir a Inicio",
+      "configuration": {
+        "title": "Ir a Inicio",
+        "skillId": "54360"
+      },
+      "type": "SKILL",
+      "position": [
+        2836,
+        269
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "CJTLq6vlqqat7Mgk9EnHr",
+      "sourceId": "OP7_e3Ku_gjEVdo_qneIE",
+      "targetId": "-hlPqpe-E1DNXk0-c6Sqg",
+      "branch": "output:Vf_C-FoPsz94f-DUxroYC:success"
+    },
+    {
+      "id": "drWg0MpUA_L4KXAl46lG_",
+      "sourceId": "0iBCMakjinqFC7d4aitFv",
+      "targetId": "UoKoOnrVs_JiDyNxd39Tc",
+      "branch": "default"
+    },
+    {
+      "id": "DT5S5PlehTnslm8MXfq54",
+      "sourceId": "-hlPqpe-E1DNXk0-c6Sqg",
+      "targetId": "0iBCMakjinqFC7d4aitFv",
+      "branch": "success"
+    },
+    {
+      "id": "FitlAytUx8ZFptQEdCmh_",
+      "sourceId": "-hlPqpe-E1DNXk0-c6Sqg",
+      "targetId": "7_4r7onsTodRyrtuHy7OI",
+      "branch": "failed"
+    },
+    {
+      "id": "FKnofCX4IbQSS3yyGwsBY",
+      "sourceId": "6NtdpHCxZw28ycHtjoVoQ",
+      "targetId": "fA164ltonhExX7irk6dzy",
+      "branch": "default"
+    },
+    {
+      "id": "G4w2Wc9rqHdxul4z4dFw3",
+      "sourceId": "OP7_e3Ku_gjEVdo_qneIE",
+      "targetId": "7_4r7onsTodRyrtuHy7OI",
+      "branch": "output:ssffI5P9j6x7qVsaH3YBz:failed"
+    },
+    {
+      "id": "IR0E29iQc5bTKEfNasbph",
+      "sourceId": "fA164ltonhExX7irk6dzy",
+      "targetId": "oUrvud3iV94PjbY7AJlBC",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "ml33M0t56c64lBlFZvMjo",
+      "sourceId": "oUrvud3iV94PjbY7AJlBC",
+      "targetId": "lO96z5K5-9AN0j4s9HuPV",
+      "branch": "default"
+    },
+    {
+      "id": "OQ13et5IvZB_0AdnQESQf",
+      "sourceId": "lO96z5K5-9AN0j4s9HuPV",
+      "targetId": "UoKoOnrVs_JiDyNxd39Tc",
+      "branch": "else"
+    },
+    {
+      "id": "RRqorN29EWk1oOMsJrpFT",
+      "sourceId": "fA164ltonhExX7irk6dzy",
+      "targetId": "UoKoOnrVs_JiDyNxd39Tc",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "X40J_c3t2h_Ybm_7HHGs7",
+      "sourceId": "lO96z5K5-9AN0j4s9HuPV",
+      "targetId": "OP7_e3Ku_gjEVdo_qneIE",
+      "branch": "condition:c_staging"
+    }
+  ]
+}

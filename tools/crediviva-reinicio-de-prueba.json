@@ -1,0 +1,313 @@
+{
+  "toolId": 9104,
+  "workflowId": 74914,
+  "toolName": "Crediviva Reinicio de Prueba",
+  "toolDescription": "Solo ambiente staging: vuelve a pedir los consentimientos de un número de prueba (agrega un registro de reinicio en Datum, no borra la firma anterior).",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "userId",
+      "id": "BS-T8cqYS8hBOgnQKAiX9",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, normalmente {{$user.id}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "phone",
+      "id": "D4UafM27B8ASzNhLm8RXP",
+      "displayName": "Teléfono",
+      "description": "Teléfono del usuario, {{$user.phone}}",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 1
+    },
+    {
+      "name": "ambiente",
+      "id": "7yFQeauvJSHowLf_2tuLZ",
+      "displayName": "Ambiente",
+      "description": "staging o production, {{$memory.cv_ambiente}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 2
+    }
+  ],
+  "outputs": [
+    {
+      "name": "error",
+      "id": "ssffI5P9j6x7qVsaH3YBz",
+      "displayName": "Error técnico",
+      "description": "{ ok:false, estado:\"error\", code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "resultado",
+      "id": "Vf_C-FoPsz94f-DUxroYC",
+      "displayName": "Resultado",
+      "description": "{ ok:true, estado: reiniciado | no_permitido }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "1ET4QnfEVfn2Pjwy6aKdB",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "6L7DK-3-aP2tGkHynqFw2",
+      "title": "Fin: resultado",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "outputId": "Vf_C-FoPsz94f-DUxroYC",
+        "title": "Fin: resultado"
+      }
+    },
+    {
+      "id": "AkV04NpKGWCYYYKEUn7So",
+      "title": "Llamar servicio de reinicio",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de reinicio",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/prueba-reiniciar",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "cDT_hS_DfNjC8sm94Q3Rn",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nlet salida = \"error\";\nif (ok && (data.estado === \"reiniciado\" || data.estado === \"no_permitido\")) {\n  salida = \"resultado\";\n  $output.set(\"resultado\", { ok: true, estado: data.estado });\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"No se pudo reiniciar la prueba.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "FNG1fUMwP3nwMozybAW21",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\nconst userId = String(inp(\"userId\", \"\")).trim();\nif (!fallo && !userId) fallo = \"Falta el usuario.\";\nconst body = { userId, ambiente };\nconst phone = String(inp(\"phone\", \"\")).trim();\nif (phone && !phone.includes(\"{{\")) body.phone = phone;\n$context.set(\"body\", JSON.stringify(body));\nif (fallo) $output.set(\"error\", { ok: false, estado: \"error\", code: \"CONFIGURACION\", message: fallo });\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "iKYECiGrzgmy15dRNfsEj",
+      "title": "¿Cuál es el resultado?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "resultado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "kzh8YD7NZIo_6fW5UVU0s",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "outputId": "ssffI5P9j6x7qVsaH3YBz",
+        "title": "Fin: Error técnico"
+      }
+    },
+    {
+      "id": "LHljk_FGi9PCgVI62stnQ",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  estado: \"error\",\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de reinicio de pruebas.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "wQB7bod21gQrYLcT_ZJga",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "5yKznsWA-PfhPDl7gy1eY",
+      "sourceId": "iKYECiGrzgmy15dRNfsEj",
+      "targetId": "6L7DK-3-aP2tGkHynqFw2",
+      "branch": "condition:cond_resultado"
+    },
+    {
+      "id": "AEZYWe0D8HFpRYAUqyLmd",
+      "sourceId": "FNG1fUMwP3nwMozybAW21",
+      "targetId": "1ET4QnfEVfn2Pjwy6aKdB",
+      "branch": "success"
+    },
+    {
+      "id": "h8nlPfjoYVbDMuoIyk7er",
+      "sourceId": "AkV04NpKGWCYYYKEUn7So",
+      "targetId": "cDT_hS_DfNjC8sm94Q3Rn",
+      "branch": "failed"
+    },
+    {
+      "id": "knrQBxZDfye5GFleU_kZ-",
+      "sourceId": "1ET4QnfEVfn2Pjwy6aKdB",
+      "targetId": "AkV04NpKGWCYYYKEUn7So",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "LoFmqGa5VZSun09GdpIdg",
+      "sourceId": "FNG1fUMwP3nwMozybAW21",
+      "targetId": "LHljk_FGi9PCgVI62stnQ",
+      "branch": "failed"
+    },
+    {
+      "id": "lpiBTGOjqX6-OI7DBiZvg",
+      "sourceId": "AkV04NpKGWCYYYKEUn7So",
+      "targetId": "cDT_hS_DfNjC8sm94Q3Rn",
+      "branch": "success"
+    },
+    {
+      "id": "lu7y-gQQZieqXytpi65kC",
+      "sourceId": "iKYECiGrzgmy15dRNfsEj",
+      "targetId": "kzh8YD7NZIo_6fW5UVU0s",
+      "branch": "else"
+    },
+    {
+      "id": "o-Gspsu6kGLCZDKYRMVx0",
+      "sourceId": "wQB7bod21gQrYLcT_ZJga",
+      "targetId": "FNG1fUMwP3nwMozybAW21",
+      "branch": "default"
+    },
+    {
+      "id": "psHs5mQYi8gxLXTGiztEG",
+      "sourceId": "cDT_hS_DfNjC8sm94Q3Rn",
+      "targetId": "LHljk_FGi9PCgVI62stnQ",
+      "branch": "failed"
+    },
+    {
+      "id": "rcStuc-G6WjxxjlCzZKvu",
+      "sourceId": "LHljk_FGi9PCgVI62stnQ",
+      "targetId": "kzh8YD7NZIo_6fW5UVU0s",
+      "branch": "success"
+    },
+    {
+      "id": "ujlNa-uc1tG018kStVnW4",
+      "sourceId": "cDT_hS_DfNjC8sm94Q3Rn",
+      "targetId": "iKYECiGrzgmy15dRNfsEj",
+      "branch": "success"
+    },
+    {
+      "id": "XvpQkJdX1AdttJXqAY7_l",
+      "sourceId": "1ET4QnfEVfn2Pjwy6aKdB",
+      "targetId": "kzh8YD7NZIo_6fW5UVU0s",
+      "branch": "else"
+    }
+  ]
+}

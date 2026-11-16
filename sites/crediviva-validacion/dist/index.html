@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Validación de identidad | Crediviva</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' fill='%2300b3c7' rx='8'/%3E%3Cpath fill='%23fff' d='M14.07 20.536H10c.233 4.13 3.675 7.464 7.748 7.464 4.26 0 7.725-3.552 7.725-7.917v-7.388h-4.058v7.388a3.7 3.7 0 0 1-1.072 2.648c-.714.729-1.636 1.13-2.596 1.13-.968 0-1.927-.412-2.631-1.13a3.7 3.7 0 0 1-1.046-2.196M14.988 9.803C14.988 8.257 16.221 7 17.736 7s2.749 1.257 2.749 2.803-1.233 2.804-2.749 2.804c-1.515 0-2.748-1.258-2.748-2.804'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="brand">
+      <span class="logo">Credi<b>Viva</b></span>
+    </header>
+
+    <!-- Cargando -->
+    <section id="v-cargando" class="view is-active" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="muted center">Preparando tu validación…</p>
+    </section>
+
+    <!-- Vía 1: número de identidad + fecha de nacimiento -->
+    <section id="v-datos" class="view">
+      <h1>Valida tu identidad</h1>
+      <p class="muted">Para entregarte tus documentos necesitamos confirmar que eres el titular de la línea <b data-phone></b>.</p>
+      <form id="f-datos" novalidate>
+        <label for="d-cedula">Número de identidad</label>
+        <input id="d-cedula" name="cedula" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="16" placeholder="Ej. 8 123 1456" data-mascara required>
+        <label for="d-fecha">Fecha de nacimiento</label>
+        <input id="d-fecha" name="birthdate" type="date" required>
+        <div class="alert" role="alert" hidden></div>
+        <button type="submit" class="btn">Validar</button>
+      </form>
+      <button type="button" class="link" data-ir-otp>Prefiero recibir un código en mi correo</button>
+    </section>
+
+    <!-- Vía 2a: número de identidad para enviar código -->
+    <section id="v-otp-cedula" class="view">
+      <h1>Valida con un código</h1>
+      <p class="muted">Te enviaremos un código de 4 dígitos al correo que tienes registrado en Crediviva.</p>
+      <form id="f-otp-cedula" novalidate>
+        <label for="o-cedula">Número de identidad</label>
+        <input id="o-cedula" name="cedula" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="16" placeholder="Ej. 8 123 1456" data-mascara required>
+        <div class="alert" role="alert" hidden></div>
+        <button type="submit" class="btn">Enviar código</button>
+      </form>
+    </section>
+
+    <!-- Vía 2b: código -->
+    <section id="v-otp-codigo" class="view">
+      <h1>Ingresa el código</h1>
+      <p class="muted">Revisa tu bandeja de entrada (y la carpeta de spam). El código vence en pocos minutos.</p>
+      <form id="f-otp-codigo" novalidate>
+        <label for="o-codigo">Código de verificación</label>
+        <input id="o-codigo" name="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••" required>
+        <div class="alert" role="alert" hidden></div>
+        <button type="submit" class="btn">Verificar</button>
+      </form>
+      <button type="button" class="link" id="b-reenviar" disabled>Reenviar código</button>
+      <button type="button" class="link" data-cambiar-cedula>Cambiar número de identidad</button>
+    </section>
+
+    <!-- Finales -->
+    <section id="v-fin" class="view">
+      <div class="icon" data-icono aria-hidden="true"></div>
+      <h1 data-titulo></h1>
+      <p class="muted center" data-texto></p>
+      <a class="btn" data-volver-wa hidden>Volver a WhatsApp</a>
+    </section>
+
+    <footer class="foot">
+      <button type="button" class="link small" data-cancelar>Cancelar y volver a WhatsApp</button>
+      <p class="small muted center">🔒 Tus datos viajan cifrados y solo se usan para validar tu identidad.</p>
+    </footer>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>

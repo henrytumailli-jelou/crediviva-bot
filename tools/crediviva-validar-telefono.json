@@ -1,0 +1,348 @@
+{
+  "toolId": 8939,
+  "workflowId": 73046,
+  "toolName": "Crediviva Validar Telefono",
+  "toolDescription": "Consulta si un teléfono de Panamá está registrado en Crediviva y qué tipo de autenticación requiere (cédula+fecha o código al correo).",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "phone",
+      "id": "sM6gs-nD2c0n8YrBZ1dle",
+      "displayName": "Teléfono",
+      "description": "Teléfono del cliente sin prefijo de país, 8 dígitos en Panamá, ej. \"61234567\"",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "countryCode",
+      "id": "M69_zNoflepbqZg-ErppR",
+      "displayName": "País",
+      "description": "Código ISO del país, ej. \"PA\"",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": "PA",
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "ambiente",
+      "id": "UIQG3VLD31UzQw45Gq5m5",
+      "displayName": "Ambiente",
+      "description": "Ambiente de Crediviva: \"staging\" o \"production\". Lo define el workflow Configuración de ambiente.",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "registrado",
+      "id": "KPHFWogOM0J5mI8sFLDL-",
+      "displayName": "Teléfono registrado",
+      "description": "Autenticar con cédula y fecha de nacimiento. { ok:true, authType:1 }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "requiere_otp",
+      "id": "onZkj3KGQZLN9Y9WFXav1",
+      "displayName": "Requiere código",
+      "description": "Teléfono no registrado: autenticar con código al correo. { ok:true, authType:2 }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "m0uXAZb8gLFL0RPb1XDwJ",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "_skF1_j9dWyFfixHH8h0D",
+      "type": "CONDITIONAL",
+      "title": "¿Configuración completa?",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Configuración completa?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Configuración completa",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "1xHLrEbF0YzV-wBHnxlHD",
+      "type": "END",
+      "title": "Fin: Error técnico",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "m0uXAZb8gLFL0RPb1XDwJ"
+      }
+    },
+    {
+      "id": "28zpmYqmF9Ui80UDVyXH9",
+      "type": "CODE",
+      "title": "Preparar solicitud",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nasync function secreto(nombre) {\n  try {\n    return String((await $secret.get(nombre)) || \"\");\n  } catch (e) {\n    return \"\";\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") {\n  fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\n}\nlet baseUrl = \"\";\nlet apiKey = \"\";\nif (!fallo) {\n  const sufijo = ambiente.toUpperCase();\n  baseUrl = (await secreto(\"CREDIVIVA_BASE_URL_\" + sufijo)).replace(/\\/+$/, \"\");\n  apiKey = (await secreto(\"CREDIVIVA_API_KEY_\" + sufijo));\n  if (!/^https:\\/\\//.test(baseUrl)) fallo = \"Falta el secreto CREDIVIVA_BASE_URL_\" + sufijo + \".\";\n  else if (apiKey.length < 8) fallo = \"Falta el secreto CREDIVIVA_API_KEY_\" + sufijo + \".\";\n}\n$context.set(\"apiKey\", apiKey);\nlet phone = String(inp(\"phone\", \"\")).replace(/\\D/g, \"\");\nif (phone.length === 11 && phone.startsWith(\"507\")) phone = phone.slice(3);\nconst countryCode = String(inp(\"countryCode\", \"PA\")).trim().toUpperCase() || \"PA\";\nif (!fallo && !/^\\d{7,15}$/.test(phone)) fallo = \"Teléfono inválido.\";\n$context.set(\"url\", baseUrl + \"/v1/whatsapp-customer-api/customer-auth/verify-phone?phone=\" + encodeURIComponent(phone) + \"&countryCode=\" + encodeURIComponent(countryCode));\nif (fallo) {\n  $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "6EBD-qAVBQkPD4PsdzAi4",
+      "type": "CODE",
+      "title": "Fallo técnico",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "DcUkoL89mhJMKYIh06QyM",
+      "type": "END",
+      "title": "Fin: Teléfono registrado",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Teléfono registrado",
+        "outputId": "KPHFWogOM0J5mI8sFLDL-"
+      }
+    },
+    {
+      "id": "hRJOInTURIrUDJf8xXUD0",
+      "type": "CODE",
+      "title": "Interpretar respuesta",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"verifyPhoneResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\nconst mensaje = String(data.message ?? data.error?.message ?? data.detail ?? \"\");\nconst codigo = String(data.code ?? data.errorCode ?? data.error?.code ?? (typeof data.error === \"string\" ? data.error : \"\"));\n$utils.logger.log(\"verifyPhoneResponse\", JSON.stringify({ status, codigo }));\nconst authType = Number(data.authType);\nlet salida = \"error\";\nif (ok && authType === 1) {\n  salida = \"registrado\";\n  $output.set(\"registrado\", { ok: true, authType: 1 });\n} else if (ok && authType === 2) {\n  salida = \"requiere_otp\";\n  $output.set(\"requiere_otp\", { ok: true, authType: 2 });\n} else {\n  $output.set(\"error\", { ok: false, code: codigo || \"HTTP_\" + status, message: mensaje || \"Respuesta inesperada al validar el teléfono.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "JFAb0q8Oo4teK9DhCed9e",
+      "type": "HTTP",
+      "title": "Consultar teléfono en Crediviva",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Consultar teléfono en Crediviva",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "method": "GET",
+        "url": "{{$context.url}}",
+        "output": "verifyPhoneResponse",
+        "authentication": {
+          "type": "no-auth",
+          "enabled": false
+        },
+        "headers": [
+          {
+            "id": "X-API-Key",
+            "key": "X-API-Key",
+            "value": "{{$context.apiKey}}",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "m29ld7NW_-8y72Mhf0RHC",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "shas0M5bMq6QWiQMV6VEV",
+      "type": "CONDITIONAL",
+      "title": "¿Cuál es el resultado?",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_registrado",
+            "name": "Teléfono registrado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "registrado"
+              }
+            ]
+          },
+          {
+            "id": "cond_requiere_otp",
+            "name": "Requiere código",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "requiere_otp"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "t3OX_t0_kNjd13YDOuJZ4",
+      "type": "END",
+      "title": "Fin: Requiere código",
+      "position": [
+        2620,
+        770
+      ],
+      "configuration": {
+        "title": "Fin: Requiere código",
+        "outputId": "onZkj3KGQZLN9Y9WFXav1"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "-se8-7vz3Fnr0xdfgX7uM",
+      "sourceId": "shas0M5bMq6QWiQMV6VEV",
+      "targetId": "t3OX_t0_kNjd13YDOuJZ4",
+      "branch": "condition:cond_requiere_otp"
+    },
+    {
+      "id": "0dhOYe5KxhYrWjsvWjJGv",
+      "sourceId": "_skF1_j9dWyFfixHH8h0D",
+      "targetId": "1xHLrEbF0YzV-wBHnxlHD",
+      "branch": "else"
+    },
+    {
+      "id": "0EMlIKY8iksMu8fQFxuXk",
+      "sourceId": "6EBD-qAVBQkPD4PsdzAi4",
+      "targetId": "1xHLrEbF0YzV-wBHnxlHD",
+      "branch": "success"
+    },
+    {
+      "id": "1yc5MMGExXvEWLtob2Q5X",
+      "sourceId": "_skF1_j9dWyFfixHH8h0D",
+      "targetId": "JFAb0q8Oo4teK9DhCed9e",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "dRGgmpwsqbFFlgnhfljAz",
+      "sourceId": "JFAb0q8Oo4teK9DhCed9e",
+      "targetId": "hRJOInTURIrUDJf8xXUD0",
+      "branch": "failed"
+    },
+    {
+      "id": "eNJ6f_KhWOXdUIH_MP6vq",
+      "sourceId": "28zpmYqmF9Ui80UDVyXH9",
+      "targetId": "6EBD-qAVBQkPD4PsdzAi4",
+      "branch": "failed"
+    },
+    {
+      "id": "ie4cM4piwf4jUT19bdjN1",
+      "sourceId": "hRJOInTURIrUDJf8xXUD0",
+      "targetId": "shas0M5bMq6QWiQMV6VEV",
+      "branch": "success"
+    },
+    {
+      "id": "KOoWQ9zuLKK2aEEEZwHsS",
+      "sourceId": "hRJOInTURIrUDJf8xXUD0",
+      "targetId": "6EBD-qAVBQkPD4PsdzAi4",
+      "branch": "failed"
+    },
+    {
+      "id": "NIjGAJz8HsULwrP8aG_Ex",
+      "sourceId": "shas0M5bMq6QWiQMV6VEV",
+      "targetId": "DcUkoL89mhJMKYIh06QyM",
+      "branch": "condition:cond_registrado"
+    },
+    {
+      "id": "qWT3l2_w_s2yMFUpC9Djt",
+      "sourceId": "28zpmYqmF9Ui80UDVyXH9",
+      "targetId": "_skF1_j9dWyFfixHH8h0D",
+      "branch": "success"
+    },
+    {
+      "id": "S0Qqr85Hrmjo5jaHCN1LB",
+      "sourceId": "m29ld7NW_-8y72Mhf0RHC",
+      "targetId": "28zpmYqmF9Ui80UDVyXH9",
+      "branch": "default"
+    },
+    {
+      "id": "uFgDgLfZiiTSUc93kNGYf",
+      "sourceId": "shas0M5bMq6QWiQMV6VEV",
+      "targetId": "1xHLrEbF0YzV-wBHnxlHD",
+      "branch": "else"
+    },
+    {
+      "id": "yiQEyQBDKdMpjTRtF__cV",
+      "sourceId": "JFAb0q8Oo4teK9DhCed9e",
+      "targetId": "hRJOInTURIrUDJf8xXUD0",
+      "branch": "success"
+    }
+  ]
+}

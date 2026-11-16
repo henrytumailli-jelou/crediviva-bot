@@ -1,0 +1,799 @@
+{
+  "workflowId": 73468,
+  "workflowName": "Consentimientos",
+  "workflowDescription": "Flujo interno reutilizable que muestra en un webview el tratamiento de datos personales, los términos y condiciones y la consulta APC de Crediviva y registra la aceptación en Datum.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "0jZZuZJZAtUSxU23ZZIwR",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "0KZktn9f21af0t4m0c483",
+      "title": "Fin: aceptado",
+      "configuration": {
+        "title": "Fin: aceptado",
+        "outputId": "rQBq8r9PdaTtJJOIZs-w-"
+      },
+      "type": "END",
+      "position": [
+        4816,
+        782
+      ]
+    },
+    {
+      "id": "1KScektz0ksv08l0A3FGJ",
+      "title": "Recordar consentimiento",
+      "configuration": {
+        "title": "Recordar consentimiento",
+        "content": "// Bandera que leen los flujos antes de invocar este workflow (dura ~1 mes en memoria).\n$memory.set(\"cv_consentimiento\", \"aceptado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4000,
+        1324
+      ]
+    },
+    {
+      "id": "30M-VX68b_NYqZW4A-ekk",
+      "title": "Iniciar revisión",
+      "configuration": {
+        "title": "Iniciar revisión",
+        "content": "$memory.set(\"cv_consRondas\", 0);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        876,
+        50
+      ]
+    },
+    {
+      "id": "5GmxJWaCE-UElLf9yfC2G",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "6fTNb1dSUkgKnE-Sk246A",
+      "title": "Fin: error",
+      "configuration": {
+        "title": "Fin: error",
+        "outputId": "2RqtOM0Desm4AxOeD9Lzr"
+      },
+      "type": "END",
+      "position": [
+        4408,
+        362
+      ]
+    },
+    {
+      "id": "8KN9vDpeQon5y9YUROa70",
+      "title": "Consentimiento registrado",
+      "configuration": {
+        "title": "Consentimiento registrado",
+        "messages": [
+          {
+            "id": "6mnT4v3Tvgnd3VwIFc4Y9",
+            "text": "✅ ¡Gracias! Registramos tu autorización.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4408,
+        1272
+      ]
+    },
+    {
+      "id": "cvUngpyV2QHhAzjrR5qoe",
+      "title": "Fin: no completado",
+      "configuration": {
+        "title": "Fin: no completado",
+        "outputId": "QeOPkcXdIgpGN14aKn23b"
+      },
+      "type": "END",
+      "position": [
+        4816,
+        992
+      ]
+    },
+    {
+      "id": "D-uDY7O_c2phIOqjo5g3z",
+      "title": "Consultar decisión",
+      "configuration": {
+        "url": "https://crediviva-onboarding.fn.jelou.ai/consentimiento-estado",
+        "body": {
+          "type": "application/json",
+          "content": "{\"userId\": \"{{$user.id}}\", \"phone\": \"{{$user.phone}}\"}",
+          "enabled": true
+        },
+        "title": "Consultar decisión",
+        "method": "POST",
+        "output": "consEstadoResp",
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "settings": {
+          "timeout": 20000,
+          "sslCertificate": true
+        },
+        "authentication": {
+          "type": "bearer",
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}",
+          "enabled": true
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        2836,
+        405
+      ]
+    },
+    {
+      "id": "DeJpGT4VGlXfc-8Tq2q9G",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        550
+      ]
+    },
+    {
+      "id": "eGYTx64mvUFZstaRapaHN",
+      "title": "Sin decisión",
+      "configuration": {
+        "title": "Sin decisión",
+        "messages": [
+          {
+            "id": "8mmGLtcSkRQWx9THwP62l",
+            "text": "Está bien. Cuando quieras continuar con tu solicitud, escríbenos *Continuar mi solicitud* 💙",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4408,
+        572
+      ]
+    },
+    {
+      "id": "FBW_50WlCMhzaGA4J5-TT",
+      "title": "Fin: rechazado",
+      "configuration": {
+        "title": "Fin: rechazado",
+        "outputId": "adcWHsqbtc99-yc61ZoEo"
+      },
+      "type": "END",
+      "position": [
+        4408,
+        152
+      ]
+    },
+    {
+      "id": "GhARoZy9xdrelGi7Lw_Jn",
+      "title": "Interpretar decisión",
+      "configuration": {
+        "title": "Interpretar decisión",
+        "content": "const res = $context.getHttpResponse(\"consEstadoResp\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"consEstadoResp\", JSON.stringify({ status, estado: data.estado }));\n// La decisión se toma de Datum (la guardó la Function), no del callback de la página.\nconst rondas = Number($memory.get(\"cv_consRondas\", 0)) + 1;\n$memory.set(\"cv_consRondas\", rondas);\nlet siguiente = \"error\";\nif (ok && data.estado === \"aceptado\") siguiente = \"aceptado\";\nelse if (ok && data.estado === \"rechazado\") siguiente = \"rechazado\";\nelse if (ok && data.estado === \"sin_registro\") siguiente = rondas >= 2 ? \"agotado\" : \"reintentar\";\n$memory.set(\"cv_consDecision\", siguiente);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3224,
+        315
+      ]
+    },
+    {
+      "id": "I3pOJ9l52LU3ShC99wBTU",
+      "title": "Fin: aceptado",
+      "configuration": {
+        "title": "Fin: aceptado",
+        "outputId": "rQBq8r9PdaTtJJOIZs-w-"
+      },
+      "type": "END",
+      "position": [
+        2836,
+        195
+      ]
+    },
+    {
+      "id": "INDyTRXpn8gLS1N8zlhf8",
+      "title": "Recordar consentimiento previo",
+      "configuration": {
+        "title": "Recordar consentimiento previo",
+        "content": "// Bandera que leen los flujos antes de invocar este workflow (dura ~1 mes en memoria).\n$memory.set(\"cv_consentimiento\", \"aceptado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2428,
+        50
+      ]
+    },
+    {
+      "id": "Jf-_dQ8lEqvIkswhS9Xx5",
+      "title": "Webview de consentimientos",
+      "configuration": {
+        "title": "Webview de consentimientos",
+        "messages": [
+          {
+            "id": "yuJTqqR09L0mlMo85rw0c",
+            "text": "Antes de continuar necesitamos tu autorización 📄\n\nToca el botón para revisar y aceptar, uno por uno:\n1️⃣ Tratamiento de datos personales\n2️⃣ Términos y condiciones\n3️⃣ Consulta de historial crediticio (APC)\n\nAl terminar vuelve a este chat. Si no quieres continuar, toca *No acepto* en el formulario.",
+            "type": "webview",
+            "settings": {
+              "pendingMessage": "Te espero ⏳ Revisa los documentos en el enlace que te envié para continuar. Si no quieres continuar, toca *No acepto* en el formulario.",
+              "responseVariable": "cv_consWv",
+              "isBlockingEnabled": true
+            },
+            "parameters": {
+              "url": "{{$memory.cv_consUrl}}",
+              "display_text": "Revisar documentos"
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2428,
+        450
+      ]
+    },
+    {
+      "id": "jX5b6qjhpdg_ruUgCNHpa",
+      "title": "Revisar consentimiento",
+      "configuration": {
+        "url": "https://crediviva-onboarding.fn.jelou.ai/consentimiento-iniciar",
+        "body": {
+          "type": "application/json",
+          "content": "{\"userId\": \"{{$user.id}}\", \"botId\": \"{{$bot.id}}\", \"phone\": \"{{$user.phone}}\", \"ambiente\": \"{{$memory.cv_ambiente}}\"}",
+          "enabled": true
+        },
+        "title": "Revisar consentimiento",
+        "method": "POST",
+        "output": "consIniciarResp",
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "settings": {
+          "timeout": 20000,
+          "sslCertificate": true
+        },
+        "authentication": {
+          "type": "bearer",
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}",
+          "enabled": true
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        1264,
+        50
+      ]
+    },
+    {
+      "id": "kI5dJ3quYkLqhgFZcvIGx",
+      "title": "¿Qué decidió?",
+      "configuration": {
+        "title": "¿Qué decidió?",
+        "conditions": [
+          {
+            "id": "c_acepto",
+            "name": "Aceptó los tres",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consDecision}}",
+                "value2": "aceptado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_rechazo",
+            "name": "Rechazó alguno",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consDecision}}",
+                "value2": "rechazado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_reintentar",
+            "name": "No terminó",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consDecision}}",
+                "value2": "reintentar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_agotado",
+            "name": "No terminó otra vez",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consDecision}}",
+                "value2": "agotado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        3612,
+        231
+      ]
+    },
+    {
+      "id": "kyXyooKjXWxYgY8IzAeID",
+      "title": "Fin: no completado",
+      "configuration": {
+        "title": "Fin: no completado",
+        "outputId": "QeOPkcXdIgpGN14aKn23b"
+      },
+      "type": "END",
+      "position": [
+        4816,
+        572
+      ]
+    },
+    {
+      "id": "nDWcqMpuz-U2fumxsvMGZ",
+      "title": "Consentimiento rechazado",
+      "configuration": {
+        "title": "Consentimiento rechazado",
+        "messages": [
+          {
+            "id": "4JCJNwm8020jffNEONQzH",
+            "text": "Entendemos tu decisión 🙏\n\nPara solicitar un crédito con Crediviva es necesario aceptar el tratamiento de datos personales, los términos y condiciones y la consulta APC, por eso no podemos continuar con tu solicitud.\n\nSi cambias de opinión, escríbenos *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4000,
+        50
+      ]
+    },
+    {
+      "id": "OALd9BDJLqKWemQ-K1Njh",
+      "title": "Error técnico",
+      "configuration": {
+        "title": "Error técnico",
+        "messages": [
+          {
+            "id": "E9GwqqDixiiMJui7TS1jS",
+            "text": "Tuvimos un problema técnico al cargar los documentos de autorización 😔.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4000,
+        974
+      ]
+    },
+    {
+      "id": "omo0i_oVlERN0wPYRuiW4",
+      "title": "¿Ya aceptó antes?",
+      "configuration": {
+        "title": "¿Ya aceptó antes?",
+        "conditions": [
+          {
+            "id": "c_ya_acepto",
+            "name": "Ya aceptó",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consEstado}}",
+                "value2": "aceptado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_pendiente",
+            "name": "Debe revisar documentos",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_consEstado}}",
+                "value2": "pendiente",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2040,
+        57
+      ]
+    },
+    {
+      "id": "S4abN04Kypyj20ZR8FlHi",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "messages": [
+          {
+            "id": "bvTZz36CSbr3-rt5xNZkO",
+            "text": "Cerré esta conversación por inactividad ⌛. Cuando quieras continuar con tu solicitud, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4408,
+        922
+      ]
+    },
+    {
+      "id": "SlGYzTW0beoH0X4gOxZJV",
+      "title": "Olvidar consentimiento",
+      "configuration": {
+        "title": "Olvidar consentimiento",
+        "content": "// Rechazó: la compuerta de los demás flujos no debe dejarlo pasar con una aceptación anterior.\n$memory.set(\"cv_consentimiento\", \"rechazado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4000,
+        1831
+      ]
+    },
+    {
+      "id": "TaP_wrvkSi4Uc9ukDCeow",
+      "title": "Interpretar revisión",
+      "configuration": {
+        "title": "Interpretar revisión",
+        "content": "const res = $context.getHttpResponse(\"consIniciarResp\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"consIniciarResp\", JSON.stringify({ status, estado: data.estado }));\nlet estado = \"error\";\nif (ok && data.estado === \"aceptado\") estado = \"aceptado\";\nelse if (ok && data.estado === \"pendiente\" && typeof data.url === \"string\" && data.url) {\n  estado = \"pendiente\";\n  $memory.set(\"cv_consUrl\", data.url);\n}\n$memory.set(\"cv_consEstado\", estado);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1652,
+        65
+      ]
+    },
+    {
+      "id": "UK3B2i--dR6mRQRYxHB06",
+      "title": "¿Revisar de nuevo?",
+      "configuration": {
+        "title": "¿Revisar de nuevo?",
+        "messages": [
+          {
+            "id": "lO_n1ukPS0ulXRZbffRJs",
+            "text": "Aún no registramos tu decisión sobre los documentos. ¿Quieres revisarlos ahora?",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_revisar",
+                "type": "postback",
+                "title": "Revisar documentos",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_revisar_de_nuevo": "Revisar documentos"
+                  },
+                  "skillId": "53334",
+                  "targetId": "jX5b6qjhpdg_ruUgCNHpa"
+                }
+              },
+              {
+                "id": "opt_luego",
+                "type": "postback",
+                "title": "Ahora no",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_revisar_de_nuevo": "Ahora no"
+                  },
+                  "skillId": "53334",
+                  "targetId": "eGYTx64mvUFZstaRapaHN"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_consRetrySel",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Elige una opción: *Revisar documentos* o *Ahora no*."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4000,
+        488
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "-_O6wDNSZg-8eILr9IbcK",
+      "sourceId": "8KN9vDpeQon5y9YUROa70",
+      "targetId": "0KZktn9f21af0t4m0c483",
+      "branch": "default"
+    },
+    {
+      "id": "1W0_lyTDhF-U2tRPVGOOg",
+      "sourceId": "UK3B2i--dR6mRQRYxHB06",
+      "targetId": "eGYTx64mvUFZstaRapaHN",
+      "branch": "option:opt_luego"
+    },
+    {
+      "id": "7yRfxf8ViNMn8_AYyTbZ9",
+      "sourceId": "GhARoZy9xdrelGi7Lw_Jn",
+      "targetId": "kI5dJ3quYkLqhgFZcvIGx",
+      "branch": "success"
+    },
+    {
+      "id": "8c5bukEX9OvuDEJtGCQ5y",
+      "sourceId": "TaP_wrvkSi4Uc9ukDCeow",
+      "targetId": "omo0i_oVlERN0wPYRuiW4",
+      "branch": "success"
+    },
+    {
+      "id": "A_rBIMUeVeoqua_ew1Wdw",
+      "sourceId": "jX5b6qjhpdg_ruUgCNHpa",
+      "targetId": "TaP_wrvkSi4Uc9ukDCeow",
+      "branch": "success"
+    },
+    {
+      "id": "C6ds-Yyhk0iMNfYzdsS_g",
+      "sourceId": "kI5dJ3quYkLqhgFZcvIGx",
+      "targetId": "eGYTx64mvUFZstaRapaHN",
+      "branch": "condition:c_agotado"
+    },
+    {
+      "id": "eC_XwNnhQLk2MEPUwFxRN",
+      "sourceId": "omo0i_oVlERN0wPYRuiW4",
+      "targetId": "Jf-_dQ8lEqvIkswhS9Xx5",
+      "branch": "condition:c_pendiente"
+    },
+    {
+      "id": "fNmzvK1vht54uVlyb_snA",
+      "sourceId": "jX5b6qjhpdg_ruUgCNHpa",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "failed"
+    },
+    {
+      "id": "gzgQjYtGI9q5d1kdHrmHw",
+      "sourceId": "UK3B2i--dR6mRQRYxHB06",
+      "targetId": "jX5b6qjhpdg_ruUgCNHpa",
+      "branch": "option:opt_revisar"
+    },
+    {
+      "id": "IoBfpd-0hT5fGeI86xcC3",
+      "sourceId": "omo0i_oVlERN0wPYRuiW4",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "else"
+    },
+    {
+      "id": "IrDt7R7CdYM9mpkSDsFdz",
+      "sourceId": "kI5dJ3quYkLqhgFZcvIGx",
+      "targetId": "1KScektz0ksv08l0A3FGJ",
+      "branch": "condition:c_acepto"
+    },
+    {
+      "id": "Jhdc-Ka3isk9bcOJjh6Nn",
+      "sourceId": "S4abN04Kypyj20ZR8FlHi",
+      "targetId": "kyXyooKjXWxYgY8IzAeID",
+      "branch": "default"
+    },
+    {
+      "id": "jzj-I6oTV8BB2WeqnpFti",
+      "sourceId": "SlGYzTW0beoH0X4gOxZJV",
+      "targetId": "nDWcqMpuz-U2fumxsvMGZ",
+      "branch": "success"
+    },
+    {
+      "id": "K35_QAl3k5pWXF4XfLZK-",
+      "sourceId": "GhARoZy9xdrelGi7Lw_Jn",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "failed"
+    },
+    {
+      "id": "KbIWMopG-l5a9ZOKhi6U7",
+      "sourceId": "0jZZuZJZAtUSxU23ZZIwR",
+      "targetId": "DeJpGT4VGlXfc-8Tq2q9G",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "KnsJiIHpgY06-kb2GoLsJ",
+      "sourceId": "nDWcqMpuz-U2fumxsvMGZ",
+      "targetId": "FBW_50WlCMhzaGA4J5-TT",
+      "branch": "default"
+    },
+    {
+      "id": "KNSP4olJMyotVLfTXZ8UE",
+      "sourceId": "D-uDY7O_c2phIOqjo5g3z",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "failed"
+    },
+    {
+      "id": "KrXBZTBDjab6iKqMHlFQK",
+      "sourceId": "kI5dJ3quYkLqhgFZcvIGx",
+      "targetId": "SlGYzTW0beoH0X4gOxZJV",
+      "branch": "condition:c_rechazo"
+    },
+    {
+      "id": "lWkmMmbye-_ecYtx10-DO",
+      "sourceId": "UK3B2i--dR6mRQRYxHB06",
+      "targetId": "S4abN04Kypyj20ZR8FlHi",
+      "branch": "expire"
+    },
+    {
+      "id": "mKEv0fvVrox3zQ8KUZmcY",
+      "sourceId": "Jf-_dQ8lEqvIkswhS9Xx5",
+      "targetId": "S4abN04Kypyj20ZR8FlHi",
+      "branch": "expire"
+    },
+    {
+      "id": "nrah4iTT51OeWAs1_dwfk",
+      "sourceId": "5GmxJWaCE-UElLf9yfC2G",
+      "targetId": "0jZZuZJZAtUSxU23ZZIwR",
+      "branch": "default"
+    },
+    {
+      "id": "pY__UryfBP5QR_9WdIWrm",
+      "sourceId": "kI5dJ3quYkLqhgFZcvIGx",
+      "targetId": "UK3B2i--dR6mRQRYxHB06",
+      "branch": "condition:c_reintentar"
+    },
+    {
+      "id": "qPHeXUkNu9chYSg8Xbzgg",
+      "sourceId": "DeJpGT4VGlXfc-8Tq2q9G",
+      "targetId": "30M-VX68b_NYqZW4A-ekk",
+      "branch": "default"
+    },
+    {
+      "id": "rBtpRIiMZjZAszw8l1PHs",
+      "sourceId": "eGYTx64mvUFZstaRapaHN",
+      "targetId": "cvUngpyV2QHhAzjrR5qoe",
+      "branch": "default"
+    },
+    {
+      "id": "RWpYcQRKx6maGyGz_hhRq",
+      "sourceId": "OALd9BDJLqKWemQ-K1Njh",
+      "targetId": "6fTNb1dSUkgKnE-Sk246A",
+      "branch": "default"
+    },
+    {
+      "id": "RzA5bnsHi4zAqrYVJ7xOT",
+      "sourceId": "omo0i_oVlERN0wPYRuiW4",
+      "targetId": "INDyTRXpn8gLS1N8zlhf8",
+      "branch": "condition:c_ya_acepto"
+    },
+    {
+      "id": "SJwJk6ZkFsXpovWC_bdbK",
+      "sourceId": "1KScektz0ksv08l0A3FGJ",
+      "targetId": "8KN9vDpeQon5y9YUROa70",
+      "branch": "success"
+    },
+    {
+      "id": "SY-o1-Lz4ViPP1q_fkv0X",
+      "sourceId": "30M-VX68b_NYqZW4A-ekk",
+      "targetId": "jX5b6qjhpdg_ruUgCNHpa",
+      "branch": "success"
+    },
+    {
+      "id": "TjwPjrF3gpvC8ovdNMLU0",
+      "sourceId": "Jf-_dQ8lEqvIkswhS9Xx5",
+      "targetId": "D-uDY7O_c2phIOqjo5g3z",
+      "branch": "error"
+    },
+    {
+      "id": "UmVL95SwYOOIaWg2gliqL",
+      "sourceId": "kI5dJ3quYkLqhgFZcvIGx",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "else"
+    },
+    {
+      "id": "ut3wnAMTDJKaZl-rejXFs",
+      "sourceId": "Jf-_dQ8lEqvIkswhS9Xx5",
+      "targetId": "D-uDY7O_c2phIOqjo5g3z",
+      "branch": "exit"
+    },
+    {
+      "id": "wSI6_oc8aKlJJl1r6iQpo",
+      "sourceId": "INDyTRXpn8gLS1N8zlhf8",
+      "targetId": "I3pOJ9l52LU3ShC99wBTU",
+      "branch": "success"
+    },
+    {
+      "id": "WVBjJR3X4pLugksE6HhWI",
+      "sourceId": "D-uDY7O_c2phIOqjo5g3z",
+      "targetId": "GhARoZy9xdrelGi7Lw_Jn",
+      "branch": "success"
+    },
+    {
+      "id": "XdUS8I82-boA3Cc8sJ11J",
+      "sourceId": "TaP_wrvkSi4Uc9ukDCeow",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "failed"
+    },
+    {
+      "id": "xkUouyYk6g-Hhs7Q3AzqP",
+      "sourceId": "0jZZuZJZAtUSxU23ZZIwR",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "zmRkc8BgNhv8j9J-_W0xv",
+      "sourceId": "30M-VX68b_NYqZW4A-ekk",
+      "targetId": "OALd9BDJLqKWemQ-K1Njh",
+      "branch": "failed"
+    }
+  ]
+}

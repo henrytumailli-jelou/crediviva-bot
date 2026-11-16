@@ -1,0 +1,66 @@
+{
+  "workflowId": 73053,
+  "workflowName": "Cierre por inactividad",
+  "workflowDescription": "Flujo interno que avisa al cliente de Crediviva que la conversación se cerró por inactividad y cómo retomarla.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "-flEZfiJ1f0OXtMXL8LOF",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "qKla_bR5hsJpa6Yr3SMyB",
+      "title": "Fin: mensaje enviado",
+      "configuration": {
+        "title": "Fin: mensaje enviado",
+        "outputId": "sdiHEQRxo-EZ3ugX9Z9PG"
+      },
+      "type": "END",
+      "position": [
+        896,
+        120
+      ]
+    },
+    {
+      "id": "wkDOPmnRQNBVtDmond2np",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "messages": [
+          {
+            "id": "RSX_rVsAO0u-1mjD91k3Z",
+            "text": "Cerré esta conversación por inactividad ⌛. Cuando quieras, escribe *documentos* y retomamos.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        488,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "-TWO6ieEZIA5323JmKEAD",
+      "sourceId": "wkDOPmnRQNBVtDmond2np",
+      "targetId": "qKla_bR5hsJpa6Yr3SMyB",
+      "branch": "default"
+    },
+    {
+      "id": "Za5meJN9I0YsrNdwSWZqY",
+      "sourceId": "-flEZfiJ1f0OXtMXL8LOF",
+      "targetId": "wkDOPmnRQNBVtDmond2np",
+      "branch": "default"
+    }
+  ]
+}

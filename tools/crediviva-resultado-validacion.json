@@ -1,0 +1,332 @@
+{
+  "toolId": 8937,
+  "workflowId": 73044,
+  "toolName": "Crediviva Resultado Validacion",
+  "toolDescription": "Consulta en el servidor el resultado de la validación de identidad hecha en el webview y devuelve el token de sesión del cliente si quedó autenticado.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "nonce",
+      "id": "eTY7MNDEddQ2FvsV3Vls9",
+      "displayName": "Sesión de validación",
+      "description": "Valor nonce devuelto por Crediviva Iniciar Validacion",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "autenticado",
+      "id": "ELq43WmSAKExFJ3GWwY46",
+      "displayName": "Autenticado",
+      "description": "{ ok:true, sessionToken, expiresInSeconds }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "no_autenticado",
+      "id": "HTNePY0-iprXr5L5eD7Ut",
+      "displayName": "No autenticado",
+      "description": "No quedó autenticado. { ok:false, reason: 'blocked' (agotó intentos, bloqueado 30 min) | 'expired' | 'incomplete' }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "1WvNODPY8rTGPsJt80_bK",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "2tGTknkmtZWCuO07Si-t-",
+      "type": "CODE",
+      "title": "Preparar solicitud",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nasync function secreto(nombre) {\n  try {\n    return String((await $secret.get(nombre)) || \"\");\n  } catch (e) {\n    return \"\";\n  }\n}\nlet fallo = \"\";\nconst fnKey = (await secreto(\"JELOU_FN_INVOKE_KEY\"));\nif (fnKey.length < 8) fallo = \"Falta el secreto JELOU_FN_INVOKE_KEY.\";\nconst nonce = String(inp(\"nonce\", \"\")).trim();\nif (!fallo && nonce.length < 50) fallo = \"Falta la sesión de validación.\";\n$context.set(\"fnKey\", fnKey);\n$context.set(\"body\", JSON.stringify({ n: nonce }));\nif (fallo) {\n  $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "6uLigRtO8A4EXKe35n35E",
+      "type": "END",
+      "title": "Fin: Error técnico",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "1WvNODPY8rTGPsJt80_bK"
+      }
+    },
+    {
+      "id": "BAljHBp_Pen4rkzu_k_Na",
+      "type": "HTTP",
+      "title": "Consultar resultado de la validación",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Consultar resultado de la validación",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "method": "POST",
+        "url": "https://crediviva-validacion-2838e0.fn.jelou.ai/resultado",
+        "output": "resultadoResponse",
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "by-MSqoQp6yMZ4497kTRK",
+      "type": "END",
+      "title": "Fin: Autenticado",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Autenticado",
+        "outputId": "ELq43WmSAKExFJ3GWwY46"
+      }
+    },
+    {
+      "id": "Fg6-Ou6MUeipwvypaG4-r",
+      "type": "END",
+      "title": "Fin: No autenticado",
+      "position": [
+        2620,
+        230
+      ],
+      "configuration": {
+        "title": "Fin: No autenticado",
+        "outputId": "HTNePY0-iprXr5L5eD7Ut"
+      }
+    },
+    {
+      "id": "HzlojpS2uInq1E5dz04QM",
+      "type": "CONDITIONAL",
+      "title": "¿Cuál es el resultado?",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_autenticado",
+            "name": "Autenticado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "autenticado"
+              }
+            ]
+          },
+          {
+            "id": "cond_no_autenticado",
+            "name": "No autenticado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "no_autenticado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "K2T6tgO4gmBsKtPmh7DkK",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "nW_DZ_dKHowMWA-Mkhqsl",
+      "type": "CODE",
+      "title": "Interpretar respuesta",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"resultadoResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\nconst mensaje = String(data.message ?? data.error?.message ?? data.detail ?? \"\");\nconst codigo = String(data.code ?? data.errorCode ?? data.error?.code ?? (typeof data.error === \"string\" ? data.error : \"\"));\n$utils.logger.log(\"resultadoResponse\", JSON.stringify({ status, codigo }));\nlet salida = \"error\";\nif (ok && data.authenticated === true && typeof data.sessionToken === \"string\" && data.sessionToken) {\n  salida = \"autenticado\";\n  $output.set(\"autenticado\", { ok: true, sessionToken: data.sessionToken, expiresInSeconds: Number(data.expiresInSeconds || 1500) });\n} else if (ok) {\n  salida = \"no_autenticado\";\n  $output.set(\"no_autenticado\", { ok: false, reason: String(data.reason || \"incomplete\") });\n} else {\n  $output.set(\"error\", { ok: false, code: \"HTTP_\" + status, message: mensaje || \"No se pudo consultar el resultado.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "qbnCXxXj02a80QKoYwZc6",
+      "type": "CONDITIONAL",
+      "title": "¿Configuración completa?",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Configuración completa?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Configuración completa",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "QmLu-6aJXzjTf5kDEDtH0",
+      "type": "CODE",
+      "title": "Fallo técnico",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "-fnRiDn-zYiDttnbSQi8U",
+      "sourceId": "HzlojpS2uInq1E5dz04QM",
+      "targetId": "6uLigRtO8A4EXKe35n35E",
+      "branch": "else"
+    },
+    {
+      "id": "-KI_PEfD3M9FAAC_cF3U_",
+      "sourceId": "qbnCXxXj02a80QKoYwZc6",
+      "targetId": "BAljHBp_Pen4rkzu_k_Na",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "8JpaAHDP0ojG9k7YEkX40",
+      "sourceId": "nW_DZ_dKHowMWA-Mkhqsl",
+      "targetId": "HzlojpS2uInq1E5dz04QM",
+      "branch": "success"
+    },
+    {
+      "id": "gPozszsiLy7eshD0sc4IZ",
+      "sourceId": "BAljHBp_Pen4rkzu_k_Na",
+      "targetId": "nW_DZ_dKHowMWA-Mkhqsl",
+      "branch": "success"
+    },
+    {
+      "id": "if2NHomjM2Zn2zW2jdXFW",
+      "sourceId": "HzlojpS2uInq1E5dz04QM",
+      "targetId": "Fg6-Ou6MUeipwvypaG4-r",
+      "branch": "condition:cond_no_autenticado"
+    },
+    {
+      "id": "kbgu6WFfa6ayzLPTVoVSV",
+      "sourceId": "QmLu-6aJXzjTf5kDEDtH0",
+      "targetId": "6uLigRtO8A4EXKe35n35E",
+      "branch": "success"
+    },
+    {
+      "id": "Ld_wg9zrL_Aajd5YjsrvZ",
+      "sourceId": "nW_DZ_dKHowMWA-Mkhqsl",
+      "targetId": "QmLu-6aJXzjTf5kDEDtH0",
+      "branch": "failed"
+    },
+    {
+      "id": "N8-IbR43RLLEHFEAu9XxC",
+      "sourceId": "2tGTknkmtZWCuO07Si-t-",
+      "targetId": "qbnCXxXj02a80QKoYwZc6",
+      "branch": "success"
+    },
+    {
+      "id": "xoNXJ0l_Tm-EBgDHQ_PKY",
+      "sourceId": "HzlojpS2uInq1E5dz04QM",
+      "targetId": "by-MSqoQp6yMZ4497kTRK",
+      "branch": "condition:cond_autenticado"
+    },
+    {
+      "id": "xTyE-8hPa05zRG6HHt0-D",
+      "sourceId": "K2T6tgO4gmBsKtPmh7DkK",
+      "targetId": "2tGTknkmtZWCuO07Si-t-",
+      "branch": "default"
+    },
+    {
+      "id": "Z5cwFIO0C07wmjOMvj_XY",
+      "sourceId": "2tGTknkmtZWCuO07Si-t-",
+      "targetId": "QmLu-6aJXzjTf5kDEDtH0",
+      "branch": "failed"
+    },
+    {
+      "id": "Zjgj845b7wiK_FlUUHsvz",
+      "sourceId": "qbnCXxXj02a80QKoYwZc6",
+      "targetId": "6uLigRtO8A4EXKe35n35E",
+      "branch": "else"
+    },
+    {
+      "id": "Zv_5G8uAPQ3904ZpICQg4",
+      "sourceId": "BAljHBp_Pen4rkzu_k_Na",
+      "targetId": "nW_DZ_dKHowMWA-Mkhqsl",
+      "branch": "failed"
+    }
+  ]
+}

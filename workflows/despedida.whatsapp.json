@@ -1,0 +1,66 @@
+{
+  "workflowId": 73051,
+  "workflowName": "Despedida",
+  "workflowDescription": "Flujo interno que envía el mensaje de despedida al cliente de Crediviva al terminar la atención.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "PmhreigeT7Dv_wIyM3hq7",
+      "title": "Fin: mensaje enviado",
+      "configuration": {
+        "title": "Fin: mensaje enviado",
+        "outputId": "8N8iAzOgxJvSPGCYcmEMk"
+      },
+      "type": "END",
+      "position": [
+        896,
+        120
+      ]
+    },
+    {
+      "id": "tG_6vXA2d8_KAybdkkTmE",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "wYiV3QuX4_K2umNkQhUc2",
+      "title": "Despedida",
+      "configuration": {
+        "title": "Despedida",
+        "messages": [
+          {
+            "id": "IC8kgHUgZBgLRRAS1KBAZ",
+            "text": "¡Gracias por escribir a Crediviva! 💙 Cuando necesites un documento de tu crédito, escribe *documentos*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        488,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "a9CPokQG7qY8ZafHrRm6E",
+      "sourceId": "wYiV3QuX4_K2umNkQhUc2",
+      "targetId": "PmhreigeT7Dv_wIyM3hq7",
+      "branch": "default"
+    },
+    {
+      "id": "NsRFj7Qn9xFqEyQ68QY4x",
+      "sourceId": "tG_6vXA2d8_KAybdkkTmE",
+      "targetId": "wYiV3QuX4_K2umNkQhUc2",
+      "branch": "default"
+    }
+  ]
+}

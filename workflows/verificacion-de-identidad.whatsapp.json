@@ -1,0 +1,1103 @@
+{
+  "workflowId": 73700,
+  "workflowName": "Verificación de identidad",
+  "workflowDescription": "Flujo interno del onboarding de Crediviva que verifica la identidad del cliente con su documento y una selfie en el proveedor de KYC (Jumio o Veriff).",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "0MXv4WAlOcic__euQIvXo",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        3264,
+        935
+      ]
+    },
+    {
+      "id": "53y89R2BJW-RVWN5WDzCf",
+      "title": "Documento ya registrado",
+      "configuration": {
+        "title": "Documento ya registrado",
+        "messages": [
+          {
+            "id": "-Rs-Ae5tGGLZh-Lo6vgPG",
+            "text": "El documento que usaste ya pertenece a una cuenta de Crediviva. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        50
+      ]
+    },
+    {
+      "id": "6MKhf1LGVwFB2z9zwnZCw",
+      "title": "¿Biometría ya aprobada?",
+      "configuration": {
+        "title": "¿Biometría ya aprobada?",
+        "conditions": [
+          {
+            "id": "c_kyc_aprobado",
+            "name": "Ya aprobada",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycAprobado}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2040,
+        750
+      ]
+    },
+    {
+      "id": "AFk_HElNp1P2ZfevnxlrW",
+      "title": "Ir a Registro de cliente",
+      "configuration": {
+        "title": "Ir a Registro de cliente",
+        "skillId": "53335"
+      },
+      "type": "SKILL",
+      "position": [
+        3264,
+        1265
+      ]
+    },
+    {
+      "id": "Bf4oEULxQDqM4ZrxQzwHj",
+      "title": "Revisar sesión",
+      "configuration": {
+        "title": "Revisar sesión",
+        "content": "// Sesión de Crediviva que dejó el registro en memoria (vence a los 30 min).\nconst s = $memory.getJson(\"cv_sesionCrediviva\", null);\nconst vigente = !!(s && s.authKey && s.ambiente === $memory.get(\"cv_ambiente\", \"\"));\n$memory.set(\"cv_sesionVigente\", vigente ? \"si\" : \"no\");\n$memory.delete(\"cv_kyc\");\n// Si el login dice que el pendiente ya es el ingreso o la solicitud, la biometría está hecha.\nconst paso = String($memory.get(\"cv_pasoCrediviva\", \"\")).toLowerCase();\nif (paso.includes(\"enter-monthly-income\") || paso.startsWith(\"credit-application\")) $memory.set(\"cv_kycAprobado\", \"si\", 3600);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1264,
+        75
+      ]
+    },
+    {
+      "id": "Bj_KS5e52CJ9-ttueVJ5e",
+      "title": "Invalidar sesión",
+      "configuration": {
+        "title": "Invalidar sesión",
+        "content": "// Crediviva rechazó la sesión (o no hay): se borra para que Registro pida iniciar sesión otra vez\n// en lugar de darla por vigente y devolver al cliente aquí en un ciclo.\n$memory.delete(\"cv_sesionCrediviva\");\n$memory.delete(\"cv_sesionVigente\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3244,
+        1600
+      ]
+    },
+    {
+      "id": "Bwx0pPy7ptbs96vVDaGFo",
+      "title": "Iniciar KYC",
+      "configuration": {
+        "async": false,
+        "input": {
+          "authKey": "{{$memory.cv_sesionCrediviva.authKey}}",
+          "ambiente": "{{$memory.cv_ambiente}}",
+          "proveedor": "{{$memory.cv_kycProveedor}}",
+          "reintento": "{{$memory.cv_kycReintento}}"
+        },
+        "title": "Iniciar KYC",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8998,
+          "toolName": "Crediviva Iniciar KYC",
+          "thumbnail": 1,
+          "workflowId": 73697
+        },
+        "variable": "cv_kycIni"
+      },
+      "type": "TOOL",
+      "position": [
+        3224,
+        2400
+      ]
+    },
+    {
+      "id": "D4cGsQ3XXYLVqtkOxH7wt",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "EywoZspCdsc1Dcsxp-z1d",
+      "title": "Identidad verificada",
+      "configuration": {
+        "title": "Identidad verificada",
+        "messages": [
+          {
+            "id": "nBhtOJe9y2kun-SjxWHR1",
+            "text": "✅ ¡Listo! Verificamos tu identidad.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        1800
+      ]
+    },
+    {
+      "id": "G_eMhKZGoeznsooje_Urq",
+      "title": "Ir a la App",
+      "configuration": {
+        "title": "Ir a la App",
+        "messages": [
+          {
+            "id": "pp7J3_J9HXZMwxlGY5fur",
+            "text": "Para continuar con tu proceso, ingresa a la App de Crediviva con tu correo y contraseña 📲",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        750
+      ]
+    },
+    {
+      "id": "G7Wo1DA3Q4r697eOhIEH2",
+      "title": "Sesión expirada",
+      "configuration": {
+        "title": "Sesión expirada",
+        "messages": [
+          {
+            "id": "mhBdbHDlrv4iwiyOhbSk7",
+            "text": "Cerré la verificación por inactividad ⌛. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2448,
+        50
+      ]
+    },
+    {
+      "id": "hgmz1jnBf8HMEhu6rXv-J",
+      "title": "Ir a Evaluación crediticia",
+      "configuration": {
+        "title": "Ir a Evaluación crediticia",
+        "skillId": "53531"
+      },
+      "type": "SKILL",
+      "position": [
+        3264,
+        605
+      ]
+    },
+    {
+      "id": "hx4_an4ocvVgVEqejCVY-",
+      "title": "Preparar KYC",
+      "configuration": {
+        "title": "Preparar KYC",
+        "content": "// Arranca la verificación: proveedor por defecto de Crediviva, sin reintentos.\n$memory.set(\"cv_kycProveedor\", \"\");\n$memory.set(\"cv_kycReintento\", \"false\");\n$memory.set(\"cv_kycReintentos\", 0);\n$memory.set(\"cv_kycErrores\", 0);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2836,
+        2400
+      ]
+    },
+    {
+      "id": "MHPxME4DpsSQUmfBJLGgw",
+      "title": "¿Ya terminaste?",
+      "configuration": {
+        "title": "¿Ya terminaste?",
+        "messages": [
+          {
+            "id": "izs5Y48z3IAJmRB85q3Jt",
+            "text": "Aún no recibimos el resultado de tu verificación. Si ya la completaste, toca *Ya terminé* y lo reviso.",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_listo",
+                "type": "postback",
+                "title": "Ya terminé",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "53530",
+                  "targetId": "W78QvN5Tn8cexoapFwHTE"
+                }
+              },
+              {
+                "id": "opt_salir",
+                "type": "postback",
+                "title": "Salir",
+                "payload": {
+                  "type": "edge",
+                  "skillId": "53530",
+                  "targetId": "q_cPGJ7bQZWHT1mRCZDpT"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_kycSel",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Elige una opción: *Ya terminé* o *Salir*."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        5552,
+        2902
+      ]
+    },
+    {
+      "id": "MwK-Sr8vHPJAdPZ4DDwNV",
+      "title": "Leer inicio",
+      "configuration": {
+        "title": "Leer inicio",
+        "content": "// Respuesta de Iniciar KYC -> cv_kycPaso: enlace | consultar | reintentar | fin (cv_kyc.estado).\nconst MAX_REINTENTOS = 2;\nconst n = (k) => Number($memory.get(k, 0)) || 0;\nconst terminar = (estado) => {\n  $memory.setJson(\"cv_kyc\", { estado }, 3600);\n  $memory.set(\"cv_kycPaso\", \"fin\");\n  // Crediviva ya la dio por buena: no se vuelve a pedir la biometría durante 1 hora.\n  if (estado === \"aprobado\") $memory.set(\"cv_kycAprobado\", \"si\", 3600);\n};\nconst reintentar = (prov, reintento) => {\n  if (n(\"cv_kycReintentos\") >= MAX_REINTENTOS) return terminar(\"asesor\");\n  $memory.set(\"cv_kycReintentos\", n(\"cv_kycReintentos\") + 1);\n  $memory.set(\"cv_kycProveedor\", prov);\n  $memory.set(\"cv_kycReintento\", reintento ? \"true\" : \"false\");\n  $memory.set(\"cv_kycPaso\", \"reintentar\");\n};\nconst otro = (p) => (p === \"VERIFF\" ? \"JUMIO\" : \"VERIFF\");\nconst proveedor = $memory.get(\"cv_kycProveedor\", \"\");\nconst directo = { cliente_existente: 1, sin_sesion: 1, app: 1, cancelado: 1 };\nconst r = $memory.getJson(\"cv_kycIni\", {}) || {};\n$memory.delete(\"cv_kycIni\");\nconst e = String(r.estado || \"error\");\nif (e === \"enlace\" && r.url) {\n  $memory.set(\"cv_kycUrl\", String(r.url));\n  $memory.set(\"cv_kycProveedor\", String(r.proveedor || proveedor || \"JUMIO\").toUpperCase());\n  $memory.set(\"cv_kycChequeos\", 0);\n  $memory.set(\"cv_kycPaso\", \"enlace\");\n} else if (e === \"completado\") terminar(\"aprobado\");\nelse if (e === \"procesada\") { if (!proveedor) $memory.set(\"cv_kycProveedor\", \"JUMIO\"); $memory.set(\"cv_kycPaso\", \"consultar\"); }\nelse if (e === \"reintentar\" || e === \"sesion_invalida\") reintentar(proveedor || \"JUMIO\", true);\nelse if (e === \"bloqueado\") { if (r.alternativa) reintentar(otro(proveedor || \"JUMIO\"), false); else terminar(\"asesor\"); }\nelse if (directo[e]) terminar(e);\nelse if (n(\"cv_kycErrores\") < 1) { $memory.set(\"cv_kycErrores\", n(\"cv_kycErrores\") + 1); $memory.set(\"cv_kycPaso\", \"reintentar\"); }\nelse terminar(\"asesor\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3612,
+        2400
+      ]
+    },
+    {
+      "id": "Ne_D5cJgR9G8xwyoTYNiS",
+      "title": "Esperar resultado",
+      "configuration": {
+        "time": "minutes",
+        "title": "Esperar resultado",
+        "duration": 2,
+        "timeInSeconds": 120,
+        "blockedMessage": "Estoy esperando el resultado de tu verificación ⏳ Te aviso aquí apenas esté listo.",
+        "isBlockingEnabled": true
+      },
+      "type": "PAUSE",
+      "position": [
+        5552,
+        2400
+      ]
+    },
+    {
+      "id": "Oi9MDkURB873oRQ1mYwGB",
+      "title": "Enlace de verificación",
+      "configuration": {
+        "title": "Enlace de verificación",
+        "messages": [
+          {
+            "id": "Y_wwU400xtqZpsS_OYhkh",
+            "text": "Toca el botón para verificar tu identidad 📸 Ten a mano tu documento vigente.\n\nNo necesitas escribir nada: cuando termines, te aviso aquí con el resultado.",
+            "type": "cta_url",
+            "parameters": {
+              "url": "{{$memory.cv_kycUrl}}",
+              "display_text": "Verificar identidad"
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        4388,
+        3156
+      ]
+    },
+    {
+      "id": "otkVwmhpMOvnc42clouG0",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "pn-VEgMxE4-ze37WImwEJ",
+      "title": "No se pudo verificar",
+      "configuration": {
+        "title": "No se pudo verificar",
+        "messages": [
+          {
+            "id": "MdBskQi9rDpCbKmM5vvdv",
+            "text": "No logramos completar la verificación de tu identidad. Te comunico con un asesor para ayudarte 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        1100
+      ]
+    },
+    {
+      "id": "q_cPGJ7bQZWHT1mRCZDpT",
+      "title": "Marcar cancelado",
+      "configuration": {
+        "title": "Marcar cancelado",
+        "content": "$memory.setJson(\"cv_kyc\", { estado: \"cancelado\" }, 3600);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5940,
+        3302
+      ]
+    },
+    {
+      "id": "qdg4EXyQKcWWymRs2w1YD",
+      "title": "¿Cómo terminó la verificación?",
+      "configuration": {
+        "title": "¿Cómo terminó la verificación?",
+        "conditions": [
+          {
+            "id": "c_aprobado",
+            "name": "Identidad verificada",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "aprobado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_cancelado",
+            "name": "No continuó",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "cancelado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_existente",
+            "name": "Documento de otro cliente",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "cliente_existente",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_sin_sesion",
+            "name": "Sesión vencida",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "sin_sesion",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_app",
+            "name": "Debe seguir en la App",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "app",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_acepto",
+            "name": "Aceptó la biometría",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kyc.estado}}",
+                "value2": "acepto",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2448,
+        400
+      ]
+    },
+    {
+      "id": "qkR7N9J1eVe_tlBBctYnl",
+      "title": "Verificación no realizada",
+      "configuration": {
+        "title": "Verificación no realizada",
+        "messages": [
+          {
+            "id": "ZseRtnAT4XTZbPzN4UuNB",
+            "text": "Sin la verificación de identidad no podemos continuar con tu solicitud. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        1450
+      ]
+    },
+    {
+      "id": "R0j86ytsweum24FHdAFFL",
+      "title": "Leer resultado",
+      "configuration": {
+        "title": "Leer resultado",
+        "content": "// Resultado de Crediviva -> cv_kycPaso: esperar | preguntar | reintentar | fin (cv_kyc.estado).\nconst MAX_REINTENTOS = 2;\nconst n = (k) => Number($memory.get(k, 0)) || 0;\nconst terminar = (estado) => {\n  $memory.setJson(\"cv_kyc\", { estado }, 3600);\n  $memory.set(\"cv_kycPaso\", \"fin\");\n  // Crediviva ya la dio por buena: no se vuelve a pedir la biometría durante 1 hora.\n  if (estado === \"aprobado\") $memory.set(\"cv_kycAprobado\", \"si\", 3600);\n};\nconst reintentar = (prov, reintento) => {\n  if (n(\"cv_kycReintentos\") >= MAX_REINTENTOS) return terminar(\"asesor\");\n  $memory.set(\"cv_kycReintentos\", n(\"cv_kycReintentos\") + 1);\n  $memory.set(\"cv_kycProveedor\", prov);\n  $memory.set(\"cv_kycReintento\", reintento ? \"true\" : \"false\");\n  $memory.set(\"cv_kycPaso\", \"reintentar\");\n};\nconst otro = (p) => (p === \"VERIFF\" ? \"JUMIO\" : \"VERIFF\");\nconst proveedor = $memory.get(\"cv_kycProveedor\", \"\");\nconst directo = { cliente_existente: 1, sin_sesion: 1, app: 1, cancelado: 1 };\nconst MAX_CHEQUEOS = 5;\nconst r = $memory.getJson(\"cv_kycRes\", {}) || {};\n$memory.delete(\"cv_kycRes\");\nconst e = String(r.estado || \"error\");\nconst esperar = () => {\n  const c = n(\"cv_kycChequeos\") + 1;\n  $memory.set(\"cv_kycChequeos\", c);\n  $memory.set(\"cv_kycPaso\", c < MAX_CHEQUEOS ? \"esperar\" : \"preguntar\");\n};\nif (e === \"aprobado\" || e === \"completado\") terminar(\"aprobado\");\nelse if (e === \"no_lista\" || e === \"sin_verificacion\") esperar();\nelse if (e === \"reintentar\" || e === \"sesion_invalida\") reintentar(proveedor || \"JUMIO\", true);\nelse if (e === \"bloqueado\") { if (r.alternativa) reintentar(otro(proveedor || \"JUMIO\"), false); else terminar(\"asesor\"); }\nelse if (directo[e]) terminar(e);\nelse if (n(\"cv_kycErrores\") < 2) { $memory.set(\"cv_kycErrores\", n(\"cv_kycErrores\") + 1); esperar(); }\nelse terminar(\"asesor\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4776,
+        2400
+      ]
+    },
+    {
+      "id": "SEAdQFuSXBqcFw5Y4-cgv",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        150
+      ]
+    },
+    {
+      "id": "shl-ZcHHqTBjA66sbbWRk",
+      "title": "¿Tiene sesión vigente?",
+      "configuration": {
+        "title": "¿Tiene sesión vigente?",
+        "conditions": [
+          {
+            "id": "c_vigente",
+            "name": "Sesión vigente",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_sesionVigente}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "u9QkFiBdt_qDLu_yUmF9x",
+      "title": "Asistente de verificación",
+      "configuration": {
+        "name": "Asistente de verificación",
+        "model": "openai/gpt-6-luna",
+        "title": "Asistente de verificación",
+        "version": "v2",
+        "settings": {
+          "expiration": {
+            "time": "minutes",
+            "enabled": true,
+            "duration": 30,
+            "timeInSeconds": 1800
+          },
+          "splitMessages": true,
+          "messageHistory": {
+            "enabled": false
+          }
+        },
+        "variable": "cv_kyc",
+        "connections": {
+          "mcp": [],
+          "datum": [],
+          "tools": [
+            {
+              "id": "send_interactive_message",
+              "name": "send_interactive_message",
+              "action": "pause",
+              "external": false,
+              "description": "Botones para que el cliente elija (consentimiento, confirmaciones, 'Ya terminé')."
+            }
+          ]
+        },
+        "endFunction": {
+          "rawSchema": {
+            "estado": {
+              "type": "string",
+              "required": true
+            }
+          },
+          "description": "Completa 'estado' con uno de: acepto, cancelado, asesor. Termina justo después de identificarlo; no envíes despedida ni confirmación, el siguiente paso la envía."
+        },
+        "instructions": "Eres el asistente de Crediviva que prepara al cliente para la verificación de su identidad (KYC). El cliente ya creó su cuenta o inició sesión. La verificación la hace un proveedor externo (Jumio o Veriff) en una página aparte; el siguiente paso del flujo le envía el enlace y espera el resultado solo.\n\nPasos:\n1. En un solo mensaje con send_interactive_message explica qué necesita: su documento de identidad vigente (frente y dorso) y una selfie, en un lugar con buena iluminación (puede usar el flash). Pide su consentimiento para el tratamiento de sus datos biométricos con exactamente estas opciones: \"Acepto\", \"No acepto\". Termina el texto con: \"Si no quieres continuar, escribe *salir*.\"\n2. Si acepta, termina de inmediato con estado \"acepto\", sin escribirle nada: el siguiente paso le envía el enlace de verificación.\n3. Si no acepta, termina con estado \"cancelado\".\n\nReglas:\n- Nunca pidas fotos, datos del documento ni datos personales por este chat: todo se hace en la página del proveedor.\n- No envíes enlaces ni inventes resultados: eso lo hace el siguiente paso.\n- Si tiene dudas, respóndelas en una o dos frases y vuelve a pedir el consentimiento.\n- Si quiere salir o cancelar, termina de inmediato con estado \"cancelado\". Si pide hablar con una persona o tiene un reclamo, termina con estado \"asesor\".\n- Nunca respondas solo \"Entendido\" ni te despidas.\n- Responde en español, breve y cordial.",
+        "startCommand": "Quiero verificar mi identidad.",
+        "instructions_lang": "es",
+        "nonHappyPathHandlers": {
+          "error": {
+            "mode": "message",
+            "message": "Tuvimos un problema técnico con tu solicitud 😔. Cuando quieras retomarlo, escribe *Continuar mi solicitud*."
+          }
+        }
+      },
+      "type": "AI_TASK",
+      "position": [
+        2060,
+        72
+      ]
+    },
+    {
+      "id": "UWMRwC8UGY7mzfDpUsxJM",
+      "title": "¿Cómo sigue el KYC?",
+      "configuration": {
+        "title": "¿Cómo sigue el KYC?",
+        "conditions": [
+          {
+            "id": "c_enlace",
+            "name": "enlace",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "enlace",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_consultar",
+            "name": "consultar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "consultar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_reintentar",
+            "name": "reintentar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "reintentar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        4000,
+        2400
+      ]
+    },
+    {
+      "id": "W78QvN5Tn8cexoapFwHTE",
+      "title": "Consultar otra vez",
+      "configuration": {
+        "title": "Consultar otra vez",
+        "content": "// Un chequeo más; si sigue sin estar listo, vuelve a preguntar.\n$memory.set(\"cv_kycChequeos\", 4);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5940,
+        2902
+      ]
+    },
+    {
+      "id": "X1H6ffKYc5TMX919dQxwG",
+      "title": "Volver a iniciar sesión",
+      "configuration": {
+        "title": "Volver a iniciar sesión",
+        "messages": [
+          {
+            "id": "kZ6uVWWEFlwLzv99dfEb8",
+            "text": "Por seguridad necesito que vuelvas a ingresar a tu cuenta para continuar 🔒",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2856,
+        400
+      ]
+    },
+    {
+      "id": "XM664hKld6sLRlLSoCZIb",
+      "title": "Consultar resultado KYC",
+      "configuration": {
+        "async": false,
+        "input": {
+          "authKey": "{{$memory.cv_sesionCrediviva.authKey}}",
+          "ambiente": "{{$memory.cv_ambiente}}",
+          "proveedor": "{{$memory.cv_kycProveedor}}"
+        },
+        "title": "Consultar resultado KYC",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8999,
+          "toolName": "Crediviva Resultado KYC",
+          "thumbnail": 1,
+          "workflowId": 73698
+        },
+        "variable": "cv_kycRes"
+      },
+      "type": "TOOL",
+      "position": [
+        4388,
+        2400
+      ]
+    },
+    {
+      "id": "YMDY8dlGxhCw8RDLGeGnx",
+      "title": "¿Resultado listo?",
+      "configuration": {
+        "title": "¿Resultado listo?",
+        "conditions": [
+          {
+            "id": "c_esperar",
+            "name": "esperar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "esperar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_preguntar",
+            "name": "preguntar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "preguntar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_reintentar",
+            "name": "reintentar",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_kycPaso}}",
+                "value2": "reintentar",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        5164,
+        2400
+      ]
+    },
+    {
+      "id": "yMu6V684329win482dgUY",
+      "title": "Error técnico",
+      "configuration": {
+        "title": "Error técnico",
+        "messages": [
+          {
+            "id": "nRuTb3bFyngaaPqBGEAoB",
+            "text": "Tuvimos un problema técnico con tu solicitud 😔. Te comunico con un asesor para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        1652,
+        400
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "-65WYrXpM1jrgqw7-Riua",
+      "sourceId": "MHPxME4DpsSQUmfBJLGgw",
+      "targetId": "q_cPGJ7bQZWHT1mRCZDpT",
+      "branch": "option:opt_salir"
+    },
+    {
+      "id": "2e3OgTh66-9YQmYq-MQJV",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "X1H6ffKYc5TMX919dQxwG",
+      "branch": "condition:c_sin_sesion"
+    },
+    {
+      "id": "2GziNLICiyuH59ZlBx9D6",
+      "sourceId": "XM664hKld6sLRlLSoCZIb",
+      "targetId": "R0j86ytsweum24FHdAFFL",
+      "branch": "output:hnn43VC_O4_2zPHJpF-3B:success"
+    },
+    {
+      "id": "2qRc0HJ027c1Psdthw8zU",
+      "sourceId": "YMDY8dlGxhCw8RDLGeGnx",
+      "targetId": "qdg4EXyQKcWWymRs2w1YD",
+      "branch": "else"
+    },
+    {
+      "id": "2yv92HWbh-ZOAPsj1uJlW",
+      "sourceId": "W78QvN5Tn8cexoapFwHTE",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "31B1nAeJ689ql1KOcdfAc",
+      "sourceId": "W78QvN5Tn8cexoapFwHTE",
+      "targetId": "XM664hKld6sLRlLSoCZIb",
+      "branch": "success"
+    },
+    {
+      "id": "3cIgpC93ZcYZsK-Le5NKe",
+      "sourceId": "u9QkFiBdt_qDLu_yUmF9x",
+      "targetId": "qdg4EXyQKcWWymRs2w1YD",
+      "branch": "success"
+    },
+    {
+      "id": "3QQndDZVxCjeEZeyyZmv0",
+      "sourceId": "MwK-Sr8vHPJAdPZ4DDwNV",
+      "targetId": "UWMRwC8UGY7mzfDpUsxJM",
+      "branch": "success"
+    },
+    {
+      "id": "5ncaJdPb32m4aWvDOFq7m",
+      "sourceId": "Ne_D5cJgR9G8xwyoTYNiS",
+      "targetId": "XM664hKld6sLRlLSoCZIb",
+      "branch": "default"
+    },
+    {
+      "id": "a6rXvAxMgjkM-CalV9d-F",
+      "sourceId": "Bf4oEULxQDqM4ZrxQzwHj",
+      "targetId": "shl-ZcHHqTBjA66sbbWRk",
+      "branch": "success"
+    },
+    {
+      "id": "aBwJu30_umtYYw3seHACO",
+      "sourceId": "UWMRwC8UGY7mzfDpUsxJM",
+      "targetId": "Oi9MDkURB873oRQ1mYwGB",
+      "branch": "condition:c_enlace"
+    },
+    {
+      "id": "bVw5DgoqihzMIX8wqBRnT",
+      "sourceId": "R0j86ytsweum24FHdAFFL",
+      "targetId": "YMDY8dlGxhCw8RDLGeGnx",
+      "branch": "success"
+    },
+    {
+      "id": "ccY9ZicnYKIo6ykq2IgHx",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "G_eMhKZGoeznsooje_Urq",
+      "branch": "condition:c_app"
+    },
+    {
+      "id": "cerpvspDeqLTIRgp1yjFE",
+      "sourceId": "hx4_an4ocvVgVEqejCVY-",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "dvAtiGeFIwV5pi0Dj2QWP",
+      "sourceId": "q_cPGJ7bQZWHT1mRCZDpT",
+      "targetId": "qdg4EXyQKcWWymRs2w1YD",
+      "branch": "success"
+    },
+    {
+      "id": "DW0dt4nEHk0G6Cxk53p2R",
+      "sourceId": "YMDY8dlGxhCw8RDLGeGnx",
+      "targetId": "Bwx0pPy7ptbs96vVDaGFo",
+      "branch": "condition:c_reintentar"
+    },
+    {
+      "id": "dYFZybqPYOGEsSBUHvXsE",
+      "sourceId": "MHPxME4DpsSQUmfBJLGgw",
+      "targetId": "W78QvN5Tn8cexoapFwHTE",
+      "branch": "option:opt_listo"
+    },
+    {
+      "id": "EFbU0S3aXmRS0_Vaf6wN7",
+      "sourceId": "6MKhf1LGVwFB2z9zwnZCw",
+      "targetId": "hgmz1jnBf8HMEhu6rXv-J",
+      "branch": "condition:c_kyc_aprobado"
+    },
+    {
+      "id": "eg_usmnGK3uLcF1NxKcpq",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "pn-VEgMxE4-ze37WImwEJ",
+      "branch": "else"
+    },
+    {
+      "id": "f5dbD_5DXw6i69uIj8RVp",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "EywoZspCdsc1Dcsxp-z1d",
+      "branch": "condition:c_aprobado"
+    },
+    {
+      "id": "FcfNBGxUZdwldeUpdzAUU",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "hx4_an4ocvVgVEqejCVY-",
+      "branch": "condition:c_acepto"
+    },
+    {
+      "id": "fPwHcInwrEsSCBwT2R8O9",
+      "sourceId": "Bj_KS5e52CJ9-ttueVJ5e",
+      "targetId": "AFk_HElNp1P2ZfevnxlrW",
+      "branch": "failed"
+    },
+    {
+      "id": "FZhy303wQIYAjeuSTD3ud",
+      "sourceId": "shl-ZcHHqTBjA66sbbWRk",
+      "targetId": "X1H6ffKYc5TMX919dQxwG",
+      "branch": "else"
+    },
+    {
+      "id": "gMMd3kfxOqUHcw1tpE8QL",
+      "sourceId": "Bwx0pPy7ptbs96vVDaGFo",
+      "targetId": "MwK-Sr8vHPJAdPZ4DDwNV",
+      "branch": "output:HNuZE38WODo0Zw00ghzQE:failed"
+    },
+    {
+      "id": "Gmyrh12HxWhtrmMkYoWnM",
+      "sourceId": "yMu6V684329win482dgUY",
+      "targetId": "0MXv4WAlOcic__euQIvXo",
+      "branch": "default"
+    },
+    {
+      "id": "gs9f8N4TY2VaHlgjHfXev",
+      "sourceId": "YMDY8dlGxhCw8RDLGeGnx",
+      "targetId": "Ne_D5cJgR9G8xwyoTYNiS",
+      "branch": "condition:c_esperar"
+    },
+    {
+      "id": "gYGoQpdGnAdFX3bLXwbjH",
+      "sourceId": "otkVwmhpMOvnc42clouG0",
+      "targetId": "SEAdQFuSXBqcFw5Y4-cgv",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "h7iAWLLwK7WY5jSIsLv57",
+      "sourceId": "53y89R2BJW-RVWN5WDzCf",
+      "targetId": "0MXv4WAlOcic__euQIvXo",
+      "branch": "default"
+    },
+    {
+      "id": "j1AngckPKYC_Cjen4Jqvs",
+      "sourceId": "Bj_KS5e52CJ9-ttueVJ5e",
+      "targetId": "AFk_HElNp1P2ZfevnxlrW",
+      "branch": "success"
+    },
+    {
+      "id": "JOqRk2ilkbeCIrVr_Kiz7",
+      "sourceId": "shl-ZcHHqTBjA66sbbWRk",
+      "targetId": "6MKhf1LGVwFB2z9zwnZCw",
+      "branch": "condition:c_vigente"
+    },
+    {
+      "id": "kea9CrC6XLW-PBy9Jnb_e",
+      "sourceId": "UWMRwC8UGY7mzfDpUsxJM",
+      "targetId": "XM664hKld6sLRlLSoCZIb",
+      "branch": "condition:c_consultar"
+    },
+    {
+      "id": "kY3Pw1nS4WOdmhwqfuJvd",
+      "sourceId": "q_cPGJ7bQZWHT1mRCZDpT",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "LEqOlWy1qxbu7rRT981Xu",
+      "sourceId": "UWMRwC8UGY7mzfDpUsxJM",
+      "targetId": "Bwx0pPy7ptbs96vVDaGFo",
+      "branch": "condition:c_reintentar"
+    },
+    {
+      "id": "lFCYDOOLmBYaUX0DYd0Yh",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "qkR7N9J1eVe_tlBBctYnl",
+      "branch": "condition:c_cancelado"
+    },
+    {
+      "id": "LWeWdb04XHnI4Dw-kKMFL",
+      "sourceId": "Bwx0pPy7ptbs96vVDaGFo",
+      "targetId": "MwK-Sr8vHPJAdPZ4DDwNV",
+      "branch": "output:kUsfusIMkhU604VjrWVw_:success"
+    },
+    {
+      "id": "mQ13kLlW7_Zm2bk6k_kAY",
+      "sourceId": "YMDY8dlGxhCw8RDLGeGnx",
+      "targetId": "MHPxME4DpsSQUmfBJLGgw",
+      "branch": "condition:c_preguntar"
+    },
+    {
+      "id": "NaC8aAWRUxUn7bGHyWwpi",
+      "sourceId": "u9QkFiBdt_qDLu_yUmF9x",
+      "targetId": "G7Wo1DA3Q4r697eOhIEH2",
+      "branch": "expire"
+    },
+    {
+      "id": "NJJeDKDnv06P53SfWFJzx",
+      "sourceId": "R0j86ytsweum24FHdAFFL",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "ogZ7qn4PJIIlSyPGKDPQ-",
+      "sourceId": "Oi9MDkURB873oRQ1mYwGB",
+      "targetId": "Ne_D5cJgR9G8xwyoTYNiS",
+      "branch": "default"
+    },
+    {
+      "id": "OOK9ecTq8OysvdBflsfus",
+      "sourceId": "EywoZspCdsc1Dcsxp-z1d",
+      "targetId": "hgmz1jnBf8HMEhu6rXv-J",
+      "branch": "default"
+    },
+    {
+      "id": "PMicL7-H6L7yU_WuVRIWg",
+      "sourceId": "otkVwmhpMOvnc42clouG0",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "pPxOF9h76qWkXlSjCbq0i",
+      "sourceId": "hx4_an4ocvVgVEqejCVY-",
+      "targetId": "Bwx0pPy7ptbs96vVDaGFo",
+      "branch": "success"
+    },
+    {
+      "id": "RMuS-bnC6g2KYxzgfTPVr",
+      "sourceId": "D4cGsQ3XXYLVqtkOxH7wt",
+      "targetId": "otkVwmhpMOvnc42clouG0",
+      "branch": "default"
+    },
+    {
+      "id": "SBo4qa-KkQKY_0EIkCgaT",
+      "sourceId": "MHPxME4DpsSQUmfBJLGgw",
+      "targetId": "G7Wo1DA3Q4r697eOhIEH2",
+      "branch": "expire"
+    },
+    {
+      "id": "Tu7dY1qn35R_eAfrTDxUh",
+      "sourceId": "MwK-Sr8vHPJAdPZ4DDwNV",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "v9MCo1XpM0xw_XvfJTDOA",
+      "sourceId": "SEAdQFuSXBqcFw5Y4-cgv",
+      "targetId": "Bf4oEULxQDqM4ZrxQzwHj",
+      "branch": "default"
+    },
+    {
+      "id": "vR07gIoywVHBJ5I2PWouz",
+      "sourceId": "pn-VEgMxE4-ze37WImwEJ",
+      "targetId": "0MXv4WAlOcic__euQIvXo",
+      "branch": "default"
+    },
+    {
+      "id": "wDE9nR3VYdr6q-KgNWPDb",
+      "sourceId": "qdg4EXyQKcWWymRs2w1YD",
+      "targetId": "53y89R2BJW-RVWN5WDzCf",
+      "branch": "condition:c_existente"
+    },
+    {
+      "id": "WvNHC_RrVJO1kW1dA2QeD",
+      "sourceId": "Bf4oEULxQDqM4ZrxQzwHj",
+      "targetId": "yMu6V684329win482dgUY",
+      "branch": "failed"
+    },
+    {
+      "id": "XQ8SarJLgyPw_-pQRk80m",
+      "sourceId": "XM664hKld6sLRlLSoCZIb",
+      "targetId": "R0j86ytsweum24FHdAFFL",
+      "branch": "output:g3SplNaVe81wrb9RoMbK3:failed"
+    },
+    {
+      "id": "xsz-eoIDbH5yE8OPDWwdG",
+      "sourceId": "X1H6ffKYc5TMX919dQxwG",
+      "targetId": "Bj_KS5e52CJ9-ttueVJ5e",
+      "branch": "default"
+    },
+    {
+      "id": "xx3w96_pKUJQHsJ5TIi-u",
+      "sourceId": "UWMRwC8UGY7mzfDpUsxJM",
+      "targetId": "qdg4EXyQKcWWymRs2w1YD",
+      "branch": "else"
+    },
+    {
+      "id": "yNTrK2VFJMM-Ds3wk8lW7",
+      "sourceId": "6MKhf1LGVwFB2z9zwnZCw",
+      "targetId": "u9QkFiBdt_qDLu_yUmF9x",
+      "branch": "else"
+    }
+  ]
+}

@@ -1,0 +1,404 @@
+{
+  "workflowId": 73057,
+  "workflowName": "Menú de documentos",
+  "workflowDescription": "Solicitar documentos de mi crédito Crediviva: ver el menú de carta de saldo, estado de cuenta, carta de cancelación o comprobante de pago.",
+  "nodes": [
+    {
+      "id": "36aukyVd46jknb7fiCmXX",
+      "title": "Ir a Carta de saldo",
+      "configuration": {
+        "title": "Ir a Carta de saldo",
+        "skillId": "53045"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        1040
+      ]
+    },
+    {
+      "id": "8Pi8F3YYR2uZwibwb6mW0",
+      "title": "Registrar salida sin autenticar",
+      "configuration": {
+        "title": "Registrar salida sin autenticar",
+        "content": "$memory.set(\"cv_ultimoResultado\", \"no_autenticado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        876,
+        50
+      ]
+    },
+    {
+      "id": "bpvGwXjMwpeXahtb9AuP3",
+      "title": "Autenticación de cliente",
+      "configuration": {
+        "title": "Autenticación de cliente",
+        "skillId": "53043"
+      },
+      "type": "SKILL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "fZRr5IsYguUeoVMckIApY",
+      "title": "Ir a Comprobante de último pago",
+      "configuration": {
+        "title": "Ir a Comprobante de último pago",
+        "skillId": "53049"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        710
+      ]
+    },
+    {
+      "id": "gq7KMy-6b3qNSyOd0xs9z",
+      "title": "Ir a Carta de cancelación",
+      "configuration": {
+        "title": "Ir a Carta de cancelación",
+        "skillId": "53044"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        380
+      ]
+    },
+    {
+      "id": "J7ZO6wYkUdkZ6hhW_NWve",
+      "title": "¿Qué documento pidió?",
+      "configuration": {
+        "title": "¿Qué documento pidió?",
+        "conditions": [
+          {
+            "id": "c_saldo",
+            "name": "Carta de saldo",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "carta_saldo",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_estado",
+            "name": "Estado de cuenta",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "estado_cuenta",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_cancel",
+            "name": "Carta de cancelación",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "carta_cancelacion",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_ultimo",
+            "name": "Último pago",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "ultimo_pago",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_asesor",
+            "name": "Asesor",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "asesor",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_registro",
+            "name": "Quiere registrarse",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "registro",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_ninguno",
+            "name": "No necesita nada",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_menu.documento}}",
+                "value2": "ninguno",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1264,
+        53
+      ]
+    },
+    {
+      "id": "MFZH-yKTuR3SuF7p-1Z27",
+      "title": "Registrar salida sin estado",
+      "configuration": {
+        "title": "Registrar salida sin estado",
+        "content": "// El agente terminó sin un documento reconocido: no se envía mensaje.\n$memory.set(\"cv_ultimoResultado\", \"sin_estado\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1652,
+        1370
+      ]
+    },
+    {
+      "id": "msJ7leZHVgdK9fUCGAHD5",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        2100
+      ]
+    },
+    {
+      "id": "nYEfOtcYanradP0Sm_ezX",
+      "title": "Ir a Estado de cuenta",
+      "configuration": {
+        "title": "Ir a Estado de cuenta",
+        "skillId": "53051"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        50
+      ]
+    },
+    {
+      "id": "pO7asGUSrMrl-DXKhj7X2",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "TJ_vrruRXx88T0bTYvCud",
+      "title": "Cierre por inactividad",
+      "configuration": {
+        "title": "Cierre por inactividad",
+        "skillId": "53048"
+      },
+      "type": "SKILL",
+      "position": [
+        1264,
+        773
+      ]
+    },
+    {
+      "id": "WaXrQkUBgRCnARpD3dv9E",
+      "title": "Ir a Registro de cliente",
+      "configuration": {
+        "title": "Ir a Registro de cliente",
+        "skillId": "53335"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        2693
+      ]
+    },
+    {
+      "id": "wfJ-_v3QLeXAsZOGdM6gD",
+      "title": "Despedida",
+      "configuration": {
+        "title": "Despedida",
+        "skillId": "53046"
+      },
+      "type": "SKILL",
+      "position": [
+        1652,
+        1770
+      ]
+    },
+    {
+      "id": "x8rcFZ3h8e8UKiIVL2U2S",
+      "title": "Asistente de documentos",
+      "configuration": {
+        "name": "Asistente de documentos",
+        "model": "openai/gpt-6-luna",
+        "version": "v2",
+        "settings": {
+          "expiration": {
+            "time": "minutes",
+            "enabled": true,
+            "duration": 30,
+            "timeInSeconds": 1800
+          },
+          "splitMessages": false,
+          "messageHistory": {
+            "count": 10,
+            "enabled": false
+          }
+        },
+        "variable": "cv_menu",
+        "connections": {
+          "mcp": [],
+          "datum": [],
+          "tools": [
+            {
+              "id": "send_interactive_message",
+              "name": "send_interactive_message",
+              "action": "pause",
+              "external": false,
+              "description": ""
+            }
+          ]
+        },
+        "endFunction": {
+          "rawSchema": {
+            "documento": {
+              "type": "string",
+              "required": true
+            }
+          },
+          "description": "Termina en cuanto sepas qué documento necesita el cliente, si pide un asesor, si quiere registrarse o solicitar un crédito nuevo, o si quiere salir o no necesita nada. Completa 'documento' con uno de: carta_saldo, estado_cuenta, carta_cancelacion, ultimo_pago, asesor, registro, ninguno. Termina justo después de identificarlo; no envíes despedida ni confirmación, el siguiente paso la envía."
+        },
+        "instructions": "Eres el asistente de atención al cliente de Crediviva (fintech panameña de \"compra ahora, paga después\"). El cliente ya validó su identidad. Tu única tarea es identificar QUÉ documento de su crédito necesita.\n\nDocumentos disponibles (en este orden):\n1. Carta de saldo — saldo pendiente del crédito; suele pedirse para un banco u otra entidad.\n2. Estado de cuenta — detalle de movimientos, cuotas y pagos del crédito.\n3. Carta de cancelación — constancia de que el crédito está pagado por completo (paz y salvo).\n4. Comprobante de último pago — recibo del pago más reciente.\n\nCómo actuar:\n- No te presentes ni des bienvenidas largas: ve directo a preguntar qué documento necesita.\n- Cada vez que entras empieza una solicitud nueva: muestra siempre las opciones, aunque el cliente ya haya pedido documentos antes en la conversación.\n- Si el cliente aún no dijo qué necesita, muéstrale las opciones con send_interactive_message usando exactamente estos títulos: \"Carta de saldo\", \"Estado de cuenta\", \"Carta de cancelación\", \"Último pago\", \"Hablar con asesor\". Termina el texto con: \"Si no necesitas nada, escribe *salir*.\"\n- Interpreta sinónimos: \"saldo\", \"cuánto debo para un banco\" → carta de saldo; \"movimientos\", \"extracto\" → estado de cuenta; \"paz y salvo\", \"ya terminé de pagar\" → carta de cancelación; \"recibo\", \"comprobante\" → último pago. Acepta también el número de la opción.\n- Si la petición es ambigua entre dos documentos, haz UNA pregunta corta para aclarar.\n- Si pide hablar con una persona, tiene un reclamo, una consulta de empresa o comercio (B2B) o algo que no es un documento ni un registro, marca \"asesor\".\n- Si dice que no necesita nada o quiere salir (\"salir\", \"cancelar\", \"no gracias\", \"ya no\", \"terminar\"), marca \"ninguno\" y termina de inmediato, sin pedir confirmación.\n- Si quiere registrarse, crear una cuenta o solicitar un crédito nuevo (\"quiero registrarme\", \"quiero un crédito\", \"abrir cuenta\"), marca \"registro\" y termina de inmediato, sin escribirle nada: el siguiente paso lo lleva al registro.\n- Nunca respondas solo \"Entendido\" ni te despidas: cuando el cliente ya decidió, termina la tarea con el valor correspondiente.\n- No inventes saldos, montos ni datos del crédito. No pidas datos personales.\n- Cuando ofrezcas opciones usa la herramienta send_interactive_message: nunca más de 10 opciones, máximo 20 caracteres por opción, títulos únicos y en el orden indicado. Envía siempre title y caption con el texto exacto \"Opciones\": es la etiqueta del botón que abre la lista.\n- Responde en español, breve y cordial.",
+        "startCommand": "Ya validé mi identidad. Quiero solicitar un documento de mi crédito.",
+        "instructions_lang": "es",
+        "nonHappyPathHandlers": {
+          "error": {
+            "mode": "message",
+            "message": "Tuvimos un problema técnico y no pude completar tu solicitud. Intenta de nuevo en unos minutos escribiendo *documentos*."
+          }
+        }
+      },
+      "type": "AI_TASK",
+      "position": [
+        876,
+        450
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "0qYOmH4-PDuS4bInwPSIC",
+      "sourceId": "bpvGwXjMwpeXahtb9AuP3",
+      "targetId": "x8rcFZ3h8e8UKiIVL2U2S",
+      "branch": "output:WmB2Tz0g6WTaag9tg4lNg:success"
+    },
+    {
+      "id": "17oJKo_8wmH-2bXYnIx9L",
+      "sourceId": "x8rcFZ3h8e8UKiIVL2U2S",
+      "targetId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "branch": "success"
+    },
+    {
+      "id": "3icplK4UVspTuEJsVGh9Y",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "36aukyVd46jknb7fiCmXX",
+      "branch": "condition:c_saldo"
+    },
+    {
+      "id": "7yQEApZsDKonmB0EU-UQM",
+      "sourceId": "bpvGwXjMwpeXahtb9AuP3",
+      "targetId": "8Pi8F3YYR2uZwibwb6mW0",
+      "branch": "output:aDZbYAFeH5p5mctJDD-kQ:failed"
+    },
+    {
+      "id": "8E7G1gURAwaPCgcQqKw4M",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "fZRr5IsYguUeoVMckIApY",
+      "branch": "condition:c_ultimo"
+    },
+    {
+      "id": "8liQ8guCT0l5weqa3i5Ss",
+      "sourceId": "bpvGwXjMwpeXahtb9AuP3",
+      "targetId": "msJ7leZHVgdK9fUCGAHD5",
+      "branch": "output:sAI_fixi4P3V8b_AXz3SP:failed"
+    },
+    {
+      "id": "bTR3DE3KOCjuqFMpSsrDv",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "MFZH-yKTuR3SuF7p-1Z27",
+      "branch": "else"
+    },
+    {
+      "id": "hBXfg6Gr6LoxvCfVF7R7P",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "wfJ-_v3QLeXAsZOGdM6gD",
+      "branch": "condition:c_ninguno"
+    },
+    {
+      "id": "HZKDSwIJCLD1UDFU_a6Kw",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "WaXrQkUBgRCnARpD3dv9E",
+      "branch": "condition:c_registro"
+    },
+    {
+      "id": "Pj9zudKj8B_3FTD8LJehn",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "nYEfOtcYanradP0Sm_ezX",
+      "branch": "condition:c_estado"
+    },
+    {
+      "id": "r5-u0Wz_Wk3QM9tt1lFN_",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "gq7KMy-6b3qNSyOd0xs9z",
+      "branch": "condition:c_cancel"
+    },
+    {
+      "id": "tj2Jak4B-3FaVZk6YnxYR",
+      "sourceId": "x8rcFZ3h8e8UKiIVL2U2S",
+      "targetId": "TJ_vrruRXx88T0bTYvCud",
+      "branch": "expire"
+    },
+    {
+      "id": "tnESjh_g87aYTZCwopDLs",
+      "sourceId": "pO7asGUSrMrl-DXKhj7X2",
+      "targetId": "bpvGwXjMwpeXahtb9AuP3",
+      "branch": "default"
+    },
+    {
+      "id": "vjgdOj20A0P6sx8U69FrV",
+      "sourceId": "J7ZO6wYkUdkZ6hhW_NWve",
+      "targetId": "msJ7leZHVgdK9fUCGAHD5",
+      "branch": "condition:c_asesor"
+    }
+  ]
+}

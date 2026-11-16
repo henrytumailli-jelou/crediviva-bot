@@ -1,0 +1,7 @@
+{
+  "$schema": "https://jelou.ai/schemas/jelou.json",
+  "function": "crediviva-documentos",
+  "id": "func_01m5g9y9rveehb26vykngfx1hb",
+  "organizationId": "01M5G106G6M3JC4N8PBHARAEGN",
+  "entrypoint": "index.ts"
+}

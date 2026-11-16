@@ -1,0 +1,324 @@
+{
+  "toolId": 9109,
+  "workflowId": 74960,
+  "toolName": "Crediviva Login de Prueba",
+  "toolDescription": "Solo ambiente staging y números de prueba autorizados: inicia sesión en Crediviva con correo y contraseña capturados en el chat.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "userId",
+      "id": "68gDBJoRNSIJeCLgjCKvx",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, {{$user.id}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "email",
+      "id": "JE-3jZdxARLAdiE2avvSF",
+      "displayName": "Correo",
+      "description": "Correo de la cuenta de prueba",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 1
+    },
+    {
+      "name": "password",
+      "id": "qyowo0ly-3Y6ioeXXQJz4",
+      "displayName": "Contraseña",
+      "description": "Contraseña de la cuenta de prueba",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 2
+    },
+    {
+      "name": "ambiente",
+      "id": "7dv2a8hBSm9o_5iKbGzD3",
+      "displayName": "Ambiente",
+      "description": "staging o production, {{$memory.cv_ambiente}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 3
+    }
+  ],
+  "outputs": [
+    {
+      "name": "error",
+      "id": "RHFj0bCs8SAzijRLkKxKW",
+      "displayName": "Error técnico",
+      "description": "{ ok:false, estado:\"error\", code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "resultado",
+      "id": "D8ri2qwRXr9LNQJBMHCmR",
+      "displayName": "Resultado",
+      "description": "{ ok:true, estado: sesion_iniciada | completado | credenciales_invalidas | no_permitido, paso, decision, authKey? }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "1xNcD4pXcM3rDwsuoif7m",
+      "title": "¿Cuál es el resultado?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "resultado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "4_cyB2oshHY3QKTJDp0lD",
+      "title": "Llamar servicio de login",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de login",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/prueba-login",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "DEdZ5aodfuvXtdvZ24H-M",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\nconst userId = String(inp(\"userId\", \"\")).trim();\nconst email = String(inp(\"email\", \"\")).trim().toLowerCase();\n// La contraseña nunca se imprime.\nconst password = String(inp(\"password\", \"\"));\nif (!fallo && (!userId || !email || !password)) fallo = \"Faltan datos para iniciar sesión.\";\n$context.set(\"body\", JSON.stringify({ userId, email, password, ambiente }));\nif (fallo) $output.set(\"error\", { ok: false, estado: \"error\", code: \"CONFIGURACION\", message: fallo });\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "IHOqrjDkf7ElmlLJOLsjv",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "jMolhx59F90K_I3PFAf74",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nlet salida = \"error\";\nconst conocidos = [\"sesion_iniciada\", \"completado\", \"credenciales_invalidas\", \"no_permitido\"];\nif (ok && conocidos.includes(data.estado)) {\n  salida = \"resultado\";\n  const r = { ok: true, estado: data.estado, paso: String(data.paso || \"\"), decision: String(data.decision || \"\") };\n  // Sesión de Crediviva: solo viaja hacia el workflow, que la guarda en memoria. Nunca se imprime.\n  if (typeof data.authKey === \"string\" && data.authKey) r.authKey = data.authKey;\n  $output.set(\"resultado\", r);\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"No se pudo iniciar sesión.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "o5trjhlXB2tiaELQ7oVXc",
+      "title": "Fin: resultado",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "outputId": "D8ri2qwRXr9LNQJBMHCmR",
+        "title": "Fin: resultado"
+      }
+    },
+    {
+      "id": "SBwCbrUv3-_90aSiq5Sxo",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  estado: \"error\",\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de login de pruebas.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "SU2vwA7CKCfSS6k25a29U",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "weWkK3OnR6wMDvZgD5wy0",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "outputId": "RHFj0bCs8SAzijRLkKxKW",
+        "title": "Fin: Error técnico"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "6c7LPuj2no2mleN4X6Yf8",
+      "sourceId": "DEdZ5aodfuvXtdvZ24H-M",
+      "targetId": "IHOqrjDkf7ElmlLJOLsjv",
+      "branch": "success"
+    },
+    {
+      "id": "bo-Jr0kv7Bmi9RDcy9ZmE",
+      "sourceId": "1xNcD4pXcM3rDwsuoif7m",
+      "targetId": "weWkK3OnR6wMDvZgD5wy0",
+      "branch": "else"
+    },
+    {
+      "id": "FJPXSoPML1Yq9TU-nx7IT",
+      "sourceId": "IHOqrjDkf7ElmlLJOLsjv",
+      "targetId": "weWkK3OnR6wMDvZgD5wy0",
+      "branch": "else"
+    },
+    {
+      "id": "ilslUMEHDc73shpqmpZYc",
+      "sourceId": "jMolhx59F90K_I3PFAf74",
+      "targetId": "SBwCbrUv3-_90aSiq5Sxo",
+      "branch": "failed"
+    },
+    {
+      "id": "MpQa2v4XfUU5RUOoObOhE",
+      "sourceId": "IHOqrjDkf7ElmlLJOLsjv",
+      "targetId": "4_cyB2oshHY3QKTJDp0lD",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "o78Dsif10x6ZBpW0rNvDJ",
+      "sourceId": "SU2vwA7CKCfSS6k25a29U",
+      "targetId": "DEdZ5aodfuvXtdvZ24H-M",
+      "branch": "default"
+    },
+    {
+      "id": "P3aKhhLP-zOKhQHZBU1-0",
+      "sourceId": "DEdZ5aodfuvXtdvZ24H-M",
+      "targetId": "SBwCbrUv3-_90aSiq5Sxo",
+      "branch": "failed"
+    },
+    {
+      "id": "PjHTaFrpjG84zGG7EnLe7",
+      "sourceId": "jMolhx59F90K_I3PFAf74",
+      "targetId": "1xNcD4pXcM3rDwsuoif7m",
+      "branch": "success"
+    },
+    {
+      "id": "pT14LibZGdGMBihEpA8MO",
+      "sourceId": "SBwCbrUv3-_90aSiq5Sxo",
+      "targetId": "weWkK3OnR6wMDvZgD5wy0",
+      "branch": "success"
+    },
+    {
+      "id": "suV6-R8oCoMDfR0kWranE",
+      "sourceId": "1xNcD4pXcM3rDwsuoif7m",
+      "targetId": "o5trjhlXB2tiaELQ7oVXc",
+      "branch": "condition:cond_resultado"
+    },
+    {
+      "id": "svT-3m96F-7tfM75jmVq3",
+      "sourceId": "4_cyB2oshHY3QKTJDp0lD",
+      "targetId": "jMolhx59F90K_I3PFAf74",
+      "branch": "failed"
+    },
+    {
+      "id": "Xk-fZndn2vLWklV3r6V2y",
+      "sourceId": "4_cyB2oshHY3QKTJDp0lD",
+      "targetId": "jMolhx59F90K_I3PFAf74",
+      "branch": "success"
+    }
+  ]
+}

@@ -1,0 +1,383 @@
+{
+  "toolId": 8934,
+  "workflowId": 73041,
+  "toolName": "Crediviva Enviar Documento",
+  "toolDescription": "Envía al cliente, en la conversación actual, un documento PDF a partir de su enlace de descarga.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "mediaUrl",
+      "id": "ZUN9QG-GRbuNfo6PO4zmr",
+      "displayName": "Enlace del documento",
+      "description": "URL https de descarga del PDF, tal como la devolvió la tool del documento (campo downloadUrl).",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "filename",
+      "id": "weuJTNjN2AC9zTx7ENZgK",
+      "displayName": "Nombre del archivo",
+      "description": "Nombre con el que el cliente verá el archivo, ej. \"Estado de cuenta - Crediviva.pdf\".",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "text",
+      "id": "-Kqm2GAJph69dul2addyT",
+      "displayName": "Mensaje",
+      "description": "Texto corto que acompaña al archivo, ej. \"Aquí tienes tu estado de cuenta 📄\".",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "enviado",
+      "id": "Tfpk461ydeL7Ti3n0idln",
+      "displayName": "Documento enviado",
+      "description": "El archivo se envió a la conversación. { ok:true }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "0zVsvUSjMSmSxoMCX3ebM",
+      "displayName": "Error al enviar",
+      "description": "No se pudo enviar el archivo. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "-IPfneM2ZAPw6hQjS9B3Q",
+      "type": "CONDITIONAL",
+      "title": "¿Se envió?",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Se envió?",
+        "conditions": [
+          {
+            "id": "cond_enviado",
+            "name": "Enviado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "enviado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ApX2n-5gOqSg7OlYG4GAE",
+      "type": "HTTP",
+      "title": "Obtener enlace PDF",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Obtener enlace PDF",
+        "method": "POST",
+        "url": "https://crediviva-documentos-c0d1ad.fn.jelou.ai/enlace",
+        "output": "enlacePdf",
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.enlaceBody}}"
+        },
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 10000
+        }
+      }
+    },
+    {
+      "id": "aTUgGxHXAuFVXLWGqdhew",
+      "type": "CODE",
+      "title": "Fallo técnico",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "memoryVersion": "v2",
+        "content": "$output.set(\"error\", { ok: false, code: \"TECNICO\", message: \"No fue posible enviar el archivo.\" });"
+      }
+    },
+    {
+      "id": "bD_dWa43d8yu9ygiNuw1Z",
+      "type": "CONDITIONAL",
+      "title": "¿Datos completos?",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Datos completos?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Datos completos",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "Ei5HWUeCtg5GiO4DQbPdS",
+      "type": "END",
+      "title": "Fin: enviado",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: enviado",
+        "outputId": "Tfpk461ydeL7Ti3n0idln"
+      }
+    },
+    {
+      "id": "eIXdeyy2EP9K4XKwdl1pv",
+      "type": "END",
+      "title": "Fin: error",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: error",
+        "outputId": "0zVsvUSjMSmSxoMCX3ebM"
+      }
+    },
+    {
+      "id": "QQ6udZrOo2BhxTabfRCxY",
+      "type": "CODE",
+      "title": "Preparar mensaje",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar mensaje",
+        "memoryVersion": "v2",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nconst mediaUrl = String(inp(\"mediaUrl\", \"\")).trim();\nlet filename = String(inp(\"filename\", \"\")).trim() || \"Documento - Crediviva.pdf\";\nif (!/\\.pdf$/i.test(filename)) filename += \".pdf\";\nconst text = String(inp(\"text\", \"\")).trim();\nlet userId = \"\";\ntry {\n  userId = String($user.get(\"id\") || \"\");\n} catch (e) {\n  userId = \"\";\n}\nlet fallo = \"\";\nif (!/^https:\\/\\//i.test(mediaUrl)) fallo = \"El enlace del documento no es válido.\";\nelse if (!userId) fallo = \"No se identificó la conversación del cliente.\";\nif (fallo) {\n  $output.set(\"error\", { ok: false, code: \"ENTRADA_INVALIDA\", message: fallo });\n}\n$context.set(\"body\", JSON.stringify({ type: \"file\", mediaUrl, text, filename, userId }));\n$context.set(\"mediaUrl\", mediaUrl);\n$context.set(\"filename\", filename);\n$context.set(\"text\", text);\n$context.set(\"userId\", userId);\n$context.set(\"enlaceBody\", JSON.stringify({ url: mediaUrl, filename }));\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");"
+      }
+    },
+    {
+      "id": "s__QRynMYow4iVDfxGVef",
+      "type": "CODE",
+      "title": "Usar enlace PDF",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Usar enlace PDF",
+        "memoryVersion": "v2",
+        "content": "// Temporal: si crediviva-documentos devuelve un enlace propio, se envía ese (sirve application/pdf).\n// Si falla o el archivo no es de Crediviva, se envía el enlace original.\nlet url = String($context.get(\"mediaUrl\") || \"\");\ntry {\n  const res = $context.getHttpResponse(\"enlacePdf\");\n  const status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n  const data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? {});\n  if (status >= 200 && status < 300 && data && data.ok === true && typeof data.url === \"string\") url = data.url;\n  $utils.logger.log(\"enlacePdf\", JSON.stringify({ status, propio: url !== $context.get(\"mediaUrl\") }));\n} catch (e) {\n  $utils.logger.log(\"enlacePdf\", \"sin respuesta, se usa el enlace original\");\n}\n$context.set(\n  \"body\",\n  JSON.stringify({ type: \"file\", mediaUrl: url, text: $context.get(\"text\") || \"\", filename: $context.get(\"filename\"), userId: $context.get(\"userId\") }),\n);"
+      }
+    },
+    {
+      "id": "TjCIPEFqr6rs2xvRts5lw",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "VN73L_UCAWlKwcigxgZxl",
+      "type": "HTTP",
+      "title": "Enviar archivo a la conversación",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Enviar archivo a la conversación",
+        "method": "POST",
+        "url": "https://api.jelou.ai/v1/bots/{{$user.botId}}/messages",
+        "output": "envioResponse",
+        "authentication": {
+          "type": "basic",
+          "enabled": true,
+          "username": "{{$company.clientId}}",
+          "password": "{{$company.clientSecret}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        },
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "Xd5kS0IAvOHkXXYMSAeDj",
+      "type": "CODE",
+      "title": "Interpretar respuesta",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "memoryVersion": "v2",
+        "content": "const res = $context.getHttpResponse(\"envioResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (!data || typeof data !== \"object\") data = {};\n$utils.logger.log(\"envioResponse\", JSON.stringify({ status }));\nif (status >= 200 && status < 300) {\n  $output.set(\"enviado\", { ok: true });\n  $context.set(\"salida\", \"enviado\");\n} else {\n  const mensaje = String(data.message ?? data.error?.message ?? \"\");\n  $output.set(\"error\", { ok: false, code: \"HTTP_\" + status, message: mensaje || \"No se pudo enviar el archivo.\" });\n  $context.set(\"salida\", \"error\");\n}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "6wQyUatHGFuIY8FeNGCC3",
+      "sourceId": "bD_dWa43d8yu9ygiNuw1Z",
+      "targetId": "eIXdeyy2EP9K4XKwdl1pv",
+      "branch": "else"
+    },
+    {
+      "id": "7jNGEw1QMCA40L7sVaVMY",
+      "sourceId": "VN73L_UCAWlKwcigxgZxl",
+      "targetId": "Xd5kS0IAvOHkXXYMSAeDj",
+      "branch": "success"
+    },
+    {
+      "id": "88VOxc0avu_oYamS0UYUL",
+      "sourceId": "TjCIPEFqr6rs2xvRts5lw",
+      "targetId": "QQ6udZrOo2BhxTabfRCxY",
+      "branch": "default"
+    },
+    {
+      "id": "d87rCFZr-JgUox89xW8MM",
+      "sourceId": "ApX2n-5gOqSg7OlYG4GAE",
+      "targetId": "s__QRynMYow4iVDfxGVef",
+      "branch": "failed"
+    },
+    {
+      "id": "hMZ8n3zVQziskL9aNvvxl",
+      "sourceId": "Xd5kS0IAvOHkXXYMSAeDj",
+      "targetId": "aTUgGxHXAuFVXLWGqdhew",
+      "branch": "failed"
+    },
+    {
+      "id": "I-Smviw8ayWrIkA56SPR7",
+      "sourceId": "-IPfneM2ZAPw6hQjS9B3Q",
+      "targetId": "eIXdeyy2EP9K4XKwdl1pv",
+      "branch": "else"
+    },
+    {
+      "id": "jP39iJZf8RRq38Ptb60vF",
+      "sourceId": "QQ6udZrOo2BhxTabfRCxY",
+      "targetId": "aTUgGxHXAuFVXLWGqdhew",
+      "branch": "failed"
+    },
+    {
+      "id": "KXp4JqolrmnNIvcvnM6wH",
+      "sourceId": "Xd5kS0IAvOHkXXYMSAeDj",
+      "targetId": "-IPfneM2ZAPw6hQjS9B3Q",
+      "branch": "success"
+    },
+    {
+      "id": "mlquMzenaRp74M9LvOfth",
+      "sourceId": "s__QRynMYow4iVDfxGVef",
+      "targetId": "VN73L_UCAWlKwcigxgZxl",
+      "branch": "failed"
+    },
+    {
+      "id": "Nc3pXq1yNSgxfB2VMZWBc",
+      "sourceId": "s__QRynMYow4iVDfxGVef",
+      "targetId": "VN73L_UCAWlKwcigxgZxl",
+      "branch": "success"
+    },
+    {
+      "id": "OcTVkPbAWgbp7VaYwXxbU",
+      "sourceId": "QQ6udZrOo2BhxTabfRCxY",
+      "targetId": "bD_dWa43d8yu9ygiNuw1Z",
+      "branch": "success"
+    },
+    {
+      "id": "ppK7vieJevmc4s3yMXEcU",
+      "sourceId": "VN73L_UCAWlKwcigxgZxl",
+      "targetId": "Xd5kS0IAvOHkXXYMSAeDj",
+      "branch": "failed"
+    },
+    {
+      "id": "Qo0e27x76oBgTokU4uxZz",
+      "sourceId": "-IPfneM2ZAPw6hQjS9B3Q",
+      "targetId": "Ei5HWUeCtg5GiO4DQbPdS",
+      "branch": "condition:cond_enviado"
+    },
+    {
+      "id": "usUz0GYdctcQQQ85SwrQ4",
+      "sourceId": "ApX2n-5gOqSg7OlYG4GAE",
+      "targetId": "s__QRynMYow4iVDfxGVef",
+      "branch": "success"
+    },
+    {
+      "id": "VXFLXWONybyLtTi-0xQz2",
+      "sourceId": "aTUgGxHXAuFVXLWGqdhew",
+      "targetId": "eIXdeyy2EP9K4XKwdl1pv",
+      "branch": "success"
+    },
+    {
+      "id": "W_4WlTGj6KvyTA0f2_1GN",
+      "sourceId": "bD_dWa43d8yu9ygiNuw1Z",
+      "targetId": "ApX2n-5gOqSg7OlYG4GAE",
+      "branch": "condition:cond_prep_ok"
+    }
+  ]
+}

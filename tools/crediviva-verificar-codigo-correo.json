@@ -1,0 +1,353 @@
+{
+  "toolId": 8991,
+  "workflowId": 73637,
+  "toolName": "Crediviva Verificar Codigo Correo",
+  "toolDescription": "Verifica el código que el cliente recibió en su correo para completar la verificación del correo de su registro en Crediviva.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "email",
+      "id": "4rPkItazA9uYLJE3M1SEg",
+      "displayName": "Correo",
+      "description": "Correo electrónico que escribió el cliente, en minúsculas, ej. \"juan.perez@gmail.com\"",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "codigo",
+      "id": "PUrsibGJZ-Fq7vCycG5Yd",
+      "displayName": "Código",
+      "description": "Código de verificación que el cliente recibió en su correo, solo dígitos (4 a 6), conserva ceros iniciales, ej. \"0427\"",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "ambiente",
+      "id": "gzbw7oG90F3VLVjc9_oy5",
+      "displayName": "Ambiente",
+      "description": "Ambiente de Crediviva: \"staging\" o \"production\". Lo define el workflow Configuración de ambiente.",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "userId",
+      "id": "JW5HG4jM948JcWJAuGRVC",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, normalmente {{$user.id}}. Se usa para asociar el correo verificado a su consentimiento.",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "phone",
+      "id": "fK6TKMlyYgHvyPdCYL-qt",
+      "displayName": "Teléfono",
+      "description": "Teléfono del usuario, normalmente {{$user.phone}}, ej. \"50761234567\"",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "resultado",
+      "id": "VQVnyr-Rw7npudwfby1Bf",
+      "displayName": "Resultado",
+      "description": "El servicio respondió. { ok:true, estado, message, segundos? }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "cy48XEgcDKIM5Gd4g-g-p",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "JwiHB5PJs-y3Ep0Eph-6T",
+      "title": "Fin: Resultado",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Resultado",
+        "outputId": "VQVnyr-Rw7npudwfby1Bf"
+      }
+    },
+    {
+      "id": "Lod8flpjtxEs9BCXthcyq",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "cy48XEgcDKIM5Gd4g-g-p"
+      }
+    },
+    {
+      "id": "lzneIEardp0g9espZWOWP",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          },
+          {
+            "id": "cond_prep_formato",
+            "name": "Dato con formato inválido",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "formato"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ouJkeksPsnkA6gH54BIIh",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "memoryVersion": "v2",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nconst MENSAJES = {\"verificado\": \"El código es correcto: el correo quedó verificado.\", \"incorrecto\": \"El código no coincide.\", \"expirado\": \"El código expiró: el cliente debe pedir uno nuevo.\"};\nconst conocidos = [\"verificado\", \"incorrecto\", \"expirado\"];\nlet salida = \"error\";\nif (ok && conocidos.includes(data.estado)) {\n  salida = \"resultado\";\n  const r = { ok: true, estado: data.estado, message: MENSAJES[data.estado] };\n  if (data.estado === \"espera\") {\n    r.segundos = Number(data.segundos) || 45;\n    r.message = \"Ya se envió un código hace poco: el cliente debe esperar \" + r.segundos + \" segundos antes de pedir otro.\";\n  }\n  $output.set(\"resultado\", r);\n} else {\n  $output.set(\"error\", { ok: false, code: \"TECNICO\", message: \"El servicio de registro de Crediviva no respondió (HTTP \" + status + \").\" });\n}\n$context.set(\"salida\", salida);"
+      }
+    },
+    {
+      "id": "pChFfbLFzpu5OYtENWA8K",
+      "title": "¿Respondió el servicio?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Respondió el servicio?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "Respondió",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "S1lW-5iUHOf35y0QFt-Kr",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "sGA2tm_FSDdy_YOcH2v8h",
+      "title": "Llamar servicio de registro",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de registro",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/correo-verificar",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "V0jHu5XVoy0uTdfdYLc4Q",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") {\n  fallo = \"El ambiente debe ser staging o production (recibido: \" + ambiente + \").\";\n}\nconst email = String(inp(\"email\", \"\")).trim().toLowerCase();\nif (!fallo && !/^[^\\s@]+@[^\\s@]+\\.[a-z]{2,}$/.test(email)) fallo = \"FORMATO\";\nconst body = { email, ambiente };\nconst codigo = String(inp(\"codigo\", \"\")).replace(/\\s/g, \"\");\nif (!fallo && !/^\\d{4,6}$/.test(codigo)) fallo = \"CODIGO\";\nbody.codigo = codigo;\nconst userId = String(inp(\"userId\", \"\")).trim();\nif (userId && !userId.includes(\"{{\")) body.userId = userId;\nconst phone = String(inp(\"phone\", \"\")).trim();\nif (phone && !phone.includes(\"{{\")) body.phone = phone;\n$context.set(\"body\", JSON.stringify(body));\nif (fallo === \"FORMATO\") {\n  $output.set(\"resultado\", { ok: true, estado: \"invalido\", message: \"El correo no tiene un formato válido: pide al cliente que lo revise.\" });\n} else if (fallo === \"CODIGO\") {\n  $output.set(\"resultado\", { ok: true, estado: \"incorrecto\", message: \"El código debe tener solo dígitos (4 a 6): pide al cliente que lo revise.\" });\n} else if (fallo) {\n  $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo === \"FORMATO\" || fallo === \"CODIGO\" ? \"formato\" : fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "wR9r5JGknh-LUKkwRnUic",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "memoryVersion": "v2",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de registro de Crediviva.\",\n});"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "_lUISHyp1qcz169rp9i-S",
+      "sourceId": "lzneIEardp0g9espZWOWP",
+      "targetId": "Lod8flpjtxEs9BCXthcyq",
+      "branch": "else"
+    },
+    {
+      "id": "-uekvKztQkuTx63rgYG5O",
+      "sourceId": "S1lW-5iUHOf35y0QFt-Kr",
+      "targetId": "V0jHu5XVoy0uTdfdYLc4Q",
+      "branch": "default"
+    },
+    {
+      "id": "7hIlWqC96L2rQCnZLrJou",
+      "sourceId": "pChFfbLFzpu5OYtENWA8K",
+      "targetId": "Lod8flpjtxEs9BCXthcyq",
+      "branch": "else"
+    },
+    {
+      "id": "9bx6wSEf3A6SY_dOzg3Wu",
+      "sourceId": "ouJkeksPsnkA6gH54BIIh",
+      "targetId": "wR9r5JGknh-LUKkwRnUic",
+      "branch": "failed"
+    },
+    {
+      "id": "c1SXZCyvtRsmjyipvqGlk",
+      "sourceId": "V0jHu5XVoy0uTdfdYLc4Q",
+      "targetId": "lzneIEardp0g9espZWOWP",
+      "branch": "success"
+    },
+    {
+      "id": "k-d_wOa5KZbs8gNOCMpMH",
+      "sourceId": "ouJkeksPsnkA6gH54BIIh",
+      "targetId": "pChFfbLFzpu5OYtENWA8K",
+      "branch": "success"
+    },
+    {
+      "id": "LpLU8gBKW3BCz-KtOlPCQ",
+      "sourceId": "sGA2tm_FSDdy_YOcH2v8h",
+      "targetId": "ouJkeksPsnkA6gH54BIIh",
+      "branch": "failed"
+    },
+    {
+      "id": "mzrLzRd0tEqED9A4e9JKK",
+      "sourceId": "lzneIEardp0g9espZWOWP",
+      "targetId": "sGA2tm_FSDdy_YOcH2v8h",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "OXLgwq9xFeFxV7yC-o2Ir",
+      "sourceId": "lzneIEardp0g9espZWOWP",
+      "targetId": "JwiHB5PJs-y3Ep0Eph-6T",
+      "branch": "condition:cond_prep_formato"
+    },
+    {
+      "id": "QCKAHU6wJP26HKL-RWgUr",
+      "sourceId": "V0jHu5XVoy0uTdfdYLc4Q",
+      "targetId": "wR9r5JGknh-LUKkwRnUic",
+      "branch": "failed"
+    },
+    {
+      "id": "RaUbzlOYP2dnfxsi8qiU3",
+      "sourceId": "wR9r5JGknh-LUKkwRnUic",
+      "targetId": "Lod8flpjtxEs9BCXthcyq",
+      "branch": "success"
+    },
+    {
+      "id": "vfxTxvIgJToeEtOzag-Vi",
+      "sourceId": "sGA2tm_FSDdy_YOcH2v8h",
+      "targetId": "ouJkeksPsnkA6gH54BIIh",
+      "branch": "success"
+    },
+    {
+      "id": "XcjBsgT0un7rIq0OiTfbK",
+      "sourceId": "pChFfbLFzpu5OYtENWA8K",
+      "targetId": "JwiHB5PJs-y3Ep0Eph-6T",
+      "branch": "condition:cond_resultado"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://jelou.ai/schemas/jelou.json",
+  "function": "crediviva-onboarding",
+  "id": "func_01m5xdbht6e8793z2vsh2mbgmv",
+  "organizationId": "01M5G106G6M3JC4N8PBHARAEGN",
+  "entrypoint": "index.ts"
+}

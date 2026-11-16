@@ -1,0 +1,302 @@
+{
+  "toolId": 8994,
+  "workflowId": 73648,
+  "toolName": "Crediviva Estado Registro",
+  "toolDescription": "Recoge (una sola vez) cómo terminó el webview de registro y, si el cliente creó su cuenta o inició sesión, la sesión de Crediviva para guardarla en memoria.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "userId",
+      "id": "9WduD2elYJ9oMOY8vCGrl",
+      "displayName": "Usuario",
+      "description": "Id del usuario de Jelou, normalmente {{$user.id}}",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "phone",
+      "id": "Ipw-WJ6GA9kDA9CDdsrf6",
+      "displayName": "Teléfono",
+      "description": "Teléfono del usuario, normalmente {{$user.phone}}, ej. \"50761234567\"",
+      "type": "STRING",
+      "required": false,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "resultado",
+      "id": "yAL6VBwC1JpYmDkQVyWBc",
+      "displayName": "Resultado",
+      "description": "{ ok:true, estado: cuenta_creada | sesion_iniciada | completado | app | cancelado | pendiente | sin_sesion, paso, decision, origen (registro | login | solicitud), ambiente, mensaje, monto, authKey? } — authKey solo cuando creó la cuenta o inició sesión; s",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "A1n9IWVQORUgbzHXu7YVf",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "3QAU1k4CnYjaUKENoqMj2",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst userId = String(inp(\"userId\", \"\")).trim();\nif (!userId) fallo = \"Falta el usuario.\";\nconst body = { userId };\nconst phone = String(inp(\"phone\", \"\")).trim();\nif (phone && !phone.includes(\"{{\")) body.phone = phone;\n$context.set(\"body\", JSON.stringify(body));\nif (fallo) $output.set(\"error\", { ok: false, code: \"CONFIGURACION\", message: fallo });\n$context.set(\"prepOk\", fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "dwv8jWiIJ0-xRLA9HDQpR",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "eDbqKaWmmqSgjieB_pM8H",
+      "title": "Fin: resultado",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: resultado",
+        "outputId": "yAL6VBwC1JpYmDkQVyWBc"
+      }
+    },
+    {
+      "id": "EUyQ5lemAT8IuL452nQMb",
+      "title": "¿Cuál es el resultado?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Cuál es el resultado?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "resultado",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "iRQrYZsTWOEjaFH50dNuo",
+      "title": "Llamar servicio de registro",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de registro",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/registro-estado",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 20000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    },
+    {
+      "id": "jTbEkg7MACn56jURd6vIi",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de registro de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "WxN7Ki7MNUAbxd5l-vdk_",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "A1n9IWVQORUgbzHXu7YVf"
+      }
+    },
+    {
+      "id": "XslgnmTheXa43bNAqBWGj",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "Z-s9TY-_3WK326d3488mq",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nconst conocidos = [\"cuenta_creada\", \"sesion_iniciada\", \"completado\", \"app\", \"cancelado\", \"pendiente\", \"sin_sesion\"];\nlet salida = \"error\";\nif (ok && conocidos.includes(data.estado)) {\n  salida = \"resultado\";\n  const resultado = { ok: true, estado: data.estado, paso: String(data.paso || \"\"), decision: String(data.decision || \"\"), origen: String(data.origen || \"\"), ambiente: String(data.ambiente || \"\"), mensaje: String(data.mensaje || \"\"), monto: Number(data.monto) || 0 };\n  // Sesión de Crediviva: solo viaja hacia el workflow, que la guarda en memoria. Nunca se imprime.\n  if (typeof data.authKey === \"string\" && data.authKey) resultado.authKey = data.authKey;\n  $output.set(\"resultado\", resultado);\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"No se pudo consultar el registro.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "cLUBlH5tDSt1VDVDLXo8_",
+      "sourceId": "EUyQ5lemAT8IuL452nQMb",
+      "targetId": "eDbqKaWmmqSgjieB_pM8H",
+      "branch": "condition:cond_resultado"
+    },
+    {
+      "id": "DmtgD61s0aJfStBcu9hBk",
+      "sourceId": "XslgnmTheXa43bNAqBWGj",
+      "targetId": "3QAU1k4CnYjaUKENoqMj2",
+      "branch": "default"
+    },
+    {
+      "id": "dVMJ82-Brj8eP4tpx-ja2",
+      "sourceId": "Z-s9TY-_3WK326d3488mq",
+      "targetId": "EUyQ5lemAT8IuL452nQMb",
+      "branch": "success"
+    },
+    {
+      "id": "i0Z_T25H37RAEaTjPxl5m",
+      "sourceId": "dwv8jWiIJ0-xRLA9HDQpR",
+      "targetId": "iRQrYZsTWOEjaFH50dNuo",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "KRch_p2xrENXF_wVB9FXU",
+      "sourceId": "3QAU1k4CnYjaUKENoqMj2",
+      "targetId": "jTbEkg7MACn56jURd6vIi",
+      "branch": "failed"
+    },
+    {
+      "id": "MjqfGvm2ECk2hG8FPHBDZ",
+      "sourceId": "dwv8jWiIJ0-xRLA9HDQpR",
+      "targetId": "WxN7Ki7MNUAbxd5l-vdk_",
+      "branch": "else"
+    },
+    {
+      "id": "O_g882asyR3lPlcjwdgwX",
+      "sourceId": "iRQrYZsTWOEjaFH50dNuo",
+      "targetId": "Z-s9TY-_3WK326d3488mq",
+      "branch": "failed"
+    },
+    {
+      "id": "rc_1pluT9cV9JC_VpkfuC",
+      "sourceId": "jTbEkg7MACn56jURd6vIi",
+      "targetId": "WxN7Ki7MNUAbxd5l-vdk_",
+      "branch": "success"
+    },
+    {
+      "id": "SIq3e4LqmTWYV1FinxBqx",
+      "sourceId": "Z-s9TY-_3WK326d3488mq",
+      "targetId": "jTbEkg7MACn56jURd6vIi",
+      "branch": "failed"
+    },
+    {
+      "id": "t9KM42pzWxlF0G4Y0CIKA",
+      "sourceId": "iRQrYZsTWOEjaFH50dNuo",
+      "targetId": "Z-s9TY-_3WK326d3488mq",
+      "branch": "success"
+    },
+    {
+      "id": "Uhd2ZUE1qnGruUwCiKCZQ",
+      "sourceId": "3QAU1k4CnYjaUKENoqMj2",
+      "targetId": "dwv8jWiIJ0-xRLA9HDQpR",
+      "branch": "success"
+    },
+    {
+      "id": "zVG7IPJExBH1mLG9Qmr3q",
+      "sourceId": "EUyQ5lemAT8IuL452nQMb",
+      "targetId": "WxN7Ki7MNUAbxd5l-vdk_",
+      "branch": "else"
+    }
+  ]
+}

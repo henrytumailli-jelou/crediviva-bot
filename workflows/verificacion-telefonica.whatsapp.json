@@ -1,0 +1,1117 @@
+{
+  "workflowId": 73058,
+  "workflowName": "Verificación telefónica",
+  "workflowDescription": "Verifica el número de teléfono del cliente nuevo de Crediviva con un código OTP enviado por WhatsApp o llamada, y deriva a la App a los clientes ya registrados",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "_PDOzMLzvE_VVpKudhPPY",
+      "title": "Código incorrecto",
+      "configuration": {
+        "messages": [
+          {
+            "id": "NBj9sOVZboV5jI5SE4SgN",
+            "text": "El código no es correcto o ya expiró ❌. Vuelve a intentarlo; si lo necesitas, escribe *REENVIAR* para recibir uno nuevo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        7592,
+        50
+      ]
+    },
+    {
+      "id": "1l8GLUsEPxN4TrtoqX_wA",
+      "title": "Revisar respuesta del código",
+      "configuration": {
+        "title": "Revisar respuesta del código",
+        "content": "const raw = String($memory.get('otpRaw', '')).trim();\nconst max = Number($memory.get('maxAttempts', 3));\nlet action;\nif (/^reenviar$/i.test(raw) || /^reenv/i.test(raw)) {\n  const resends = Number($memory.get('otpResends', 0)) + 1;\n  $memory.set('otpResends', resends);\n  action = resends > max ? 'exhausted' : 'resend';\n} else {\n  const otp = raw.replace(/\\s/g, '');\n  if (/^\\d{4,6}$/.test(otp)) {\n    $memory.set('otp', otp);\n    action = 'verify';\n  } else {\n    const attempts = Number($memory.get('otpAttempts', 0)) + 1;\n    $memory.set('otpAttempts', attempts);\n    action = attempts >= max ? 'exhausted' : 'invalid';\n  }\n}\n$memory.set('otpAction', action);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        5612,
+        50
+      ]
+    },
+    {
+      "id": "57NYx0rHSI3uxGmFdctyk",
+      "title": "Interpretar envío del código",
+      "configuration": {
+        "title": "Interpretar envío del código",
+        "content": "const res = $context.getHttpResponse('sendPhoneOtpResponse');\nlet data = {};\ntry {\n  data = (res && typeof res.json === 'function') ? await res.json() : (res?.data ?? res?.body ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === 'string') {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nconst status = Number(res?.status ?? res?.statusCode ?? 200);\nconst ok = status >= 200 && status < 300;\n$utils.logger.log('sendPhoneOtpResponse', JSON.stringify({ status, data }));\n$memory.set('otpSendStatus', ok ? 'sent' : 'error');",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4428,
+        310
+      ]
+    },
+    {
+      "id": "8MFSZ8P6NKLuNymTH512S",
+      "title": "¿Cliente existente o nuevo?",
+      "configuration": {
+        "title": "¿Cliente existente o nuevo?",
+        "conditions": [
+          {
+            "id": "cond_registered",
+            "name": "Cliente registrado",
+            "terms": [
+              {
+                "value1": "{{$memory.phoneCheck}}",
+                "value2": "registered",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_new",
+            "name": "Teléfono nuevo",
+            "terms": [
+              {
+                "value1": "{{$memory.phoneCheck}}",
+                "value2": "new",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2856,
+        232
+      ]
+    },
+    {
+      "id": "8u2-5pKxfj0xDrQQNP8V5",
+      "title": "Método WhatsApp",
+      "configuration": {
+        "title": "Método WhatsApp",
+        "content": "$memory.set('otpMethod', 'WHATSAPP');\n$memory.set('otpMethodLabel', 'WhatsApp');",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3652,
+        110
+      ]
+    },
+    {
+      "id": "B0L7-17ExBReMsLUPJmVg",
+      "title": "Enviar código al teléfono",
+      "configuration": {
+        "url": "{{$memory.crediviva_base_url}}/send-phone-otp",
+        "body": {
+          "type": "application/json",
+          "content": "{\"countryCode\":\"{{$memory.countryCode}}\",\"phone\":\"{{$memory.phone}}\",\"method\":\"{{$memory.otpMethod}}\"}",
+          "enabled": true
+        },
+        "title": "Enviar código al teléfono",
+        "method": "POST",
+        "output": "sendPhoneOtpResponse",
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "X-API-Key",
+            "key": "X-API-Key",
+            "value": "{{$secret.CREDIVIVA_API_KEY}}",
+            "enabled": true
+          },
+          {
+            "id": "x-auth-key",
+            "key": "x-auth-key",
+            "value": "{{$memory.crediviva_auth_key}}",
+            "enabled": true,
+            "description": "Sesión del registro (Flujo 1). Pendiente de confirmar con Crediviva."
+          }
+        ],
+        "settings": {
+          "timeout": 20000,
+          "sslCertificate": true
+        },
+        "authentication": {
+          "type": "no-auth",
+          "enabled": false
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        4040,
+        295
+      ]
+    },
+    {
+      "id": "BeVDZh-6TKMnWskaixuDV",
+      "title": "Elegir método de verificación",
+      "configuration": {
+        "messages": [
+          {
+            "id": "aCVPq3UcM3H9fxEcOfTea",
+            "text": "Vamos a verificar tu número {{$memory.phoneMasked}} con un código de seguridad 🔐\n\n¿Cómo prefieres recibirlo?",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_whatsapp",
+                "type": "postback",
+                "title": "WhatsApp",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_0szzewtwgqnhokzaf_zu3": "WhatsApp"
+                  },
+                  "skillId": "53053",
+                  "targetId": "8u2-5pKxfj0xDrQQNP8V5"
+                }
+              },
+              {
+                "id": "opt_call",
+                "type": "postback",
+                "title": "Llamada",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_0szzewtwgqnhokzaf_zu3": "Llamada"
+                  },
+                  "skillId": "53053",
+                  "targetId": "Mcxz-7Lq7YwzsuEnvd56-"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "otpMethodChoice",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Por favor elige una de las opciones: WhatsApp o Llamada."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3244,
+        50
+      ]
+    },
+    {
+      "id": "c0S8fcFSbYhzFKf2x9trp",
+      "title": "Validar formato del teléfono",
+      "configuration": {
+        "title": "Validar formato del teléfono",
+        "content": "let digits = String($memory.get('phoneRaw', '')).replace(/\\D/g, '');\nif (digits.length === 11 && digits.startsWith('507')) digits = digits.slice(3);\nconst max = Number($memory.get('maxAttempts', 3));\nif (/^6\\d{7}$/.test(digits)) {\n  $memory.set('phone', digits);\n  $memory.set('phoneMasked', '****' + digits.slice(-4));\n  $memory.set('phoneStatus', 'valid');\n} else {\n  const attempts = Number($memory.get('phoneAttempts', 0)) + 1;\n  $memory.set('phoneAttempts', attempts);\n  $memory.set('phoneStatus', attempts >= max ? 'exhausted' : 'invalid');\n}",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1284,
+        125
+      ]
+    },
+    {
+      "id": "dFep474m07J9XumkFtsRZ",
+      "title": "Sin respuesta del cliente",
+      "configuration": {
+        "messages": [
+          {
+            "id": "VeDEX1lmpdDynxQNVDseE",
+            "text": "Como no recibimos respuesta, pausamos tu verificación ⏸️. Escríbenos cuando quieras continuar.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        5612,
+        800
+      ]
+    },
+    {
+      "id": "E1LV4FgxMyYSpa-UETuar",
+      "title": "Código con formato inválido",
+      "configuration": {
+        "messages": [
+          {
+            "id": "v2dXX6MopYw4PVit55NF7",
+            "text": "El código debe tener solo números (por ejemplo 1234). Revisa el mensaje que recibiste e inténtalo de nuevo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        6408,
+        640
+      ]
+    },
+    {
+      "id": "ey-5KzoF8O6tmf3NOwZaP",
+      "title": "Interpretar verificación del código",
+      "configuration": {
+        "title": "Interpretar verificación del código",
+        "content": "const res = $context.getHttpResponse('verifyPhoneOtpResponse');\nlet data = {};\ntry {\n  data = (res && typeof res.json === 'function') ? await res.json() : (res?.data ?? res?.body ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === 'string') {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nconst status = Number(res?.status ?? res?.statusCode ?? 200);\nconst ok = status >= 200 && status < 300;\n$utils.logger.log('verifyPhoneOtpResponse', JSON.stringify({ status, data }));\nconst max = Number($memory.get('maxAttempts', 3));\nconst flags = [data?.otpValid, data?.valid, data?.verified, data?.success];\nconst valid = ok && flags.some((f) => f === true);\nlet result;\nif (valid) {\n  $memory.set('phoneVerified', true);\n  result = 'valid';\n} else if (ok || status === 400 || status === 401 || status === 422) {\n  const attempts = Number($memory.get('otpAttempts', 0)) + 1;\n  $memory.set('otpAttempts', attempts);\n  result = attempts >= max ? 'exhausted' : 'invalid';\n} else {\n  result = 'error';\n}\n$memory.set('otpResult', result);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        6816,
+        400
+      ]
+    },
+    {
+      "id": "FY-ST2BW6p8c7BDOjhtWi",
+      "title": "Validar teléfono en Crediviva",
+      "configuration": {
+        "url": "{{$memory.crediviva_base_url}}/v1/whatsapp-customer-api/customer-auth/verify-phone",
+        "title": "Validar teléfono en Crediviva",
+        "method": "GET",
+        "output": "verifyPhoneResponse",
+        "headers": [
+          {
+            "id": "X-API-Key",
+            "key": "X-API-Key",
+            "value": "{{$secret.CREDIVIVA_API_KEY}}",
+            "enabled": true
+          }
+        ],
+        "settings": {
+          "timeout": 20000,
+          "sslCertificate": true
+        },
+        "parameters": [
+          {
+            "id": "phone",
+            "key": "phone",
+            "value": "{{$memory.phone}}",
+            "enabled": true
+          },
+          {
+            "id": "countryCode",
+            "key": "countryCode",
+            "value": "{{$memory.countryCode}}",
+            "enabled": true
+          }
+        ],
+        "authentication": {
+          "type": "no-auth",
+          "enabled": false
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        2060,
+        50
+      ]
+    },
+    {
+      "id": "Gh6zQSaik7D8bJhALkT9V",
+      "title": "¿Formato de teléfono válido?",
+      "configuration": {
+        "title": "¿Formato de teléfono válido?",
+        "conditions": [
+          {
+            "id": "cond_phone_valid",
+            "name": "Formato válido",
+            "terms": [
+              {
+                "value1": "{{$memory.phoneStatus}}",
+                "value2": "valid",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_phone_exhausted",
+            "name": "Intentos agotados",
+            "terms": [
+              {
+                "value1": "{{$memory.phoneStatus}}",
+                "value2": "exhausted",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1672,
+        117
+      ]
+    },
+    {
+      "id": "GskGNrBDCVXsyqowaVnVQ",
+      "title": "Teléfono con formato inválido",
+      "configuration": {
+        "messages": [
+          {
+            "id": "VcMTfr5vwPgnRV1NYz4F0",
+            "text": "Ese número no parece válido 🤔. Debe ser un celular de Panamá de 8 dígitos que empiece con 6, por ejemplo 61234567. Inténtalo de nuevo.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2060,
+        480
+      ]
+    },
+    {
+      "id": "hUfOx1gkUaqrGd3x9W-W5",
+      "title": "Aviso de error técnico",
+      "configuration": {
+        "messages": [
+          {
+            "id": "dnXZ4zsWqUVDT_6z_5Yg7",
+            "text": "Tuvimos un inconveniente técnico al validar tu número 🛠️. Te comunico con un asesor de Crediviva para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        7592,
+        750
+      ]
+    },
+    {
+      "id": "jDXE0fFvw0GdpxtP1j4q7",
+      "title": "Preparar verificación",
+      "configuration": {
+        "title": "Preparar verificación",
+        "content": "// Parámetros del flujo (ajustar cuando Crediviva confirme los puntos abiertos)\n$memory.set('crediviva_base_url', 'https://api.kubbesa.net/staging/integrations');\n$memory.set('countryCode', 'PA');\n$memory.set('maxAttempts', 3);\n$memory.set('phoneAttempts', 0);\n$memory.set('otpAttempts', 0);\n$memory.set('otpResends', 0);\n$memory.set('phoneVerified', false);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "jESCviJz06fH3uLNsorUz",
+      "title": "Asesor asignado",
+      "configuration": {
+        "messages": [
+          {
+            "id": "19o_FdLU59fH-nJ5Tt_d1",
+            "text": "Un asesor ya tiene tu caso y te escribirá en breve por este chat 🙌",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        8388,
+        750
+      ]
+    },
+    {
+      "id": "LtwsZVs3HNwc1Hm7NcT2l",
+      "title": "Interpretar validación del teléfono",
+      "configuration": {
+        "title": "Interpretar validación del teléfono",
+        "content": "const res = $context.getHttpResponse('verifyPhoneResponse');\nlet data = {};\ntry {\n  data = (res && typeof res.json === 'function') ? await res.json() : (res?.data ?? res?.body ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === 'string') {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nconst status = Number(res?.status ?? res?.statusCode ?? 200);\nconst ok = status >= 200 && status < 300;\n$utils.logger.log('verifyPhoneResponse', JSON.stringify({ status, data }));\nconst authType = Number(data?.authType);\nlet check = 'error';\nif (ok && authType === 1) check = 'registered';\nelse if (ok && authType === 2) check = 'new';\n$memory.set('phoneCheck', check);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2468,
+        240
+      ]
+    },
+    {
+      "id": "Mcxz-7Lq7YwzsuEnvd56-",
+      "title": "Método llamada",
+      "configuration": {
+        "title": "Método llamada",
+        "content": "$memory.set('otpMethod', 'CALL');\n$memory.set('otpMethodLabel', 'una llamada');",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3652,
+        510
+      ]
+    },
+    {
+      "id": "mnBDLvq9Wwuf_QDPjYMo-",
+      "title": "¿Código enviado?",
+      "configuration": {
+        "title": "¿Código enviado?",
+        "conditions": [
+          {
+            "id": "cond_otp_sent",
+            "name": "Código enviado",
+            "terms": [
+              {
+                "value1": "{{$memory.otpSendStatus}}",
+                "value2": "sent",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        4816,
+        335
+      ]
+    },
+    {
+      "id": "PHj4d2yowfE81Rrl3h3WP",
+      "title": "Cliente canceló",
+      "configuration": {
+        "messages": [
+          {
+            "id": "SuLr4ulya0TIrs4SCWZ29",
+            "text": "Entendido, cancelamos la verificación de tu número. Cuando quieras retomarla, escríbenos 👋",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        5612,
+        450
+      ]
+    },
+    {
+      "id": "PSnHWOk4nn0kMwpFVu_DH",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "PZ7wTq4EVjbpXpBF704zp",
+      "title": "Aviso de intentos agotados",
+      "configuration": {
+        "messages": [
+          {
+            "id": "pp54liUodRJbXnxY-YqJg",
+            "text": "No pudimos validar tu número después de varios intentos 😕. Te comunico con un asesor de Crediviva para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        7592,
+        400
+      ]
+    },
+    {
+      "id": "qNC-joZOvGQA8kS2dJtZP",
+      "title": "Derivar a la App",
+      "configuration": {
+        "messages": [
+          {
+            "id": "hofeQCUhioM0EqXCel5Qc",
+            "text": "¡Hola de nuevo! 👋 Tu número ya está registrado en Crediviva.\n\nPara continuar con tu cuenta o con tu solicitud, ingresa a la App de Crediviva con tu usuario. Allí podrás retomar todo donde lo dejaste.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3244,
+        572
+      ]
+    },
+    {
+      "id": "SrW23xMSHGTPa5JWm9TfQ",
+      "title": "Teléfono verificado",
+      "configuration": {
+        "messages": [
+          {
+            "id": "2hQZtC00WFp_P3kbGGGM1",
+            "text": "✅ ¡Listo! Tu número {{$memory.phoneMasked}} quedó verificado.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        7592,
+        1100
+      ]
+    },
+    {
+      "id": "TglnF9hheQ4kcBd2Llxbj",
+      "title": "Pedir teléfono",
+      "configuration": {
+        "prompt": "📱 Para continuar, escribe tu número de celular de Panamá (8 dígitos, sin el +507).\n\nEjemplo: 61234567",
+        "variable": "phoneRaw"
+      },
+      "type": "INPUT",
+      "position": [
+        876,
+        50
+      ]
+    },
+    {
+      "id": "trza2Xh76mcjoAUevxjVL",
+      "title": "Transferir a un asesor",
+      "configuration": {
+        "title": "Transferir a un asesor",
+        "priority": 0,
+        "assignment": {
+          "by": "shuffle",
+          "type": "direct"
+        }
+      },
+      "type": "CONNECT",
+      "position": [
+        8000,
+        291
+      ]
+    },
+    {
+      "id": "UrQe3VZToFkS7cGjReoer",
+      "title": "¿Qué hizo el cliente con el código?",
+      "configuration": {
+        "title": "¿Qué hizo el cliente con el código?",
+        "conditions": [
+          {
+            "id": "cond_otp_verify",
+            "name": "Ingresó un código",
+            "terms": [
+              {
+                "value1": "{{$memory.otpAction}}",
+                "value2": "verify",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_otp_resend",
+            "name": "Pidió reenvío",
+            "terms": [
+              {
+                "value1": "{{$memory.otpAction}}",
+                "value2": "resend",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_otp_exhausted",
+            "name": "Intentos agotados",
+            "terms": [
+              {
+                "value1": "{{$memory.otpAction}}",
+                "value2": "exhausted",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        6020,
+        354
+      ]
+    },
+    {
+      "id": "Vf82HPT320XuGRWFzIcis",
+      "title": "Pedir código OTP",
+      "configuration": {
+        "prompt": "Te enviamos un código por {{$memory.otpMethodLabel}} al número {{$memory.phoneMasked}} 📲\n\nEscríbelo aquí. Si no te llegó, escribe *REENVIAR*.",
+        "variable": "otpRaw"
+      },
+      "type": "INPUT",
+      "position": [
+        5204,
+        235
+      ]
+    },
+    {
+      "id": "VjrGYW_6NCg71BaZLndOJ",
+      "title": "Verificar código del teléfono",
+      "configuration": {
+        "url": "{{$memory.crediviva_base_url}}/verify-phone-otp",
+        "body": {
+          "type": "application/json",
+          "content": "{\"countryCode\":\"{{$memory.countryCode}}\",\"phone\":\"{{$memory.phone}}\",\"otp\":\"{{$memory.otp}}\"}",
+          "enabled": true
+        },
+        "title": "Verificar código del teléfono",
+        "method": "POST",
+        "output": "verifyPhoneOtpResponse",
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "X-API-Key",
+            "key": "X-API-Key",
+            "value": "{{$secret.CREDIVIVA_API_KEY}}",
+            "enabled": true
+          },
+          {
+            "id": "x-auth-key",
+            "key": "x-auth-key",
+            "value": "{{$memory.crediviva_auth_key}}",
+            "enabled": true,
+            "description": "Sesión del registro (Flujo 1). Pendiente de confirmar con Crediviva."
+          }
+        ],
+        "settings": {
+          "timeout": 20000,
+          "sslCertificate": true
+        },
+        "authentication": {
+          "type": "no-auth",
+          "enabled": false
+        }
+      },
+      "type": "HTTP",
+      "position": [
+        6408,
+        210
+      ]
+    },
+    {
+      "id": "xUtYNFkE0ssmEU56FpB1K",
+      "title": "¿Código correcto?",
+      "configuration": {
+        "title": "¿Código correcto?",
+        "conditions": [
+          {
+            "id": "cond_otp_valid",
+            "name": "Código correcto",
+            "terms": [
+              {
+                "value1": "{{$memory.otpResult}}",
+                "value2": "valid",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_otp_wrong",
+            "name": "Código incorrecto",
+            "terms": [
+              {
+                "value1": "{{$memory.otpResult}}",
+                "value2": "invalid",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "cond_otp_result_exhausted",
+            "name": "Intentos agotados",
+            "terms": [
+              {
+                "value1": "{{$memory.otpResult}}",
+                "value2": "exhausted",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        7204,
+        354
+      ]
+    },
+    {
+      "id": "Z7z3ddYxirADqXqF4Ba-P",
+      "title": "Sin asesores disponibles",
+      "configuration": {
+        "messages": [
+          {
+            "id": "QacxJIENHI0kOcbNl8U0q",
+            "text": "En este momento no hay asesores disponibles 🙏. Por favor escríbenos más tarde y retomamos tu verificación.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        8388,
+        400
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "_gaRAxvFL-Bo-8PU0lWbx",
+      "sourceId": "8MFSZ8P6NKLuNymTH512S",
+      "targetId": "qNC-joZOvGQA8kS2dJtZP",
+      "branch": "condition:cond_registered"
+    },
+    {
+      "id": "0xR5ugX5X-dB2c5P5Torb",
+      "sourceId": "Mcxz-7Lq7YwzsuEnvd56-",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "4HnnGGzWwc6xSMFU28HD2",
+      "sourceId": "Gh6zQSaik7D8bJhALkT9V",
+      "targetId": "GskGNrBDCVXsyqowaVnVQ",
+      "branch": "else"
+    },
+    {
+      "id": "5qDZWH1U63LYcRGR3CxBT",
+      "sourceId": "TglnF9hheQ4kcBd2Llxbj",
+      "targetId": "dFep474m07J9XumkFtsRZ",
+      "branch": "expire"
+    },
+    {
+      "id": "8Hl8k8zxcYW2gTXEpZyRj",
+      "sourceId": "Gh6zQSaik7D8bJhALkT9V",
+      "targetId": "PZ7wTq4EVjbpXpBF704zp",
+      "branch": "condition:cond_phone_exhausted"
+    },
+    {
+      "id": "8oTh9Ddx24Io7NhtolXZE",
+      "sourceId": "ey-5KzoF8O6tmf3NOwZaP",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "8VbSJ6D8L_UYfrKgHKBb8",
+      "sourceId": "PSnHWOk4nn0kMwpFVu_DH",
+      "targetId": "jDXE0fFvw0GdpxtP1j4q7",
+      "branch": "default"
+    },
+    {
+      "id": "AEAR4FYVGOtN9rWCvdegw",
+      "sourceId": "FY-ST2BW6p8c7BDOjhtWi",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "AlEAJ6U9qg46Ene5_a4gs",
+      "sourceId": "xUtYNFkE0ssmEU56FpB1K",
+      "targetId": "_PDOzMLzvE_VVpKudhPPY",
+      "branch": "condition:cond_otp_wrong"
+    },
+    {
+      "id": "Bsjsalry3sPMDhvC5m9xE",
+      "sourceId": "BeVDZh-6TKMnWskaixuDV",
+      "targetId": "Mcxz-7Lq7YwzsuEnvd56-",
+      "branch": "option:opt_call"
+    },
+    {
+      "id": "ClXXjXGI20P4NNX5PLGqL",
+      "sourceId": "UrQe3VZToFkS7cGjReoer",
+      "targetId": "E1LV4FgxMyYSpa-UETuar",
+      "branch": "else"
+    },
+    {
+      "id": "CTdoAjwYWi1svfcxnrtZV",
+      "sourceId": "8u2-5pKxfj0xDrQQNP8V5",
+      "targetId": "B0L7-17ExBReMsLUPJmVg",
+      "branch": "success"
+    },
+    {
+      "id": "DN6W3gvHFWTgtGGsXpxPJ",
+      "sourceId": "E1LV4FgxMyYSpa-UETuar",
+      "targetId": "Vf82HPT320XuGRWFzIcis",
+      "branch": "default"
+    },
+    {
+      "id": "DXDLBF9Onn-twLC7FiJnx",
+      "sourceId": "8MFSZ8P6NKLuNymTH512S",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "else"
+    },
+    {
+      "id": "DzwSuPyG0fd3n9UyrXQIs",
+      "sourceId": "mnBDLvq9Wwuf_QDPjYMo-",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "else"
+    },
+    {
+      "id": "eEhU9Zz2Dmj3aZg3svKFq",
+      "sourceId": "UrQe3VZToFkS7cGjReoer",
+      "targetId": "B0L7-17ExBReMsLUPJmVg",
+      "branch": "condition:cond_otp_resend"
+    },
+    {
+      "id": "FdTkyNSGM45xUlWgNFIBa",
+      "sourceId": "UrQe3VZToFkS7cGjReoer",
+      "targetId": "VjrGYW_6NCg71BaZLndOJ",
+      "branch": "condition:cond_otp_verify"
+    },
+    {
+      "id": "FoFwoS1xT4gtTDilw7vFI",
+      "sourceId": "_PDOzMLzvE_VVpKudhPPY",
+      "targetId": "Vf82HPT320XuGRWFzIcis",
+      "branch": "default"
+    },
+    {
+      "id": "FypLnX3F6ONBdbSwK8OXi",
+      "sourceId": "1l8GLUsEPxN4TrtoqX_wA",
+      "targetId": "UrQe3VZToFkS7cGjReoer",
+      "branch": "success"
+    },
+    {
+      "id": "Gau5nCnIgTFlJo6SIwbJi",
+      "sourceId": "8MFSZ8P6NKLuNymTH512S",
+      "targetId": "BeVDZh-6TKMnWskaixuDV",
+      "branch": "condition:cond_new"
+    },
+    {
+      "id": "GP7P_GA3OLjUwsiKpcVkC",
+      "sourceId": "BeVDZh-6TKMnWskaixuDV",
+      "targetId": "dFep474m07J9XumkFtsRZ",
+      "branch": "expire"
+    },
+    {
+      "id": "hixYVQ9Ig7fxd9ICIy2dP",
+      "sourceId": "B0L7-17ExBReMsLUPJmVg",
+      "targetId": "57NYx0rHSI3uxGmFdctyk",
+      "branch": "success"
+    },
+    {
+      "id": "hjlHpAwolU3J4cgmQphBk",
+      "sourceId": "GskGNrBDCVXsyqowaVnVQ",
+      "targetId": "TglnF9hheQ4kcBd2Llxbj",
+      "branch": "default"
+    },
+    {
+      "id": "hmDMhRaej_lPy2__Dz3Dh",
+      "sourceId": "57NYx0rHSI3uxGmFdctyk",
+      "targetId": "mnBDLvq9Wwuf_QDPjYMo-",
+      "branch": "success"
+    },
+    {
+      "id": "I_0UKd5ZPazoJmmxjFE7l",
+      "sourceId": "LtwsZVs3HNwc1Hm7NcT2l",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "IHbETWTAStI3ukVIFgNyO",
+      "sourceId": "57NYx0rHSI3uxGmFdctyk",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "iT6vYGBtNMW5MRffTaw-B",
+      "sourceId": "VjrGYW_6NCg71BaZLndOJ",
+      "targetId": "ey-5KzoF8O6tmf3NOwZaP",
+      "branch": "success"
+    },
+    {
+      "id": "jK1QEkQT81jeMQy4iSM5K",
+      "sourceId": "FY-ST2BW6p8c7BDOjhtWi",
+      "targetId": "LtwsZVs3HNwc1Hm7NcT2l",
+      "branch": "success"
+    },
+    {
+      "id": "jQitM3qNvX6pQs7z9iJf_",
+      "sourceId": "ey-5KzoF8O6tmf3NOwZaP",
+      "targetId": "xUtYNFkE0ssmEU56FpB1K",
+      "branch": "success"
+    },
+    {
+      "id": "Jqx0Kun2UWOvhwsfTlzz-",
+      "sourceId": "PZ7wTq4EVjbpXpBF704zp",
+      "targetId": "trza2Xh76mcjoAUevxjVL",
+      "branch": "default"
+    },
+    {
+      "id": "k3TIn6pncYqFWgj_qXrBf",
+      "sourceId": "xUtYNFkE0ssmEU56FpB1K",
+      "targetId": "SrW23xMSHGTPa5JWm9TfQ",
+      "branch": "condition:cond_otp_valid"
+    },
+    {
+      "id": "ljcH0d55aciQqZixd9ouI",
+      "sourceId": "B0L7-17ExBReMsLUPJmVg",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "ltFsjweWn6wIyecss3Iov",
+      "sourceId": "trza2Xh76mcjoAUevxjVL",
+      "targetId": "Z7z3ddYxirADqXqF4Ba-P",
+      "branch": "output:OPERATOR_NOT_FOUND:failed"
+    },
+    {
+      "id": "N6llTt4u88LQEeluUIJEC",
+      "sourceId": "BeVDZh-6TKMnWskaixuDV",
+      "targetId": "PHj4d2yowfE81Rrl3h3WP",
+      "branch": "exit"
+    },
+    {
+      "id": "nDQfaC_QG49xzxS6TFqdW",
+      "sourceId": "TglnF9hheQ4kcBd2Llxbj",
+      "targetId": "PHj4d2yowfE81Rrl3h3WP",
+      "branch": "exit"
+    },
+    {
+      "id": "nrISwgMCEU4fr3YWV7geP",
+      "sourceId": "xUtYNFkE0ssmEU56FpB1K",
+      "targetId": "PZ7wTq4EVjbpXpBF704zp",
+      "branch": "condition:cond_otp_result_exhausted"
+    },
+    {
+      "id": "OZu9YXQ2BzUKPC1XXKLuh",
+      "sourceId": "mnBDLvq9Wwuf_QDPjYMo-",
+      "targetId": "Vf82HPT320XuGRWFzIcis",
+      "branch": "condition:cond_otp_sent"
+    },
+    {
+      "id": "p6c_IaOt25aGs6h7RMgEm",
+      "sourceId": "jDXE0fFvw0GdpxtP1j4q7",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "q1bQJv3wl7y0L3rpEsXgM",
+      "sourceId": "xUtYNFkE0ssmEU56FpB1K",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "else"
+    },
+    {
+      "id": "q3FayxKkqpIiQDnFCwZ7h",
+      "sourceId": "TglnF9hheQ4kcBd2Llxbj",
+      "targetId": "c0S8fcFSbYhzFKf2x9trp",
+      "branch": "success"
+    },
+    {
+      "id": "R4pmjtaWulhr9R7ElxjnJ",
+      "sourceId": "trza2Xh76mcjoAUevxjVL",
+      "targetId": "jESCviJz06fH3uLNsorUz",
+      "branch": "output:JelouConnect:success"
+    },
+    {
+      "id": "uGAQPTgPvAy7O914AOJhm",
+      "sourceId": "Gh6zQSaik7D8bJhALkT9V",
+      "targetId": "FY-ST2BW6p8c7BDOjhtWi",
+      "branch": "condition:cond_phone_valid"
+    },
+    {
+      "id": "uM91TXwdD2-83k4J_w0ES",
+      "sourceId": "c0S8fcFSbYhzFKf2x9trp",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "uuO55jMIqEiTDAeQEwU3f",
+      "sourceId": "trza2Xh76mcjoAUevxjVL",
+      "targetId": "Z7z3ddYxirADqXqF4Ba-P",
+      "branch": "output:UNKNOWN_ERROR:failed"
+    },
+    {
+      "id": "v0C2uypKZwaassPACc_Q8",
+      "sourceId": "UrQe3VZToFkS7cGjReoer",
+      "targetId": "PZ7wTq4EVjbpXpBF704zp",
+      "branch": "condition:cond_otp_exhausted"
+    },
+    {
+      "id": "Vs5RA2pZvYnFf9fbqVnqH",
+      "sourceId": "jDXE0fFvw0GdpxtP1j4q7",
+      "targetId": "TglnF9hheQ4kcBd2Llxbj",
+      "branch": "success"
+    },
+    {
+      "id": "VtZsS9jN-7v5HCOnDiNes",
+      "sourceId": "Vf82HPT320XuGRWFzIcis",
+      "targetId": "PHj4d2yowfE81Rrl3h3WP",
+      "branch": "exit"
+    },
+    {
+      "id": "wKpEMG1p-8qt1V8i3RDRg",
+      "sourceId": "c0S8fcFSbYhzFKf2x9trp",
+      "targetId": "Gh6zQSaik7D8bJhALkT9V",
+      "branch": "success"
+    },
+    {
+      "id": "WLR7sPU8HKvhXthFZVKiD",
+      "sourceId": "Vf82HPT320XuGRWFzIcis",
+      "targetId": "dFep474m07J9XumkFtsRZ",
+      "branch": "expire"
+    },
+    {
+      "id": "wx95iBN-geIF4T94nSaj9",
+      "sourceId": "Vf82HPT320XuGRWFzIcis",
+      "targetId": "1l8GLUsEPxN4TrtoqX_wA",
+      "branch": "success"
+    },
+    {
+      "id": "XRoRE-mGMhIWm7lmX0BbN",
+      "sourceId": "1l8GLUsEPxN4TrtoqX_wA",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "Y1xq8UtE5JOYU_nJaXogC",
+      "sourceId": "trza2Xh76mcjoAUevxjVL",
+      "targetId": "Z7z3ddYxirADqXqF4Ba-P",
+      "branch": "output:OPERATORS_NOT_IN_SCHEDULER:failed"
+    },
+    {
+      "id": "Y9mWKzydkgNkB5QO5fzbv",
+      "sourceId": "BeVDZh-6TKMnWskaixuDV",
+      "targetId": "8u2-5pKxfj0xDrQQNP8V5",
+      "branch": "option:opt_whatsapp"
+    },
+    {
+      "id": "yhaxC17yHpO7rzAq65TFH",
+      "sourceId": "hUfOx1gkUaqrGd3x9W-W5",
+      "targetId": "trza2Xh76mcjoAUevxjVL",
+      "branch": "default"
+    },
+    {
+      "id": "yo9XH2Oj-yF8iHwod8J7r",
+      "sourceId": "8u2-5pKxfj0xDrQQNP8V5",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "z_8d9iOI7QSFa5xdMpLyh",
+      "sourceId": "Mcxz-7Lq7YwzsuEnvd56-",
+      "targetId": "B0L7-17ExBReMsLUPJmVg",
+      "branch": "success"
+    },
+    {
+      "id": "ZgXUJE4e1-1KZwIbbIaiL",
+      "sourceId": "VjrGYW_6NCg71BaZLndOJ",
+      "targetId": "hUfOx1gkUaqrGd3x9W-W5",
+      "branch": "failed"
+    },
+    {
+      "id": "ZhO0jfW23i31YniM-vk1e",
+      "sourceId": "LtwsZVs3HNwc1Hm7NcT2l",
+      "targetId": "8MFSZ8P6NKLuNymTH512S",
+      "branch": "success"
+    }
+  ]
+}

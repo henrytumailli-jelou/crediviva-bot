@@ -1,0 +1,399 @@
+lockfileVersion: 7
+brain: 01M5G1071BFYCBZ3GZM3R9A35A
+engine:
+  name: workflow-core
+  resolvedAt: "2026-10-21T22:34:33.091Z"
+  selectedBy: default
+workflows:
+  workflows/atencion-humana.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Hablar con un asesor humano de Crediviva: transferir la conversación a un agente de atención al cliente."
+    hash: "sha256:a2e39e47555956ce8cc95c0ca18dab8b601e7e77e388d8da9845826736ae877f"
+    lastPulledAt: "2026-10-21T22:51:32.773Z"
+    name: "Atención humana"
+    skillId: 53042
+    workflowId: 73047
+  workflows/autenticacion-de-cliente.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno reutilizable que valida la identidad del cliente de Crediviva por webview antes de entregarle documentos."
+    hash: "sha256:00861ee6f7408098cd975ec1e1ea8a899fc936bdd935c64137688f46ee457653"
+    lastPulledAt: "2026-11-12T06:59:24.908Z"
+    name: "Autenticación de cliente"
+    skillId: 53043
+    workflowId: 73048
+  workflows/carta-de-cancelacion.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Solicitar la carta de cancelación o paz y salvo de mi crédito Crediviva ya pagado."
+    hash: "sha256:e3ddc6f2c6fa90d30d2906b04c46c7b51e4d6038a87673a2ce9f9e53692b3528"
+    lastPulledAt: "2026-11-12T06:52:39.884Z"
+    name: "Carta de cancelación"
+    skillId: 53044
+    workflowId: 73049
+  workflows/carta-de-saldo.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Solicitar la carta de saldo de mi crédito Crediviva dirigida a un banco, entidad o persona."
+    hash: "sha256:2d227bdd04bce51ee57874f9733ada9306e8dcc400c666e27a71a7ec16d2b15b"
+    lastPulledAt: "2026-11-12T06:52:39.866Z"
+    name: "Carta de saldo"
+    skillId: 53045
+    workflowId: 73050
+  workflows/cierre-por-inactividad.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno que avisa al cliente de Crediviva que la conversación se cerró por inactividad y cómo retomarla."
+    hash: "sha256:ae4cdb8662635a72763752f415b9c153ed45ba7d7e9061420cfc4f4e48b05364"
+    lastPulledAt: "2026-10-21T22:51:32.787Z"
+    name: "Cierre por inactividad"
+    skillId: 53048
+    workflowId: 73053
+  workflows/comprobante-de-ultimo-pago.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Solicitar el comprobante o recibo del último pago que hice a mi crédito Crediviva."
+    hash: "sha256:30e44d318a6e0539c2d4365f542615f20bb745ec55f73f240da42c6828208fa3"
+    lastPulledAt: "2026-11-12T06:52:39.875Z"
+    name: "Comprobante de último pago"
+    skillId: 53049
+    workflowId: 73054
+  workflows/configuracion-de-ambiente.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno que define el ambiente de las APIs de Crediviva (staging o production) para los demás flujos de atención al cliente."
+    hash: "sha256:1ab34de742d69c511aaae63ab7ceacb44685b1c5c15259ee59560f2f176d616b"
+    lastPulledAt: "2026-10-21T22:51:32.775Z"
+    name: "Configuración de ambiente"
+    skillId: 53050
+    workflowId: 73055
+  workflows/consentimientos.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno reutilizable que muestra en un webview el tratamiento de datos personales, los términos y condiciones y la consulta APC de Crediviva y registra la aceptación en Datum."
+    hash: "sha256:4047e49afbc728fea83e7b629f3af6ae0d610edf6ddddba9ec0c598e30128596"
+    lastPulledAt: "2026-11-12T06:59:24.905Z"
+    name: Consentimientos
+    skillId: 53334
+    workflowId: 73468
+  workflows/despedida.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno que envía el mensaje de despedida al cliente de Crediviva al terminar la atención."
+    hash: "sha256:21255b9ce6aafed2f1f4425126b19f2d846179bafaf805b2c6cd99e405078543"
+    lastPulledAt: "2026-10-21T22:51:32.963Z"
+    name: Despedida
+    skillId: 53046
+    workflowId: 73051
+  workflows/estado-de-cuenta.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Solicitar o descargar el estado de cuenta de mi crédito Crediviva en PDF."
+    hash: "sha256:b4fc8c4682b14ec1e0c2587c0d226adb327c8753383f3b46787f0d08c07ae751"
+    lastPulledAt: "2026-11-12T06:52:39.914Z"
+    name: "Estado de cuenta"
+    skillId: 53051
+    workflowId: 73056
+  workflows/evaluacion-crediticia.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno del onboarding de Crediviva que registra el ingreso mensual del cliente, ejecuta la evaluación crediticia y le comunica el resultado."
+    hash: "sha256:bc6961901e2efad679111432c34a57de7e56ae4f9473adb75e94cbd6fcef25dd"
+    lastPulledAt: "2026-11-16T06:45:16.801Z"
+    name: "Evaluación crediticia"
+    skillId: 53531
+    workflowId: 73701
+  workflows/inicio.whatsapp.json:
+    channel: WHATSAPP
+    default: true
+    description: "Saludo inicial de Crediviva: bienvenida y menú para elegir entre solicitar un crédito por primera vez, consultar documentos si ya es cliente, o hablar con un asesor si es un comercio."
+    hash: "sha256:fd1bd4898449643c75783c4b14e2a34f6fd5e4b5172837aa8c672db7c6ce28b8"
+    lastPulledAt: "2026-11-16T06:24:40.812Z"
+    name: Inicio
+    skillId: 54360
+    workflowId: 74693
+  workflows/menu-de-documentos.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Solicitar documentos de mi crédito Crediviva: ver el menú de carta de saldo, estado de cuenta, carta de cancelación o comprobante de pago."
+    hash: "sha256:ed83a2244be9a0993d3b88ab148de5538cc2a891de8be114829d908f3e9e47fd"
+    lastPulledAt: "2026-11-12T06:52:39.885Z"
+    name: "Menú de documentos"
+    skillId: 53052
+    workflowId: 73057
+  workflows/registro-de-cliente.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Quiero un crédito o un préstamo: solicitar mi primer crédito en Crediviva (compra ahora, paga después), registrarme o crear mi cuenta, iniciar sesión porque ya tengo cuenta, o continuar mi solicitud de crédito. Se ingresa con el correo electrónico."
+    hash: "sha256:2bba5589db8fcad538db8c5763aa66dda375e6506ac1d449987abd283601c00a"
+    lastPulledAt: "2026-11-16T06:38:09.371Z"
+    name: "Registro de cliente"
+    skillId: 53335
+    workflowId: 73469
+  workflows/reinicio-de-prueba.whatsapp.json:
+    channel: WHATSAPP
+    default: false
+    description: "Reiniciar prueba: comando del equipo de QA para reiniciar la conversación y el onboarding desde cero en el ambiente de pruebas. Se activa cuando el usuario escribe exactamente reiniciar prueba."
+    hash: "sha256:df371d56be914d9fcacf032be621a7af941e6302ef9d8e4bbdde83d9dd31734c"
+    lastPulledAt: "2026-11-16T06:38:09.351Z"
+    name: "Reinicio de prueba"
+    skillId: 54526
+    workflowId: 74915
+  workflows/verificacion-de-identidad.whatsapp.json:
+    channel: WHATSAPP
+    configurationHash: "sha256:088b129ef69c9db58eee3387ea00c883d630fd5a7bdec4c0b938cc0ec417a1e5"
+    default: false
+    description: "Flujo interno del onboarding de Crediviva que verifica la identidad del cliente con su documento y una selfie en el proveedor de KYC (Jumio o Veriff)."
+    hash: "sha256:b0452dc66c510c79cf1c736c0420e817c6dc8fa7dccf45046587581307852b57"
+    lastPulledAt: "2026-11-13T18:35:49.957Z"
+    name: "Verificación de identidad"
+    skillId: 53530
+    workflowId: 73700
+tools:
+  crediviva-carta-de-cancelacion:
+    contractHash: "sha256:c78c6241677f8db49173f0b45aa6a204ce7b826ff2af1d72295a65c7c7bf3a05"
+    envelopeHash: "sha256:fc3c6215c6bef92748abfc0187b3c6b59761d6e12e2d3deb6b89d64afedc9aec"
+    hash: "sha256:7f69d5ca4437ba467769915eb0658693e864e11da610fc08e7453871b2ae2297"
+    lastPulledAt: "2026-10-21T22:46:43.603Z"
+    latestVersion: 1.0.3
+    metaHash: "sha256:186b18c639ab1832da29245e7b9124e79d44d29e814e95edfe897deb07f21a58"
+    name: "Crediviva Carta de Cancelacion"
+    ownership: OWNED
+    toolId: 8932
+    versionIndex: 1
+    workflowId: 73039
+  crediviva-carta-de-saldo:
+    contractHash: "sha256:c78c6241677f8db49173f0b45aa6a204ce7b826ff2af1d72295a65c7c7bf3a05"
+    envelopeHash: "sha256:6c60acc409c1fdb8ad4e98d65d8dfd38a133209d1b81b31008e118f17742e725"
+    hash: "sha256:ed1493e9749f6ad5ee26901947952674011a7a937a8bdcc89885d1bfd34e46d2"
+    lastPulledAt: "2026-10-21T22:46:55.870Z"
+    latestVersion: 1.0.3
+    metaHash: "sha256:6a1479f5d3c9023a1596f4ea4bafffd1c86383ebf2f45af7debc3c0392e9ab7c"
+    name: "Crediviva Carta de Saldo"
+    ownership: OWNED
+    toolId: 8933
+    versionIndex: 1
+    workflowId: 73040
+  crediviva-configuracion-de-ambiente:
+    contractHash: "sha256:35742d321059d9cedadc00ae63f68e4c712bfd6f55d7213090e9556203db91ba"
+    envelopeHash: "sha256:f1b5780e5fc0116fd4149de7aaf455a4dffeb28c23b4b6c3de04e71c347b02cf"
+    hash: "sha256:e55addb9674f1c7d9c0998527edf43c101cd2f8eb487958cc46d0ae9716a1fa9"
+    lastPulledAt: "2026-10-28T19:50:35.457Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:9442858ee5c94802a02fc9bb837f489dc61aef5f68381c8f3b3caa6bbadd24eb"
+    name: "Crediviva Configuracion de Ambiente"
+    ownership: OWNED
+    toolId: 8992
+    versionIndex: 1
+    workflowId: 73643
+  crediviva-enviar-documento:
+    contractHash: "sha256:b64b04429d797c4071ac81cf5fa6328e1d0760cb3bc7c14eb8699812740a8af7"
+    envelopeHash: "sha256:7892854b82eca7f2d86ad5b213f1785e47e9d62761ec0fb2c85ca9e9cb935421"
+    hash: "sha256:1e0b67868c625bf316165770f796ed0dd5f7129c6a2b5a6b0d2853c1ec09c6fe"
+    lastPulledAt: "2026-10-21T22:45:09.899Z"
+    latestVersion: 1.0.1
+    metaHash: "sha256:e979db6c0fae80fdc6c9b8404d35f052991d5606398739b977b49aa728595fd3"
+    name: "Crediviva Enviar Documento"
+    ownership: OWNED
+    toolId: 8934
+    versionIndex: 1
+    workflowId: 73041
+  crediviva-estado-de-cuenta:
+    contractHash: "sha256:2bacc7502be57dde44f4ce3717a1c8e175214419a26d7f7d9ddd629a33dbba8a"
+    envelopeHash: "sha256:02393fa381ae4fd700d122b6ed4b57f368fdc21e189c4b24201b3528ff2eeddb"
+    hash: "sha256:ae8afa8c3549b68d0c3e6ee141386213eff9af24ed8adf6c103ae61ca2293bd5"
+    lastPulledAt: "2026-10-21T22:47:08.407Z"
+    latestVersion: 1.0.3
+    metaHash: "sha256:1b19e552b5811ac9bd98f69c68c4c0af24416094601ded5b7584031ee95a3050"
+    name: "Crediviva Estado de Cuenta"
+    ownership: OWNED
+    toolId: 8935
+    versionIndex: 1
+    workflowId: 73042
+  crediviva-estado-registro:
+    contractHash: "sha256:61e31015fbc8f3a1e74ef716b48d63375ea21bb5d3df7857fdc05b082e686778"
+    envelopeHash: "sha256:3938e32e47e94ae836cf6d3ad88139e379b6a14d9a7ac9f0362ab3b72b4dbf41"
+    hash: "sha256:f687d19eee82f716a872f3c872b89fb753d62124c1c15696e9a604ae6765e1c2"
+    lastPulledAt: "2026-11-12T08:01:26.358Z"
+    latestVersion: 1.0.3
+    metaHash: "sha256:2ca9b27783679eb27276fbf2d558cb36d9035968f2252e7caa7ff7841fa65e5e"
+    name: "Crediviva Estado Registro"
+    ownership: OWNED
+    toolId: 8994
+    versionIndex: 4
+    workflowId: 73648
+  crediviva-iniciar-kyc:
+    contractHash: "sha256:acaaffd088262196b78ceb7ec3cb794a9fbf5a12c60b96f3ddea02b698ee697f"
+    envelopeHash: "sha256:02b389e71e95dc55b0290c289920d7bdd59f52b5aedf611044788cf22f63bab4"
+    hash: "sha256:6eb8cc7f5c4a1ffec3cb73627f14e0293a6ca38f0ec7ba6eeab44b360f9aac99"
+    lastPulledAt: "2026-10-29T18:03:15.437Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:5ab30ae55701f231051a1bb875caa01fba4cb9879be971ec902793ea32736a74"
+    name: "Crediviva Iniciar KYC"
+    ownership: OWNED
+    toolId: 8998
+    versionIndex: 1
+    workflowId: 73697
+  crediviva-iniciar-registro:
+    contractHash: "sha256:884f78362987b8c67395b57a1e39eec6b775b02879b597176a4d1b6efd205cb0"
+    envelopeHash: "sha256:5bb90dab0537281a3532775daf5f5e21b0cc260bf9520c8123830024868d1c47"
+    hash: "sha256:f99892477ef651216a963bba4a4fdc706ecc562ab498411bb45520701d42cde1"
+    lastPulledAt: "2026-10-29T13:29:17.097Z"
+    latestVersion: 1.0.1
+    metaHash: "sha256:6f2514ef4cd1144290ed67268a3ce13a8378bc939f24369ea35dc09e1f77595e"
+    name: "Crediviva Iniciar Registro"
+    ownership: OWNED
+    toolId: 8993
+    versionIndex: 2
+    workflowId: 73647
+  crediviva-iniciar-solicitud:
+    contractHash: "sha256:0100e9601e8d4b5fba4d7f75bd7b5605e8c4a4f8c0af9438e9ab226122e68e22"
+    envelopeHash: "sha256:b2d62a432a3abbb0f84103e31d305dcf924da0ac746964e8cfb15d3e6e80c4d7"
+    hash: "sha256:ec005ea11a86fab02a5c1a904434f3516dd4bb981ac90dea7b9678dbbfd19e31"
+    lastPulledAt: "2026-11-12T08:03:02.905Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:2cb9f34eb4a2fd6c448db34724d1d89b45259b6a5557e35f871d7b5ad24b092d"
+    name: "Crediviva Iniciar Solicitud"
+    ownership: OWNED
+    toolId: 9072
+    versionIndex: 1
+    workflowId: 74697
+  crediviva-iniciar-validacion:
+    contractHash: "sha256:780827e56c74f561f18d97b62f2822f9c444a844dfc6eb34121b1d1093bf146c"
+    envelopeHash: "sha256:e5204481022bcf5109e8d9bd4c85ef08d20233063bf693eed2971c2aee181a67"
+    hash: "sha256:3df485bcc0d5b8a2c89f585d76733de7b47879226e5294c5c46542b35c059bf2"
+    lastPulledAt: "2026-10-21T22:45:20.840Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:5cfb30fbd4105073f101f458f40c1d6a00465fa39d9b2c039aa06efac06adbeb"
+    name: "Crediviva Iniciar Validacion"
+    ownership: OWNED
+    toolId: 8936
+    versionIndex: 1
+    workflowId: 73043
+  crediviva-login-de-prueba:
+    contractHash: "sha256:ca5f6c2278e34c07a24ff7a0f0a6d3999bdfbcd6631218a6a65b1cd4dcb890fd"
+    envelopeHash: "sha256:924f3c47707e21087171f898365a005f437a7ea9b17a74fc2984dee352fa92b9"
+    hash: "sha256:76c78b43c386565a5ba1bdada03f17633f58a467bb07350eac65739ee4ae557c"
+    lastPulledAt: "2026-11-16T06:15:05.966Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:eeb659f3f5fd97072f822d6d1e7b5f170e8930f928c0a6fa011cdf830f5ff09d"
+    name: "Crediviva Login de Prueba"
+    ownership: OWNED
+    toolId: 9109
+    versionIndex: 1
+    workflowId: 74960
+  crediviva-reenviar-codigo-correo:
+    contractHash: "sha256:eb56a447f987ed9bcc4455de049501bcd6251e38e32d1c5077e04028ba710faa"
+    envelopeHash: "sha256:dc6a511f468cf4785301cefeb3f708bac0e7a8f461d578cd87fbadcf181b283f"
+    hash: "sha256:305fb30b1c4f5c9cd4504cfb4a41c2378edb5e70ddf4d6c6498fcfd567d43c89"
+    lastPulledAt: "2026-10-28T18:37:22.868Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:c781d4e428983eb758abf6298c3450baf7137e19cdefaa002b0fd4b960f1f8ee"
+    name: "Crediviva Reenviar Codigo Correo"
+    ownership: OWNED
+    toolId: 8990
+    versionIndex: 1
+    workflowId: 73636
+  crediviva-registrar-ingreso:
+    contractHash: "sha256:101d302c0686742b5cf0121eeffc0bb367112eeaf2a5507e501df8e37982ffcd"
+    envelopeHash: "sha256:eb997847d71070c1be1ba3db1916d6fbaba464971349a625be54618ac4f75d86"
+    hash: "sha256:93e29b6298020cc061baa18faecd5f7c4adec56761077514cc264768d36f3acf"
+    lastPulledAt: "2026-10-29T18:03:28.341Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:3c954851c1ebe9513ab5265d5f6cb440cc406f002567ef9874a5c3b95cd96437"
+    name: "Crediviva Registrar Ingreso"
+    ownership: OWNED
+    toolId: 9000
+    versionIndex: 1
+    workflowId: 73699
+  crediviva-reinicio-de-prueba:
+    contractHash: "sha256:90ab00e48195611c36fcd159071ef6cc87ef6428b8adf1ffefd92820bbd3e96a"
+    envelopeHash: "sha256:f2797a31151121a5d382aea48285f98e2bc8c548f1bae6b52fdec8f0e605b5a9"
+    hash: "sha256:4037710cccafe578dfcbf321bb8f4de0e180437fdfa0113585d41e6096a7174c"
+    lastPulledAt: "2026-11-13T19:42:11.593Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:6bf51e46ea5a0d86bd1297dd74b1ec2bb993e63b7e70c2858859b45a7dc3cc9b"
+    name: "Crediviva Reinicio de Prueba"
+    ownership: OWNED
+    toolId: 9104
+    versionIndex: 1
+    workflowId: 74914
+  crediviva-resultado-kyc:
+    contractHash: "sha256:ae87d378158d8a38e6c1dbb6edec659fcc5a19537e84c31a826e64a3c8a35155"
+    envelopeHash: "sha256:3474e66b58e8615a60511aa29aa88c890951ddf6b7f5587018e54b0edd4e1352"
+    hash: "sha256:95e85c7d4800678adf6299fbca9891e6890c3acd07a63d757b20e5964ab04a14"
+    lastPulledAt: "2026-10-29T18:03:21.910Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:bdc461879761feda1950ea63025c3082892379e97affc2af100847a98d6a85f7"
+    name: "Crediviva Resultado KYC"
+    ownership: OWNED
+    toolId: 8999
+    versionIndex: 1
+    workflowId: 73698
+  crediviva-resultado-validacion:
+    contractHash: "sha256:f67ed563cf9a63e9c917f7f7ff051fca3363784f20a23397cc5d16d9fb8ad540"
+    envelopeHash: "sha256:3246c769193231522fa1baec24b80992bef1c020272758f25e87300a575140e7"
+    hash: "sha256:8b8d24733a0cf7c7724de8f2f4bbdfcc258d4c44967b1cb8fe0301303c097b70"
+    lastPulledAt: "2026-10-21T22:45:31.173Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:394530b05f0994b15efefe53f4f785c25f23c91d620ab75ccfb1fd9c4da00b16"
+    name: "Crediviva Resultado Validacion"
+    ownership: OWNED
+    toolId: 8937
+    versionIndex: 1
+    workflowId: 73044
+  crediviva-ultimo-pago:
+    contractHash: "sha256:2bacc7502be57dde44f4ce3717a1c8e175214419a26d7f7d9ddd629a33dbba8a"
+    envelopeHash: "sha256:a897c2ea72033325db9386bc16021d83592cc29a1fe17aef4893dfb38dd6316b"
+    hash: "sha256:816456156b9106c5a35177a07672b91f1f76da3832c92c711a617ac11b34c4d1"
+    lastPulledAt: "2026-10-21T22:47:20.111Z"
+    latestVersion: 1.0.3
+    metaHash: "sha256:e896616543e8631dc69b8e66c0cfc567a609fa560ddd39301c2baef550097b4b"
+    name: "Crediviva Ultimo Pago"
+    ownership: OWNED
+    toolId: 8938
+    versionIndex: 1
+    workflowId: 73045
+  crediviva-validar-correo:
+    contractHash: "sha256:eb56a447f987ed9bcc4455de049501bcd6251e38e32d1c5077e04028ba710faa"
+    envelopeHash: "sha256:0fd51befb3c6b73280bbe91630a5e90d903dfacc83842a406e90c8dce33f4f39"
+    hash: "sha256:521c741862bea79419f5511d02313141ceb0a45ee92654be4fc4b504627b5422"
+    lastPulledAt: "2026-10-28T18:37:17.401Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:2f4de0544543b4a097acae837a79ba9a67beb180a69a9a87247ef920c176f050"
+    name: "Crediviva Validar Correo"
+    ownership: OWNED
+    toolId: 8989
+    versionIndex: 1
+    workflowId: 73635
+  crediviva-validar-telefono:
+    contractHash: "sha256:7ba383516bc1eb0bfbaba628d7271d83780d7c8c761fe4b99d7268683d119fef"
+    envelopeHash: "sha256:33cd1508c808ef51fdbd9494e2ed5fdf41b99820a542877f3da66ad2489eb3b6"
+    hash: "sha256:d4a7e7fa6d993f0ee337daa2f45cab379a831e1e23b1cfd7070b28b399a681a1"
+    lastPulledAt: "2026-10-21T22:45:40.207Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:de28633ce49833d00515358dd6262b4f9b0d7e40c23666735ac9bb19640984bc"
+    name: "Crediviva Validar Telefono"
+    ownership: OWNED
+    toolId: 8939
+    versionIndex: 1
+    workflowId: 73046
+  crediviva-verificar-codigo-correo:
+    contractHash: "sha256:0b8714f57be7fea5c448b130bc4897c99fbe5c8f48f24f0510d5cf5752b3c8c9"
+    envelopeHash: "sha256:59a3f111611b591f1c3ca3f7b4e93be19a4bf121ebb8c21fad1c94f8842cd575"
+    hash: "sha256:f39ca44fbbf6c9d0dc4fa2d97fad89f7cda7699f09bac74b812d4a4764808904"
+    lastPulledAt: "2026-10-28T18:37:29.351Z"
+    latestVersion: 1.0.0
+    metaHash: "sha256:8ff7a8938dbc58011af0474b0ea44e85329f6b1314816471cf7cdc6f286844e6"
+    name: "Crediviva Verificar Codigo Correo"
+    ownership: OWNED
+    toolId: 8991
+    versionIndex: 1
+    workflowId: 73637

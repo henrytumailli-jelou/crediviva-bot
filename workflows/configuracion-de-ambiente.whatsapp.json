@@ -1,0 +1,61 @@
+{
+  "workflowId": 73055,
+  "workflowName": "Configuración de ambiente",
+  "workflowDescription": "Flujo interno que define el ambiente de las APIs de Crediviva (staging o production) para los demás flujos de atención al cliente.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "1ypiLs2qEZea6A8btgCpi",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "dKJkz6qcZJMueCxWf8esJ",
+      "title": "Fin: ambiente listo",
+      "configuration": {
+        "title": "Fin: ambiente listo",
+        "outputId": "YwrE4iwzd5JP37D2DyjhZ"
+      },
+      "type": "END",
+      "position": [
+        876,
+        145
+      ]
+    },
+    {
+      "id": "iYXjIcvCW72adm3sD993b",
+      "title": "Elegir ambiente",
+      "configuration": {
+        "title": "Elegir ambiente",
+        "content": "// ================== ELIGE AQUÍ EL AMBIENTE ==================\n//  \"staging\"    → pruebas  (secretos CREDIVIVA_*_STAGING)\n//  \"production\" → clientes reales (secretos CREDIVIVA_*_PRODUCTION)\nconst AMBIENTE = \"staging\";\n// País de operación (Panamá es el único activo en esta fase)\nconst PAIS = \"PA\";\n// ============================================================\nif (AMBIENTE !== \"staging\" && AMBIENTE !== \"production\") {\n  throw new Error(\"AMBIENTE debe ser staging o production\");\n}\n$memory.set(\"cv_ambiente\", AMBIENTE);\n$memory.set(\"cv_countryCode\", PAIS);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        488,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "FRMsepqNT1n1kAcZJpBqf",
+      "sourceId": "iYXjIcvCW72adm3sD993b",
+      "targetId": "dKJkz6qcZJMueCxWf8esJ",
+      "branch": "success"
+    },
+    {
+      "id": "Nbi7wLP8vIahzRpSFKe0v",
+      "sourceId": "1ypiLs2qEZea6A8btgCpi",
+      "targetId": "iYXjIcvCW72adm3sD993b",
+      "branch": "default"
+    }
+  ]
+}

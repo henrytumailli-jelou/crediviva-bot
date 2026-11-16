@@ -1,0 +1,331 @@
+{
+  "toolId": 8999,
+  "workflowId": 73698,
+  "toolName": "Crediviva Resultado KYC",
+  "toolDescription": "Consulta en Crediviva el resultado de la verificación de identidad que el cliente completó en Jumio o Veriff.",
+  "triggerType": "DEFAULT",
+  "ownership": "OWNED",
+  "inputs": [
+    {
+      "name": "authKey",
+      "id": "FXh8AXb76nZ3f8FJAh9Ey",
+      "displayName": "Sesión de Crediviva",
+      "description": "Sesión del registro, normalmente {{$memory.cv_sesionCrediviva.authKey}}. Nunca se le pide al cliente.",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "ambiente",
+      "id": "-Ykz05ThnC9aq1_xlEgVK",
+      "displayName": "Ambiente",
+      "description": "Ambiente de Crediviva: \"staging\" o \"production\".",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    },
+    {
+      "name": "proveedor",
+      "id": "tqr_cbcCysSzOuARTPMfL",
+      "displayName": "Proveedor",
+      "description": "Proveedor que devolvió \"Crediviva Iniciar KYC\": \"JUMIO\" o \"VERIFF\".",
+      "type": "STRING",
+      "required": true,
+      "defaultValue": null,
+      "configuration": null,
+      "position": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "resultado",
+      "id": "hnn43VC_O4_2zPHJpF-3B",
+      "displayName": "Resultado",
+      "description": "{ ok:true, estado: aprobado | completado | bloqueado | reintentar | cliente_existente | sin_verificacion | no_lista | sin_sesion | app, message, alternativa? }",
+      "type": "SUCCESS",
+      "required": true,
+      "schema": null,
+      "position": 0
+    },
+    {
+      "name": "error",
+      "id": "g3SplNaVe81wrb9RoMbK3",
+      "displayName": "Error técnico",
+      "description": "El servicio no respondió o falta configuración. { ok:false, estado:\"error\", code, message }",
+      "type": "FAILED",
+      "required": true,
+      "schema": null,
+      "position": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "_IWj4dfwyo2rZaJgXKym7",
+      "title": "¿Respondió el servicio?",
+      "type": "CONDITIONAL",
+      "position": [
+        2200,
+        410
+      ],
+      "configuration": {
+        "title": "¿Respondió el servicio?",
+        "conditions": [
+          {
+            "id": "cond_resultado",
+            "name": "Respondió",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.salida}}",
+                "operator": "equal",
+                "value2": "resultado"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "_tOas_nZBMAR0Zw7JZpVg",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "Bxf5ZhbZ7bEGLKdcuRJuE",
+      "title": "Interpretar respuesta",
+      "type": "CODE",
+      "position": [
+        1780,
+        50
+      ],
+      "configuration": {
+        "title": "Interpretar respuesta",
+        "content": "const res = $context.getHttpResponse(\"fnResponse\");\nlet status = 0;\ntry {\n  status = Number(typeof res?.status === \"function\" ? res.status() : res?.status) || 0;\n} catch (e) {\n  status = 0;\n}\nlet data = {};\ntry {\n  data = typeof res?.json === \"function\" ? await res.json() : (res?.json ?? res?.data ?? {});\n} catch (e) {\n  data = {};\n}\nif (typeof data === \"string\") {\n  try { data = JSON.parse(data); } catch (e) { data = {}; }\n}\nif (!data || typeof data !== \"object\") data = {};\nconst ok = status >= 200 && status < 300;\n$utils.logger.log(\"fnResponse\", JSON.stringify({ status, estado: data.estado }));\nconst MENSAJES = {\"enlace\": \"Envía la url al cliente como botón para que complete la verificación en el proveedor.\", \"aprobado\": \"La identidad del cliente quedó verificada.\", \"completado\": \"Este paso ya estaba completado en Crediviva; continúa con el siguiente.\", \"bloqueado\": \"La verificación fue bloqueada por el proveedor.\", \"reintentar\": \"El proveedor pide repetir la verificación.\", \"procesada\": \"La verificación ya fue procesada; consulta su resultado.\", \"cliente_existente\": \"El documento ya pertenece a otro cliente de Crediviva.\", \"sin_verificacion\": \"No se encontró una verificación iniciada para este cliente.\", \"no_lista\": \"El resultado aún no está listo; vuelve a consultarlo en unos segundos.\", \"sesion_invalida\": \"La sesión con el proveedor no es válida; hay que iniciar la verificación de nuevo.\", \"sin_sesion\": \"La sesión de Crediviva venció: el cliente debe iniciar sesión otra vez.\", \"app\": \"El cliente debe continuar su proceso en la App de Crediviva.\", \"approved\": \"Evaluación aprobada.\", \"manualAnalysis\": \"La solicitud requiere análisis manual.\", \"rejected\": \"La solicitud no cumple los criterios de crédito.\", \"monto_minimo\": \"El ingreso mínimo es de $100: pide al cliente que lo revise.\", \"invalido\": \"Crediviva no aceptó el dato enviado.\"};\nlet salida = \"error\";\nif (ok && typeof data.estado === \"string\" && data.estado !== \"error\") {\n  salida = \"resultado\";\n  const r = { ok: true, estado: data.estado, message: data.message || MENSAJES[data.estado] || \"\" };\n  for (const k of [\"url\", \"proveedor\", \"alternativa\", \"minimo\"]) if (data[k] !== undefined) r[k] = data[k];\n  $output.set(\"resultado\", r);\n} else {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"HTTP_\" + status, message: \"El servicio de Crediviva no respondió.\" });\n}\n$context.set(\"salida\", salida);",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "CkWM8tpaCl-d4SCzoatGr",
+      "title": "¿Solicitud lista?",
+      "type": "CONDITIONAL",
+      "position": [
+        940,
+        50
+      ],
+      "configuration": {
+        "title": "¿Solicitud lista?",
+        "conditions": [
+          {
+            "id": "cond_prep_ok",
+            "name": "Lista para enviar",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "si"
+              }
+            ]
+          },
+          {
+            "id": "cond_prep_resp",
+            "name": "Ya respondida",
+            "operator": "and",
+            "terms": [
+              {
+                "value1": "{{$context.prepOk}}",
+                "operator": "equal",
+                "value2": "respondido"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "Dyntf3Wq80Ie8d3oDnqn3",
+      "title": "Fallo técnico",
+      "type": "CODE",
+      "position": [
+        2200,
+        50
+      ],
+      "configuration": {
+        "title": "Fallo técnico",
+        "content": "$output.set(\"error\", {\n  ok: false,\n  estado: \"error\",\n  code: \"TECNICO\",\n  message: \"No fue posible comunicarse con el servicio de Crediviva.\",\n});",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "N3GvSk3IGL2tguwKv2xX5",
+      "title": "Fin: Resultado",
+      "type": "END",
+      "position": [
+        2620,
+        410
+      ],
+      "configuration": {
+        "title": "Fin: Resultado",
+        "outputId": "hnn43VC_O4_2zPHJpF-3B"
+      }
+    },
+    {
+      "id": "nfS0gcKPY8YIqlJYwdhHf",
+      "title": "Preparar solicitud",
+      "type": "CODE",
+      "position": [
+        520,
+        50
+      ],
+      "configuration": {
+        "title": "Preparar solicitud",
+        "content": "function inp(k, d) {\n  try {\n    const v = $input.get(k);\n    return v === undefined || v === null || v === \"\" ? d : v;\n  } catch (e) {\n    return d;\n  }\n}\nlet fallo = \"\";\nconst ambiente = String(inp(\"ambiente\", \"\")).trim().toLowerCase();\nif (ambiente !== \"staging\" && ambiente !== \"production\") fallo = \"El ambiente debe ser staging o production.\";\nconst authKey = String(inp(\"authKey\", \"\")).trim();\nif (!fallo && (authKey.length < 10 || authKey.includes(\"{{\"))) fallo = \"SIN_SESION\";\nconst proveedor = String(inp(\"proveedor\", \"\")).trim().toUpperCase();\nif (!fallo && proveedor !== \"JUMIO\" && proveedor !== \"VERIFF\") fallo = \"Proveedor inválido.\";\nconst body = { authKey, ambiente, proveedor };\n$context.set(\"body\", JSON.stringify(body));\nif (fallo === \"SIN_SESION\") {\n  $output.set(\"resultado\", { ok: true, estado: \"sin_sesion\", message: \"La sesión de Crediviva venció: el cliente debe iniciar sesión otra vez.\" });\n} else if (fallo === \"MONTO\") {\n  $output.set(\"resultado\", { ok: true, estado: \"invalido\", message: \"El ingreso debe ser un número en dólares, ej. 1200.\" });\n} else if (fallo) {\n  $output.set(\"error\", { ok: false, estado: \"error\", code: \"CONFIGURACION\", message: fallo });\n}\n$context.set(\"prepOk\", fallo === \"SIN_SESION\" || fallo === \"MONTO\" ? \"respondido\" : fallo ? \"no\" : \"si\");",
+        "memoryVersion": "v2"
+      }
+    },
+    {
+      "id": "NYir5hDjfImXjVRcOEji_",
+      "title": "Fin: Error técnico",
+      "type": "END",
+      "position": [
+        2620,
+        50
+      ],
+      "configuration": {
+        "title": "Fin: Error técnico",
+        "outputId": "g3SplNaVe81wrb9RoMbK3"
+      }
+    },
+    {
+      "id": "ZRSiIlb35DP5VtNN9nH-9",
+      "title": "Llamar servicio de Crediviva",
+      "type": "HTTP",
+      "position": [
+        1360,
+        50
+      ],
+      "configuration": {
+        "title": "Llamar servicio de Crediviva",
+        "method": "POST",
+        "url": "https://crediviva-onboarding.fn.jelou.ai/kyc-resultado",
+        "output": "fnResponse",
+        "settings": {
+          "sslCertificate": true,
+          "timeout": 30000
+        },
+        "authentication": {
+          "type": "bearer",
+          "enabled": true,
+          "token": "{{$secret.JELOU_FN_INVOKE_KEY}}"
+        },
+        "headers": [
+          {
+            "id": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "id": "Accept",
+            "key": "Accept",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "type": "application/json",
+          "enabled": true,
+          "content": "{{$context.body}}"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "0ZTJ9TlFYl75rJWOiWPyT",
+      "sourceId": "nfS0gcKPY8YIqlJYwdhHf",
+      "targetId": "CkWM8tpaCl-d4SCzoatGr",
+      "branch": "success"
+    },
+    {
+      "id": "2R8GdsgLhBH-2KjYaXo6I",
+      "sourceId": "CkWM8tpaCl-d4SCzoatGr",
+      "targetId": "NYir5hDjfImXjVRcOEji_",
+      "branch": "else"
+    },
+    {
+      "id": "8PUs40eEhVGKxBP2Wuv1Y",
+      "sourceId": "Bxf5ZhbZ7bEGLKdcuRJuE",
+      "targetId": "Dyntf3Wq80Ie8d3oDnqn3",
+      "branch": "failed"
+    },
+    {
+      "id": "av-3fg9DpTaDzDknUc6yF",
+      "sourceId": "CkWM8tpaCl-d4SCzoatGr",
+      "targetId": "N3GvSk3IGL2tguwKv2xX5",
+      "branch": "condition:cond_prep_resp"
+    },
+    {
+      "id": "B6wjrWLJO93l3q5_z2BsC",
+      "sourceId": "_tOas_nZBMAR0Zw7JZpVg",
+      "targetId": "nfS0gcKPY8YIqlJYwdhHf",
+      "branch": "default"
+    },
+    {
+      "id": "jby6u27cv00NoxX4V6A3i",
+      "sourceId": "Dyntf3Wq80Ie8d3oDnqn3",
+      "targetId": "NYir5hDjfImXjVRcOEji_",
+      "branch": "success"
+    },
+    {
+      "id": "lk8OEzqDWpFk45HCLS-M0",
+      "sourceId": "nfS0gcKPY8YIqlJYwdhHf",
+      "targetId": "Dyntf3Wq80Ie8d3oDnqn3",
+      "branch": "failed"
+    },
+    {
+      "id": "NaxgIRTje0Hxh8s7DSCky",
+      "sourceId": "ZRSiIlb35DP5VtNN9nH-9",
+      "targetId": "Bxf5ZhbZ7bEGLKdcuRJuE",
+      "branch": "failed"
+    },
+    {
+      "id": "ptZoY_DzO8TWmFNIw6jPd",
+      "sourceId": "CkWM8tpaCl-d4SCzoatGr",
+      "targetId": "ZRSiIlb35DP5VtNN9nH-9",
+      "branch": "condition:cond_prep_ok"
+    },
+    {
+      "id": "q77J3H_pumjUgJADn3wgB",
+      "sourceId": "_IWj4dfwyo2rZaJgXKym7",
+      "targetId": "NYir5hDjfImXjVRcOEji_",
+      "branch": "else"
+    },
+    {
+      "id": "RVcZ8Up9ZiK_3lM_AIWyd",
+      "sourceId": "_IWj4dfwyo2rZaJgXKym7",
+      "targetId": "N3GvSk3IGL2tguwKv2xX5",
+      "branch": "condition:cond_resultado"
+    },
+    {
+      "id": "TBJGwYCtjfa23Ljeqt5bz",
+      "sourceId": "ZRSiIlb35DP5VtNN9nH-9",
+      "targetId": "Bxf5ZhbZ7bEGLKdcuRJuE",
+      "branch": "success"
+    },
+    {
+      "id": "vBqG2cEFYrTVGy799efyO",
+      "sourceId": "Bxf5ZhbZ7bEGLKdcuRJuE",
+      "targetId": "_IWj4dfwyo2rZaJgXKym7",
+      "branch": "success"
+    }
+  ]
+}

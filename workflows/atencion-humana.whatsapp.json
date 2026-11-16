@@ -1,0 +1,129 @@
+{
+  "workflowId": 73047,
+  "workflowName": "Atención humana",
+  "workflowDescription": "Hablar con un asesor humano de Crediviva: transferir la conversación a un agente de atención al cliente.",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "DQXVqBvUrdhCAO2Yt95Tm",
+      "title": "Asesor asignado",
+      "configuration": {
+        "title": "Asesor asignado",
+        "messages": [
+          {
+            "id": "2HISNE5El4aRu_G6hfSE6",
+            "text": "Listo 🙌 Un asesor de Crediviva continuará contigo en este chat en breve.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        1284,
+        514
+      ]
+    },
+    {
+      "id": "i7JcjcijC6mKWDYQkZ59w",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "J60nxCPvJKWB6SONjCjHE",
+      "title": "Transferir a un asesor",
+      "configuration": {
+        "title": "Transferir a un asesor",
+        "priority": 0,
+        "assignment": {
+          "by": "shuffle",
+          "type": "direct"
+        }
+      },
+      "type": "CONNECT",
+      "position": [
+        896,
+        50
+      ]
+    },
+    {
+      "id": "REAXawAmgivFxlT1v0N6X",
+      "title": "Sin asesores disponibles",
+      "configuration": {
+        "title": "Sin asesores disponibles",
+        "messages": [
+          {
+            "id": "RWyCZ5iP9hvfWgfNbRX1E",
+            "text": "En este momento no tenemos asesores disponibles 😔. Tu caso quedó registrado y te atenderemos en nuestro horario de atención. Si necesitas un documento de tu crédito, escribe *documentos*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        1284,
+        156
+      ]
+    },
+    {
+      "id": "VnB-c9V_68xnGN7nHJhRF",
+      "title": "Aviso de transferencia",
+      "configuration": {
+        "title": "Aviso de transferencia",
+        "messages": [
+          {
+            "id": "sLeBjZVyrmLrxLzLpGw_y",
+            "text": "Te comunico con un asesor de Crediviva 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        488,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "FtlJsBM-054kL5LOK1wyu",
+      "sourceId": "VnB-c9V_68xnGN7nHJhRF",
+      "targetId": "J60nxCPvJKWB6SONjCjHE",
+      "branch": "default"
+    },
+    {
+      "id": "l_1JOpkmvbeJ6zbvtZuAm",
+      "sourceId": "i7JcjcijC6mKWDYQkZ59w",
+      "targetId": "VnB-c9V_68xnGN7nHJhRF",
+      "branch": "default"
+    },
+    {
+      "id": "pOVsFCQTnYqwPjWQD_Hd2",
+      "sourceId": "J60nxCPvJKWB6SONjCjHE",
+      "targetId": "REAXawAmgivFxlT1v0N6X",
+      "branch": "output:UNKNOWN_ERROR:failed"
+    },
+    {
+      "id": "S-b8VUD8soHENTqTeX6YO",
+      "sourceId": "J60nxCPvJKWB6SONjCjHE",
+      "targetId": "REAXawAmgivFxlT1v0N6X",
+      "branch": "output:OPERATORS_NOT_IN_SCHEDULER:failed"
+    },
+    {
+      "id": "sWuIJwUn5S5uYhQDMnBWX",
+      "sourceId": "J60nxCPvJKWB6SONjCjHE",
+      "targetId": "DQXVqBvUrdhCAO2Yt95Tm",
+      "branch": "output:JelouConnect:success"
+    },
+    {
+      "id": "ZJFvoeH_V4M1LF39uFAwE",
+      "sourceId": "J60nxCPvJKWB6SONjCjHE",
+      "targetId": "REAXawAmgivFxlT1v0N6X",
+      "branch": "output:OPERATOR_NOT_FOUND:failed"
+    }
+  ]
+}

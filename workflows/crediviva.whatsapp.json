@@ -1,0 +1,129 @@
+{
+  "workflowId": 73026,
+  "workflowName": "Crediviva",
+  "workflowDescription": "Bienvenida de Crediviva: saludar y mostrar el menú principal para pedir documentos del crédito o hablar con un asesor.",
+  "workflowDefault": false,
+  "nodes": [
+    {
+      "id": "0cglb0KNDqzxN0QwM8gkr",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        1594,
+        338
+      ]
+    },
+    {
+      "id": "c67AwIkNSffV6qlU4d43u",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        818,
+        338
+      ]
+    },
+    {
+      "id": "JPkh0hfquBFMvfbQq1fFv",
+      "title": "Bienvenida",
+      "configuration": {
+        "title": "Bienvenida",
+        "messages": [
+          {
+            "id": "_HRrCaIouGisJ7Wwezkd8",
+            "text": "¡Hola! 👋 Soy el asistente virtual de Crediviva.\n\n¿En qué te puedo ayudar hoy?",
+            "type": "buttons",
+            "options": [
+              {
+                "id": "opt_documentos",
+                "type": "postback",
+                "title": "Mis documentos",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_bienvenida": "Mis documentos"
+                  },
+                  "skillId": "53032",
+                  "targetId": "xW46-9oJZGwb2H6DjoNhw"
+                }
+              },
+              {
+                "id": "opt_asesor",
+                "type": "postback",
+                "title": "Hablar con asesor",
+                "payload": {
+                  "type": "edge",
+                  "memory": {
+                    "selection_bienvenida": "Hablar con asesor"
+                  },
+                  "skillId": "53032",
+                  "targetId": "0cglb0KNDqzxN0QwM8gkr"
+                }
+              }
+            ],
+            "settings": {
+              "responseVariable": "cv_bienvenidaSel",
+              "isBlockingEnabled": true,
+              "expiredButtonAction": true,
+              "optionNotFoundMessage": "Elige una opción: *Mis documentos* o *Hablar con asesor*."
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        1206,
+        338
+      ]
+    },
+    {
+      "id": "L9yPub9qlZcs3oK378A9E",
+      "title": "Webhook",
+      "configuration": {
+        "method": "GET",
+        "oneTimeOnly": false
+      },
+      "type": "WEBHOOK",
+      "position": [
+        50,
+        800
+      ]
+    },
+    {
+      "id": "xW46-9oJZGwb2H6DjoNhw",
+      "title": "Ir a Menú de documentos",
+      "configuration": {
+        "title": "Ir a Menú de documentos",
+        "skillId": "53052"
+      },
+      "type": "SKILL",
+      "position": [
+        1594,
+        668
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "97F1kvI0m-JdJnHP-2oAj",
+      "sourceId": "JPkh0hfquBFMvfbQq1fFv",
+      "targetId": "0cglb0KNDqzxN0QwM8gkr",
+      "branch": "option:opt_asesor"
+    },
+    {
+      "id": "LXk9liotIc3gs_2jv0h7t",
+      "sourceId": "JPkh0hfquBFMvfbQq1fFv",
+      "targetId": "xW46-9oJZGwb2H6DjoNhw",
+      "branch": "option:opt_documentos"
+    },
+    {
+      "id": "Z_S21umz5oDX8EHbygW2i",
+      "sourceId": "c67AwIkNSffV6qlU4d43u",
+      "targetId": "JPkh0hfquBFMvfbQq1fFv",
+      "branch": "default"
+    }
+  ]
+}

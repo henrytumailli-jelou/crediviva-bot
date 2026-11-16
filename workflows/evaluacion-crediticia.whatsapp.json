@@ -1,0 +1,857 @@
+{
+  "workflowId": 73701,
+  "workflowName": "Evaluación crediticia",
+  "workflowDescription": "Flujo interno del onboarding de Crediviva que registra el ingreso mensual del cliente, ejecuta la evaluación crediticia y le comunica el resultado.",
+  "workflowDefault": false,
+  "workflowConfiguration": {
+    "hidden": true
+  },
+  "nodes": [
+    {
+      "id": "_xvspEHwIkzYFV-w2ZN21",
+      "title": "Aplicar ambiente",
+      "configuration": {
+        "title": "Aplicar ambiente",
+        "variables": {
+          "cv_ambiente": "{{$memory.cv_config.ambiente}}",
+          "cv_countryCode": "{{$memory.cv_config.countryCode}}"
+        }
+      },
+      "type": "MEMORY",
+      "position": [
+        876,
+        150
+      ]
+    },
+    {
+      "id": "-ZvD88MLNjJh-5i6p4iAO",
+      "title": "Volver a iniciar sesión",
+      "configuration": {
+        "title": "Volver a iniciar sesión",
+        "messages": [
+          {
+            "id": "Prhom3guYb6c_oznOqvr9",
+            "text": "Por seguridad necesito que vuelvas a ingresar a tu cuenta para continuar 🔒",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        2206
+      ]
+    },
+    {
+      "id": "1TZQXSTvtJqBmUtH5fCMt",
+      "title": "Evaluación ya realizada",
+      "configuration": {
+        "title": "Evaluación ya realizada",
+        "messages": [
+          {
+            "id": "hvLZhvZIDLCcQjd0Nw9_l",
+            "text": "Tu evaluación ya fue registrada 🙌. Ingresa a la App de Crediviva para ver el estado de tu solicitud 📲",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        1506
+      ]
+    },
+    {
+      "id": "2kmADQqTsqanPsRzzhZHo",
+      "title": "Start",
+      "type": "START",
+      "position": [
+        100,
+        50
+      ]
+    },
+    {
+      "id": "bycqqzQuTyuXovBwt1arD",
+      "title": "Resultado: en revisión",
+      "configuration": {
+        "title": "Resultado: en revisión",
+        "messages": [
+          {
+            "id": "qolPqSP1mAM24oHHqMXod",
+            "text": "Tu solicitud necesita una revisión adicional para darte un resultado definitivo 🕐. Te comunico con un asesor para continuar 👩‍💼",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        1856
+      ]
+    },
+    {
+      "id": "BZEdVghdbmg5lq-_twiR_",
+      "title": "Formulario de solicitud",
+      "configuration": {
+        "title": "Formulario de solicitud",
+        "messages": [
+          {
+            "id": "SqZ-eJifZ2r9Gq2QIqkmQ",
+            "text": "¡Ya casi terminamos! 🙌 Completa tu solicitud de crédito: monto, comercios favoritos, dirección, datos laborales y referencias. Ten a mano tu documento de trabajo (carta, talonario o comprobante de pensión).\n\nAl terminar vuelve a este chat. Si quieres seguir después, toca *Salir y continuar después* en el formulario.",
+            "type": "webview",
+            "settings": {
+              "pendingMessage": "Te espero ⏳ Completa tu solicitud en el enlace que te envié. Si quieres seguir después, toca *Salir y continuar después* en el formulario.",
+              "responseVariable": "cv_solWv",
+              "isBlockingEnabled": true
+            },
+            "parameters": {
+              "url": "{{$memory.cv_sol.url}}",
+              "display_text": "Completar solicitud"
+            }
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3612,
+        2765
+      ]
+    },
+    {
+      "id": "DbVWyHH_OKYW6u5ccQ1c6",
+      "title": "Leer decisión",
+      "configuration": {
+        "title": "Leer decisión",
+        "content": "// Cómo terminó el formulario de solicitud (la Function lo deja en Datum y la tool lo entrega una vez).\nconst r = $memory.getJson(\"cv_solRes\", {}) || {};\n$memory.delete(\"cv_solRes\");\nconst dec = String(r.decision || \"\").toUpperCase();\nlet estado = \"error\";\nif (r.estado === \"completado\" && r.origen === \"solicitud\") {\n  estado = dec === \"APPROVED\" ? \"credito_aprobado\" : dec === \"REJECTED\" ? \"rejected\" : dec === \"PENDING\" ? \"manualAnalysis\" : \"completado\";\n} else if (r.estado === \"cancelado\" || r.estado === \"pendiente\") estado = \"cancelado\";\nelse if (r.estado === \"sin_sesion\") estado = \"sin_sesion\";\n$memory.setJson(\"cv_eval\", { estado }, 3600);\nif ([\"credito_aprobado\", \"rejected\", \"manualAnalysis\"].includes(estado)) $memory.set(\"cv_evaluacion\", estado);\nif (estado === \"credito_aprobado\") {\n  const msg = String(r.mensaje || \"\").trim();\n  $memory.set(\"cv_solMensaje\", (msg || \"¡Felicitaciones! Tu crédito fue aprobado. Ingresa a la App de Crediviva con tu correo y contraseña para usarlo 📲\").slice(0, 1000));\n}",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        4388,
+        2765
+      ]
+    },
+    {
+      "id": "GYl3k5jVQR2y0prm1O6wO",
+      "title": "Sesión expirada",
+      "configuration": {
+        "title": "Sesión expirada",
+        "messages": [
+          {
+            "id": "nQSp6DzJ0WrcIR6FUioiC",
+            "text": "Cerré la evaluación por inactividad ⌛. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        2428,
+        450
+      ]
+    },
+    {
+      "id": "Hji3xROwtt4mlF8KIIe2n",
+      "title": "Configuración de ambiente",
+      "configuration": {
+        "async": false,
+        "title": "Configuración de ambiente",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 8992,
+          "toolName": "Crediviva Configuracion de Ambiente",
+          "thumbnail": 1,
+          "workflowId": 73643
+        },
+        "variable": "cv_config"
+      },
+      "type": "TOOL",
+      "position": [
+        488,
+        50
+      ]
+    },
+    {
+      "id": "IvfJiA0MNxN9fanJhdhM6",
+      "title": "Ir a Registro de cliente",
+      "configuration": {
+        "title": "Ir a Registro de cliente",
+        "skillId": "53335"
+      },
+      "type": "SKILL",
+      "position": [
+        3632,
+        1303
+      ]
+    },
+    {
+      "id": "l4MmMFCTDSNrbROft-E-z",
+      "title": "¿Resultado de la evaluación?",
+      "configuration": {
+        "title": "¿Resultado de la evaluación?",
+        "conditions": [
+          {
+            "id": "c_aprobado",
+            "name": "Aprobado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "approved",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_rechazado",
+            "name": "Rechazado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "rejected",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_manual",
+            "name": "Análisis manual",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "manualAnalysis",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_completado",
+            "name": "Ya evaluado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "completado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_sin_sesion",
+            "name": "Sesión vencida",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "sin_sesion",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_cancelado",
+            "name": "No continuó",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "cancelado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          },
+          {
+            "id": "c_credito_aprobado",
+            "name": "Crédito aprobado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_eval.estado}}",
+                "value2": "credito_aprobado",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        2836,
+        65
+      ]
+    },
+    {
+      "id": "M9O4PMVwnjzTND-uzCLsb",
+      "title": "Revisar sesión",
+      "configuration": {
+        "title": "Revisar sesión",
+        "content": "// Sesión de Crediviva que dejó el registro en memoria (vence a los 30 min).\nconst s = $memory.getJson(\"cv_sesionCrediviva\", null);\nconst vigente = !!(s && s.authKey && s.ambiente === $memory.get(\"cv_ambiente\", \"\"));\n$memory.set(\"cv_sesionVigente\", vigente ? \"si\" : \"no\");\n// Decisión final ya conocida: se muestra sin volver a pedir nada.\nlet previa = $memory.get(\"cv_evaluacion\", \"\");\n// Si el login dice que el pendiente ya es la solicitud, el ingreso fue aprobado: se va directo al formulario.\nconst paso = String($memory.get(\"cv_pasoCrediviva\", \"\")).toLowerCase();\nif (!previa && vigente && paso.startsWith(\"credit-application\")) previa = \"approved\";\n// Atajo de pruebas (solo lo marca Registro para números de prueba en staging): directo al formulario.\nif (!previa && vigente && $memory.get(\"cv_pruebaSolicitud\", \"\") === \"si\") previa = \"approved\";\n// Borrar y escribir la misma clave en un mismo nodo no es confiable (el borrado puede aplicarse\n// después y dejarla vacía): se escribe si hay decisión y solo se borra si no la hay.\nif (previa) $memory.setJson(\"cv_eval\", { estado: previa }, 3600);\nelse $memory.delete(\"cv_eval\");\n$memory.set(\"cv_evalPrevia\", previa ? \"si\" : \"no\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        1264,
+        75
+      ]
+    },
+    {
+      "id": "mSWei534i0Ox0NsYT6llm",
+      "title": "Guardar resultado",
+      "configuration": {
+        "title": "Guardar resultado",
+        "content": "const r = $memory.getJson(\"cv_eval\", {});\n$memory.set(\"cv_ultimoResultado\", \"evaluacion_\" + String(r.estado || \"\"));\n// Rechazo o revisión manual por ingreso son definitivos. Aprobado sigue con la solicitud, cuya\n// decisión es la final. \"completado\" (el ingreso ya estaba registrado, sin decisión a la vista)\n// también sigue a la solicitud: Crediviva salta los pasos hechos y devuelve la decisión.\nconst e = String(r.estado || \"\");\nif (e === \"rejected\" || e === \"manualAnalysis\") $memory.set(\"cv_evaluacion\", e);\nelse if (e === \"completado\" && !$memory.get(\"cv_evaluacion\", \"\")) $memory.setJson(\"cv_eval\", { estado: \"approved\" }, 3600);",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        2428,
+        50
+      ]
+    },
+    {
+      "id": "n7JxChPdx6rvNtCbLzJC4",
+      "title": "Ir a Atención humana",
+      "configuration": {
+        "title": "Ir a Atención humana",
+        "skillId": "53042"
+      },
+      "type": "SKILL",
+      "position": [
+        3632,
+        973
+      ]
+    },
+    {
+      "id": "NqqyVRsxr9S_7SDo8GkmO",
+      "title": "¿Tiene sesión vigente?",
+      "configuration": {
+        "title": "¿Tiene sesión vigente?",
+        "conditions": [
+          {
+            "id": "c_vigente",
+            "name": "Sesión vigente",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_sesionVigente}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1652,
+        100
+      ]
+    },
+    {
+      "id": "P-zJhoUUf5QLsZb4rBqp9",
+      "title": "Evaluación no realizada",
+      "configuration": {
+        "title": "Evaluación no realizada",
+        "messages": [
+          {
+            "id": "Z2vDJnwh44SxhSaqUL4Sl",
+            "text": "Dejamos tu evaluación pendiente. Cuando quieras retomarlo, escribe *Continuar mi solicitud*.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        1156
+      ]
+    },
+    {
+      "id": "qBVUaEFEgDkYRe658puNy",
+      "title": "Recoger decisión",
+      "configuration": {
+        "async": false,
+        "input": {
+          "phone": "{{$user.phone}}",
+          "userId": "{{$user.id}}"
+        },
+        "title": "Recoger decisión",
+        "version": "1.0.3",
+        "toolData": {
+          "toolId": 8994,
+          "toolName": "Crediviva Estado Registro",
+          "thumbnail": 1,
+          "workflowId": 73648
+        },
+        "variable": "cv_solRes"
+      },
+      "type": "TOOL",
+      "position": [
+        4000,
+        2765
+      ]
+    },
+    {
+      "id": "r-gCNPZfq4T-Iora1pLaV",
+      "title": "Resultado: aprobado",
+      "configuration": {
+        "title": "Resultado: aprobado",
+        "messages": [
+          {
+            "id": "C3MT-YibH69rjAr4nV5XB",
+            "text": "🎉 {{$memory.cv_solMensaje}}",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        778
+      ]
+    },
+    {
+      "id": "SXVXEzIoso5KMQIOitioc",
+      "title": "Iniciar solicitud",
+      "configuration": {
+        "async": false,
+        "input": {
+          "paso": "{{$memory.cv_pasoCrediviva}}",
+          "botId": "{{$bot.id}}",
+          "userId": "{{$user.id}}",
+          "authKey": "{{$memory.cv_sesionCrediviva.authKey}}",
+          "ambiente": "{{$memory.cv_ambiente}}"
+        },
+        "title": "Iniciar solicitud",
+        "version": "1.0.0",
+        "toolData": {
+          "toolId": 9072,
+          "toolName": "Crediviva Iniciar Solicitud",
+          "thumbnail": 1,
+          "workflowId": 74697
+        },
+        "variable": "cv_sol"
+      },
+      "type": "TOOL",
+      "position": [
+        3224,
+        2765
+      ]
+    },
+    {
+      "id": "SZCECi8tD3SJVL9Trkm5W",
+      "title": "Resultado: rechazado",
+      "configuration": {
+        "title": "Resultado: rechazado",
+        "messages": [
+          {
+            "id": "D6cEv6GRh3bXd_Jw8zKBF",
+            "text": "Lo sentimos 😔, por ahora no podemos brindarte un crédito dado que no cumples con los criterios crediticios y de riesgo mínimos.\n\nGracias por tu interés en Crediviva 💙",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        400
+      ]
+    },
+    {
+      "id": "vfcBcYaUhgBjAOd3D8t6l",
+      "title": "Invalidar sesión",
+      "configuration": {
+        "title": "Invalidar sesión",
+        "content": "// Crediviva rechazó la sesión (o no hay): se borra para que Registro pida iniciar sesión otra vez\n// en lugar de darla por vigente y devolver al cliente aquí en un ciclo.\n$memory.delete(\"cv_sesionCrediviva\");\n$memory.delete(\"cv_sesionVigente\");",
+        "memoryVersion": "v2"
+      },
+      "type": "CODE",
+      "position": [
+        3612,
+        2206
+      ]
+    },
+    {
+      "id": "W_TT6OPcjhMpFe_8i0SrM",
+      "title": "Asistente de evaluación",
+      "configuration": {
+        "name": "Asistente de evaluación",
+        "model": "openai/gpt-6-luna",
+        "title": "Asistente de evaluación",
+        "version": "v2",
+        "settings": {
+          "expiration": {
+            "time": "minutes",
+            "enabled": true,
+            "duration": 30,
+            "timeInSeconds": 1800
+          },
+          "splitMessages": true,
+          "messageHistory": {
+            "enabled": false
+          }
+        },
+        "variable": "cv_eval",
+        "connections": {
+          "mcp": [],
+          "datum": [],
+          "tools": [
+            {
+              "id": "tool-9000",
+              "name": "Crediviva Registrar Ingreso",
+              "inputs": [
+                {
+                  "id": "h_oDHF4gl7DhFRqXVaA_5",
+                  "name": "monto",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 9000,
+                  "position": 0,
+                  "required": true,
+                  "description": "Ingreso mensual del cliente en dólares, solo el número, ej. \"1200\" o \"850.50\".",
+                  "displayName": "Ingreso mensual",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "T6sau6R0juKNClkdXOdkk",
+                  "name": "authKey",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 9000,
+                  "position": 0,
+                  "required": true,
+                  "description": "Sesión del registro, normalmente {{$memory.cv_sesionCrediviva.authKey}}. Nunca se le pide al cliente.",
+                  "displayName": "Sesión de Crediviva",
+                  "defaultValue": null,
+                  "configuration": null
+                },
+                {
+                  "id": "ZHUktmtV3s9S6jVQVKFLf",
+                  "name": "ambiente",
+                  "type": "STRING",
+                  "state": true,
+                  "toolId": 9000,
+                  "position": 0,
+                  "required": true,
+                  "description": "Ambiente de Crediviva: \"staging\" o \"production\".",
+                  "displayName": "Ambiente",
+                  "defaultValue": null,
+                  "configuration": null
+                }
+              ],
+              "toolId": 9000,
+              "version": "1.0.0",
+              "external": true,
+              "parameters": {
+                "authKey": "{{$memory.cv_sesionCrediviva.authKey}}",
+                "ambiente": "{{$memory.cv_ambiente}}"
+              },
+              "description": "Registra el ingreso mensual del cliente en Crediviva y devuelve el resultado de la evaluación crediticia: aprobado, análisis manual o rechazado.",
+              "parameterModes": {
+                "monto": "dynamic",
+                "authKey": "dynamic",
+                "ambiente": "dynamic"
+              }
+            },
+            {
+              "id": "send_interactive_message",
+              "name": "send_interactive_message",
+              "action": "pause",
+              "external": false,
+              "description": "Botones para que el cliente elija (consentimiento, confirmaciones, 'Ya terminé')."
+            }
+          ]
+        },
+        "endFunction": {
+          "rawSchema": {
+            "estado": {
+              "type": "string",
+              "required": true
+            }
+          },
+          "description": "Completa 'estado' con uno de: approved, manualAnalysis, rejected, completado, sin_sesion, cancelado, asesor, error. Termina justo después de identificarlo; no envíes despedida ni confirmación, el siguiente paso la envía."
+        },
+        "instructions": "Eres el asistente de Crediviva que completa la evaluación crediticia del cliente. Su identidad ya fue verificada.\n\nPasos:\n1. Pregúntale cuál es su ingreso mensual en dólares (el mínimo es $100) y termina esa pregunta con: \"Si no quieres continuar, escribe *salir*.\"\n2. Cuando lo diga, interpreta el monto (ej. \"mil doscientos\" = 1200, \"$850.50\" = 850.50) y confírmalo con send_interactive_message: \"¿Tu ingreso mensual es de $<monto>?\" con exactamente estas opciones: \"Sí, es correcto\", \"Corregir\".\n   - \"Corregir\": vuelve a preguntar el monto.\n   - Si el monto es menor a $100, no lo confirmes: dile que el ingreso mínimo es de $100 y pregunta de nuevo.\n3. Con la confirmación, llama a \"Crediviva Registrar Ingreso\" con el monto (solo el número) y lee \"estado\":\n   - \"approved\", \"manualAnalysis\" o \"rejected\": termina de inmediato con ese mismo estado. No le comuniques el resultado: el siguiente paso lo hace.\n   - \"monto_minimo\" o \"invalido\": explícale el motivo con el campo message y pregunta de nuevo el monto.\n   - \"completado\": este paso ya estaba hecho; termina con estado \"completado\".\n   - \"sin_sesion\": termina con estado \"sin_sesion\".\n   - ok = false: inténtalo una vez más; si vuelve a fallar, termina con estado \"error\".\n\nReglas:\n- Nunca inventes ni anticipes el resultado de la evaluación ni montos de crédito.\n- No pidas otros datos personales ni documentos.\n- Si quiere salir o cancelar, termina de inmediato con estado \"cancelado\". Si pide hablar con una persona o tiene un reclamo, termina con estado \"asesor\".\n- Nunca respondas solo \"Entendido\" ni te despidas.\n- Responde en español, breve y cordial.",
+        "startCommand": "Quiero continuar con la evaluación de mi crédito.",
+        "instructions_lang": "es",
+        "nonHappyPathHandlers": {
+          "error": {
+            "mode": "message",
+            "message": "Tuvimos un problema técnico con tu solicitud 😔. Cuando quieras retomarlo, escribe *Continuar mi solicitud*."
+          }
+        }
+      },
+      "type": "AI_TASK",
+      "position": [
+        2040,
+        50
+      ]
+    },
+    {
+      "id": "w1wO0BFzdYjLsN11p5Clm",
+      "title": "¿Ya fue evaluado?",
+      "configuration": {
+        "title": "¿Ya fue evaluado?",
+        "conditions": [
+          {
+            "id": "c_eval_previa",
+            "name": "Ya evaluado",
+            "terms": [
+              {
+                "value1": "{{$memory.cv_evalPrevia}}",
+                "value2": "si",
+                "operator": "equal"
+              }
+            ],
+            "operator": "and"
+          }
+        ]
+      },
+      "type": "CONDITIONAL",
+      "position": [
+        1652,
+        775
+      ]
+    },
+    {
+      "id": "ZcNRrQ7KiZUyB_50NJY9V",
+      "title": "Error técnico",
+      "configuration": {
+        "title": "Error técnico",
+        "messages": [
+          {
+            "id": "SFFQgvfKWA34gECcCz3yq",
+            "text": "Tuvimos un problema técnico con tu solicitud 😔. Te comunico con un asesor para ayudarte.",
+            "type": "text"
+          }
+        ]
+      },
+      "type": "CHANNEL_MESSAGE",
+      "position": [
+        3224,
+        50
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "_arGMx1Idh0_VMtma8RQ2",
+      "sourceId": "bycqqzQuTyuXovBwt1arD",
+      "targetId": "n7JxChPdx6rvNtCbLzJC4",
+      "branch": "default"
+    },
+    {
+      "id": "1yC0KzRqOG6hxPtCyd1XS",
+      "sourceId": "DbVWyHH_OKYW6u5ccQ1c6",
+      "targetId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "branch": "failed"
+    },
+    {
+      "id": "3sxjOndgAY7Bha6VKRnln",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "bycqqzQuTyuXovBwt1arD",
+      "branch": "condition:c_manual"
+    },
+    {
+      "id": "48GDSCxpuYOX8D8dOnm3u",
+      "sourceId": "M9O4PMVwnjzTND-uzCLsb",
+      "targetId": "w1wO0BFzdYjLsN11p5Clm",
+      "branch": "success"
+    },
+    {
+      "id": "5pGKG5mB9n0hh0TMRmGHH",
+      "sourceId": "2kmADQqTsqanPsRzzhZHo",
+      "targetId": "Hji3xROwtt4mlF8KIIe2n",
+      "branch": "default"
+    },
+    {
+      "id": "6UrtVd_H-iCBJoOvBU4-o",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "r-gCNPZfq4T-Iora1pLaV",
+      "branch": "condition:c_credito_aprobado"
+    },
+    {
+      "id": "7FuQeXk6lgS1eI9yHQKx5",
+      "sourceId": "mSWei534i0Ox0NsYT6llm",
+      "targetId": "l4MmMFCTDSNrbROft-E-z",
+      "branch": "success"
+    },
+    {
+      "id": "86M454_BXJQMzZm-vVWOE",
+      "sourceId": "NqqyVRsxr9S_7SDo8GkmO",
+      "targetId": "W_TT6OPcjhMpFe_8i0SrM",
+      "branch": "condition:c_vigente"
+    },
+    {
+      "id": "a73BWXxSij-Qxcd1-CeVa",
+      "sourceId": "w1wO0BFzdYjLsN11p5Clm",
+      "targetId": "l4MmMFCTDSNrbROft-E-z",
+      "branch": "condition:c_eval_previa"
+    },
+    {
+      "id": "B0Jbw80RQKiMOl9Vegh3H",
+      "sourceId": "SXVXEzIoso5KMQIOitioc",
+      "targetId": "BZEdVghdbmg5lq-_twiR_",
+      "branch": "output:HKsagWmytMDObQknh4en0:success"
+    },
+    {
+      "id": "b0ZYns2OaCfTQH9_2EAE7",
+      "sourceId": "BZEdVghdbmg5lq-_twiR_",
+      "targetId": "GYl3k5jVQR2y0prm1O6wO",
+      "branch": "expire"
+    },
+    {
+      "id": "FXMX0yceEgJsbd963Ed73",
+      "sourceId": "vfcBcYaUhgBjAOd3D8t6l",
+      "targetId": "IvfJiA0MNxN9fanJhdhM6",
+      "branch": "success"
+    },
+    {
+      "id": "G6m4rmzUCVVB4O4LK-egY",
+      "sourceId": "Hji3xROwtt4mlF8KIIe2n",
+      "targetId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "branch": "output:8Wc3ClqwLQOKYMDyRS4RJ:failed"
+    },
+    {
+      "id": "GHKkaTBFLgJBGCrCiwhTj",
+      "sourceId": "NqqyVRsxr9S_7SDo8GkmO",
+      "targetId": "-ZvD88MLNjJh-5i6p4iAO",
+      "branch": "else"
+    },
+    {
+      "id": "HfErWEvI6jqV_bnf2WU1l",
+      "sourceId": "M9O4PMVwnjzTND-uzCLsb",
+      "targetId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "branch": "failed"
+    },
+    {
+      "id": "KJgv3ZjP2Vg8Ch0fEf5ui",
+      "sourceId": "BZEdVghdbmg5lq-_twiR_",
+      "targetId": "qBVUaEFEgDkYRe658puNy",
+      "branch": "exit"
+    },
+    {
+      "id": "lrKHazImkIjpy6UBc97R3",
+      "sourceId": "Hji3xROwtt4mlF8KIIe2n",
+      "targetId": "_xvspEHwIkzYFV-w2ZN21",
+      "branch": "output:Vw5_BkbhdlEcmw8GhTh1V:success"
+    },
+    {
+      "id": "nggtH0SBEfDDHIqvaDmq8",
+      "sourceId": "-ZvD88MLNjJh-5i6p4iAO",
+      "targetId": "vfcBcYaUhgBjAOd3D8t6l",
+      "branch": "default"
+    },
+    {
+      "id": "PaVHf7n74XyPCPXrCCbr8",
+      "sourceId": "vfcBcYaUhgBjAOd3D8t6l",
+      "targetId": "IvfJiA0MNxN9fanJhdhM6",
+      "branch": "failed"
+    },
+    {
+      "id": "pERIdKxe99pLitM7bH89x",
+      "sourceId": "DbVWyHH_OKYW6u5ccQ1c6",
+      "targetId": "l4MmMFCTDSNrbROft-E-z",
+      "branch": "success"
+    },
+    {
+      "id": "q_dPXD02GX2KKcC2TzOMr",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "SZCECi8tD3SJVL9Trkm5W",
+      "branch": "condition:c_rechazado"
+    },
+    {
+      "id": "qGszIdqRkFdeSTgyraH2F",
+      "sourceId": "SXVXEzIoso5KMQIOitioc",
+      "targetId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "branch": "output:TLDVrXNhmMgit9d-ZBCW0:failed"
+    },
+    {
+      "id": "RsSIF8zIpvjZvtA2j5l_b",
+      "sourceId": "mSWei534i0Ox0NsYT6llm",
+      "targetId": "l4MmMFCTDSNrbROft-E-z",
+      "branch": "failed"
+    },
+    {
+      "id": "RTaXbNP6ifBWpUrpPVqj5",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "branch": "else"
+    },
+    {
+      "id": "RUgx_a2XhgA2Rsm6w0VyT",
+      "sourceId": "qBVUaEFEgDkYRe658puNy",
+      "targetId": "DbVWyHH_OKYW6u5ccQ1c6",
+      "branch": "output:A1n9IWVQORUgbzHXu7YVf:failed"
+    },
+    {
+      "id": "sIN-xRX_u11vGdqTPAIIa",
+      "sourceId": "W_TT6OPcjhMpFe_8i0SrM",
+      "targetId": "GYl3k5jVQR2y0prm1O6wO",
+      "branch": "expire"
+    },
+    {
+      "id": "TN9SdHezL33eyADr-uUGx",
+      "sourceId": "W_TT6OPcjhMpFe_8i0SrM",
+      "targetId": "mSWei534i0Ox0NsYT6llm",
+      "branch": "success"
+    },
+    {
+      "id": "uHZEFbIb_uHMct-WjVBOI",
+      "sourceId": "ZcNRrQ7KiZUyB_50NJY9V",
+      "targetId": "n7JxChPdx6rvNtCbLzJC4",
+      "branch": "default"
+    },
+    {
+      "id": "Ulblsx7VzBIbV_NUGeLSa",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "1TZQXSTvtJqBmUtH5fCMt",
+      "branch": "condition:c_completado"
+    },
+    {
+      "id": "UXMSz9k5XRAaBan-GsMbF",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "-ZvD88MLNjJh-5i6p4iAO",
+      "branch": "condition:c_sin_sesion"
+    },
+    {
+      "id": "VNTViWVGiiuYtfTdrDsDM",
+      "sourceId": "qBVUaEFEgDkYRe658puNy",
+      "targetId": "DbVWyHH_OKYW6u5ccQ1c6",
+      "branch": "output:yAL6VBwC1JpYmDkQVyWBc:success"
+    },
+    {
+      "id": "wxTBfYlDaUL5JfoUIeKCs",
+      "sourceId": "_xvspEHwIkzYFV-w2ZN21",
+      "targetId": "M9O4PMVwnjzTND-uzCLsb",
+      "branch": "default"
+    },
+    {
+      "id": "x7Of0fQzPcsKhkCh4CwSh",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "SXVXEzIoso5KMQIOitioc",
+      "branch": "condition:c_aprobado"
+    },
+    {
+      "id": "yMWf-_FEctJNLW9Ue77ZM",
+      "sourceId": "BZEdVghdbmg5lq-_twiR_",
+      "targetId": "qBVUaEFEgDkYRe658puNy",
+      "branch": "error"
+    },
+    {
+      "id": "Z-II-sF6DAfMlx3tygif1",
+      "sourceId": "w1wO0BFzdYjLsN11p5Clm",
+      "targetId": "NqqyVRsxr9S_7SDo8GkmO",
+      "branch": "else"
+    },
+    {
+      "id": "ZOuD8Xgd6yb-82zq4JNHS",
+      "sourceId": "l4MmMFCTDSNrbROft-E-z",
+      "targetId": "P-zJhoUUf5QLsZb4rBqp9",
+      "branch": "condition:c_cancelado"
+    }
+  ]
+}
